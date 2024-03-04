@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -59,10 +60,19 @@ public class Bouton : Interactable {
     /// </summary>
     public override void OnInteract()
     {
-        StopAllCoroutines();
-        animator.Play(pressAnimationName);
-        onClick.Invoke();
-        StartCoroutine(ResetState());
+        if(IsHost)
+        {
+            SendInteractionClientRpc();
+            StopAllCoroutines();
+            animator.Play(pressAnimationName);
+            onClick.Invoke();
+            StartCoroutine(ResetState());
+        } 
+        else
+        {
+            SendInteractionServerRpc();
+        }
+        
     }
 
     /// <summary>
@@ -75,6 +85,21 @@ public class Bouton : Interactable {
         animator.Play(resetAnimationName);
         yield return new WaitForSeconds(resetAnimation.length);
         onReset.Invoke();
+    }
+
+    [ServerRpc]
+    private void SendInteractionServerRpc()
+    {
+        OnInteract();
+    }
+
+    [ClientRpc]
+    private void SendInteractionClientRpc()
+    {
+        StopAllCoroutines();
+        animator.Play(pressAnimationName);
+        onClick.Invoke();
+        StartCoroutine(ResetState());
     }
 
 }

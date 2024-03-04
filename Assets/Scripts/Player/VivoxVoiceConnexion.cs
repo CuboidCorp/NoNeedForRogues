@@ -27,8 +27,8 @@ public class VivoxVoiceConnexion : MonoBehaviour
     /// </summary>
     /// <returns>Quand l'initialisation est terminée</returns>
     public async Task InitVivox()
-    {        
-        if(!AuthenticationService.Instance.IsSignedIn)
+    {
+        if (!AuthenticationService.Instance.IsSignedIn)
         {
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
         }
@@ -39,7 +39,7 @@ public class VivoxVoiceConnexion : MonoBehaviour
         await servVivox.LoginAsync();
     }
 
-    
+
 
     /// <summary>
     /// Rejoint le channel de chat 
@@ -60,7 +60,15 @@ public class VivoxVoiceConnexion : MonoBehaviour
     private async void OnLoggedIn()
     {
         Debug.Log("Vivox Logged In");
-        await JoinPositionalChannelAsync();
+        if (MultiplayerGameManager.Instance.soloMode)
+        {
+            await servVivox.JoinEchoChannelAsync("EchoTest", ChatCapability.AudioOnly);
+        }
+        else
+        {
+            await JoinPositionalChannelAsync();
+        }
+
     }
 
     /// <summary>

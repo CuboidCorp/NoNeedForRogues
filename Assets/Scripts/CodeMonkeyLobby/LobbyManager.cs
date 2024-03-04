@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Lobbies;
@@ -12,6 +14,7 @@ public class LobbyManager : MonoBehaviour
     public static LobbyManager Instance { get; private set; }
 
     [SerializeField] private TMP_Text playerNameText;
+    [SerializeField] private GameObject lobbyWindow;
 
     public const string KEY_PLAYER_NAME = "PlayerName";
     public const string KEY_PLAYER_CHARACTER = "Character";
@@ -71,10 +74,23 @@ public class LobbyManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("DataHolder not found");
-            playerName = "Player";
+            //Pas de dataHolder -> Mode solo
+            SoloMode();
         }
         playerNameText.text = playerName;
+    }
+
+    /// <summary>
+    /// Lance le mode solo
+    /// </summary>
+    private void SoloMode()
+    {
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData("127.0.0.1", 7777);
+        MultiplayerGameManager.Instance.soloMode = true;
+        OnGameStarted?.Invoke(this, EventArgs.Empty);
+        NetworkManager.Singleton.StartHost();
+        Destroy(lobbyWindow);
+        Destroy(gameObject);
     }
 
     private void Update()

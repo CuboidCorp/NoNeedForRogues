@@ -4961,7 +4961,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 683df6093d061a0409cf139fef784d36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ragdoll: {fileID: 0}
+  ragdoll: {fileID: 9169868645945297206, guid: ea61977453e0b1749b6f735cca592207, type: 3}
   playerCamera: {fileID: 3785949629200311055}
   invertCamera: 0
   mouseSensitivity: 100

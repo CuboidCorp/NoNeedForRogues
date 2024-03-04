@@ -1,11 +1,11 @@
 using System;
-using UnityEngine;
+using Unity.Netcode;
 using UnityEngine.Events;
 
 /// <summary>
 /// A rajouter aux objets avec lesquels le joueur peut interagir (Boutons, portes, etc.)
 /// </summary>
-public abstract class Interactable : MonoBehaviour
+public abstract class Interactable : NetworkBehaviour
 {
     /// <summary>
     /// Quand on interagit avec l'objet

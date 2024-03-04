@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -18,9 +19,11 @@ public class MonPlayerController : NetworkBehaviour
 
     [SerializeField] private float interactDistance = 5f;
 
+    [SerializeField] private GameObject vivox;
+
     #region Camera Movement Variables
 
-    [SerializeField] private Camera playerCamera;
+    public Camera playerCamera;
     [SerializeField] private GameObject cameraPivot;
 
     [SerializeField] private bool invertCamera = false;
@@ -69,7 +72,7 @@ public class MonPlayerController : NetworkBehaviour
     #endregion
 
     #region Prefabs
-    private GameObject ragdollPrefab;
+    private GameObject ghostPlayerPrefab;
 
     #endregion 
 
@@ -92,7 +95,8 @@ public class MonPlayerController : NetworkBehaviour
         playerActions.Run.canceled += ctx => StopRun();
         playerActions.BasicAttack.started += ctx => StartBasicAttack();
         playerActions.BasicAttack.canceled += ctx => StopBasicAttack();
-        playerActions.LongAttack.performed += ctx => StartLongAttack();
+        playerActions.LongAttack.started += ctx => StartLongAttack();
+        playerActions.LongAttack.performed += ctx => StopLongAttack();
         playerActions.LongAttack.canceled += ctx => StopLongAttack();
 
         playerActions.Interact.performed += ctx => Interact();
@@ -110,10 +114,10 @@ public class MonPlayerController : NetworkBehaviour
 
         animator = transform.GetComponentInChildren<Animator>();
 
-        voiceConnexion = GetComponent<VivoxVoiceConnexion>();
+        voiceConnexion = vivox.GetComponent<VivoxVoiceConnexion>();
 
         //On recupere le prefab de la ragdoll
-        ragdollPrefab = Resources.Load<GameObject>("Ragdoll");
+        ghostPlayerPrefab = Resources.Load<GameObject>("Perso/GhostPlayer");
 
 
         //On randomize le joueur
@@ -130,9 +134,10 @@ public class MonPlayerController : NetworkBehaviour
     public async override void OnNetworkSpawn()
     {
         gameObject.GetComponent<PlayerRandomizer>().Randomize(seed);
+        DisableRagdoll();
         if (IsOwner) //Quand on est le proprietaire on passe en mode premiere personne et on desactive toutes les parties du corps sauf les mains
         {
-            DesactiverBodyPrPremierePersonne();
+            ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
             transform.position = new Vector3(0, 1, 0);
 
             await voiceConnexion.InitVivox();
@@ -146,12 +151,10 @@ public class MonPlayerController : NetworkBehaviour
         }
     }
 
-
-
     /// <summary>
     /// Passe les parties du corps en mode première personne en les mettant sur une autre layer
     /// </summary>
-    private void DesactiverBodyPrPremierePersonne()
+    private void ChangerRenderCorps(ShadowCastingMode shadow)
     {
         //On desactive les child 0 a 3 pr le premier child
         //Ce qui correspond à épaulières, genouières, ceinture, cape
@@ -160,7 +163,7 @@ public class MonPlayerController : NetworkBehaviour
             //On recupere les skinned mesh renderer dans leurs enfants et on met leur option de rendu sur shadow only
             foreach(SkinnedMeshRenderer smr in transform.GetChild(0).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
             {
-                smr.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                smr.shadowCastingMode = shadow;
             }
         }
 
@@ -171,7 +174,7 @@ public class MonPlayerController : NetworkBehaviour
             //On recupere les skinned mesh renderer dans leurs enfants et on met leur option de rendu sur shadow only
             foreach (SkinnedMeshRenderer smr in transform.GetChild(1).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
             {
-                smr.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                smr.shadowCastingMode = shadow;
             }
         }
 
@@ -324,7 +327,8 @@ public class MonPlayerController : NetworkBehaviour
     /// Inflige des dégats au joueur
     /// </summary>
     /// <param name="damage">Le nombre de degats infligés</param>
-    public void Damage(float damage)
+    /// <returns>True si le joueur est mort, false sinon</returns>
+    public bool Damage(float damage)
     {
         StopEmotes();
         animator.SetTrigger("GotHurt");
@@ -333,7 +337,9 @@ public class MonPlayerController : NetworkBehaviour
         if(vie <= 0)
         {
             Die();
+            return true;
         }
+        return false;
     }
 
     /// <summary>
@@ -341,29 +347,105 @@ public class MonPlayerController : NetworkBehaviour
     /// </summary>
     private void Die()
     {
+        Debug.Log("Mort");
         animator.SetTrigger("Died");
         StopEmotes();
-        
-        gameObject.tag = "PlayerGhost"; 
+
+        gameObject.tag = "Ragdoll"; 
 
         //On instancie la ragdoll
-        GameObject ragdoll = Instantiate(ragdollPrefab, transform.position, transform.rotation);
-        ragdoll.GetComponent<PlayerRandomizer>().Randomize(seed);
+        EnableRagdoll();
 
-        GhostController ghCtrl = gameObject.GetComponent<GhostController>();
-        ghCtrl.enabled = true;
+        GameObject ghost = Instantiate(ghostPlayerPrefab, transform.position, transform.rotation);
+        ghost.GetComponent<GhostController>().root = gameObject;
+        ghost.GetComponent<GhostController>().vivox = vivox;
+        vivox.transform.parent = ghost.transform;
 
-        ghCtrl.ragdoll = ragdoll;
-
-        gameObject.GetComponent<CapsuleCollider>().isTrigger = true;
-        gameObject.GetComponent<Animator>().enabled = false;
-        gameObject.GetComponent<Rigidbody>().isKinematic = true;
-        //Les parties du corps on les desactive pr rendre le joueur invisible
-        transform.GetChild(0).gameObject.SetActive(false);
-        transform.GetChild(1).gameObject.SetActive(false);
+        gameObject.GetComponent<SpellRecognition>().enabled = false;
+        cameraPivot.SetActive(false);   
         enabled = false;
 
     }
+
+    /// <summary>
+    /// L'inverse de la mort, on remet le joueur en vie
+    /// </summary>
+    public void Respawn()
+    {
+        gameObject.tag = "Player";
+        DisableRagdoll();
+        gameObject.GetComponent<SpellRecognition>().enabled = true;
+        cameraPivot.SetActive(true);
+    }
+    #endregion
+
+    #region Ragdoll
+
+    /// <summary>
+    /// Desactive la ragdoll du joueur
+    /// </summary>
+    private void DisableRagdoll()
+    {
+        animator.enabled = true;
+        ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
+        gameObject.GetComponent<CapsuleCollider>().enabled = true;
+        gameObject.GetComponent<Rigidbody>().isKinematic = false;
+        //On passe tous les rigidbodies des gosses en kinematic et on desactive les colliders
+        foreach (Rigidbody rb in GetRagdollRigidbodies())
+        {
+            rb.isKinematic = true;
+        }
+        foreach(Collider col in transform.GetChild(2).GetComponentsInChildren<Collider>())
+        {
+            col.enabled = false;
+        }
+
+    }
+
+    /// <summary>
+    /// Active la ragdoll du joueur
+    /// </summary>
+    private void EnableRagdoll()
+    {
+        animator.enabled = false;
+        gameObject.GetComponent<CapsuleCollider>().enabled = false;
+        gameObject.GetComponent<Rigidbody>().isKinematic = true;
+        ChangerRenderCorps(ShadowCastingMode.On);
+        //On passe tous les rigidbodies des gosses en kinematic et on desactive les colliders
+        foreach (Rigidbody rb in GetRagdollRigidbodies())
+        {
+            rb.isKinematic = false;
+        }
+        foreach (Collider col in transform.GetChild(2).GetComponentsInChildren<Collider>())
+        {
+            col.enabled = true;
+        }
+    }
+
+    /// <summary>
+    /// Renvoie la liste des rigidbodies de la ragdoll
+    /// </summary>
+    /// <returns>La </returns>
+    public Rigidbody[] GetRagdollRigidbodies()
+    {
+        return transform.GetChild(2).GetComponentsInChildren<Rigidbody>();
+    }
+
+    /// <summary>
+    /// Met le joueur en ragdoll pour un temps donné
+    /// </summary>
+    /// <param name="time">Le temps pendant lequel le joueur est en ragdoll</param>
+    /// <returns>Quand le joueur n'est plus en ragdoll</returns>
+    public IEnumerator SetRagdollTemp(float time)
+    {
+        controls.Disable();
+        EnableRagdoll();
+        yield return new WaitForSeconds(time);
+        DisableRagdoll();
+        controls.Enable();
+    }
+
+
     #endregion
 
     #region Attaques
@@ -389,7 +471,9 @@ public class MonPlayerController : NetworkBehaviour
     /// </summary>
     private void StartLongAttack()
     {
-        animator.SetTrigger("LongAttack");
+        Debug.Log("LongAttack");
+        GetComponent<SpellRecognition>().StartListening();
+        animator.SetTrigger("isLongAttacking");
     }
 
     /// <summary>
@@ -397,7 +481,9 @@ public class MonPlayerController : NetworkBehaviour
     /// </summary>
     private void StopLongAttack()
     {
-        animator.SetBool("isAttacking", false);
+        Debug.Log("StopLongAttack");
+        GetComponent<SpellRecognition>().StopListening();
+        animator.SetBool("isLongAttacking", false);
     }
 
     #endregion
@@ -531,6 +617,26 @@ public class MonPlayerController : NetworkBehaviour
 #endif
 
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDistance))
+        {
+            if (hit.collider.TryGetComponent(out Interactable interactable))
+            {
+                interactable.OnInteract();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Interagir avec un objet à une distance plus grande
+    /// </summary>
+    /// <param name="interactDist">La distance d'interaction</param>
+    public void InteractSpell(float interactDist)
+    {
+        //On fait un draw ray pr voir si on touche un objet interactable
+#if UNITY_EDITOR
+        Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * interactDist, Color.yellow, 1f);
+#endif
+
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDist))
         {
             if (hit.collider.TryGetComponent(out Interactable interactable))
             {

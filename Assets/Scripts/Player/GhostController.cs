@@ -10,7 +10,8 @@ public class GhostController : MonoBehaviour
     private PlayerControls controls;
     private PlayerControls.PlayerActions playerActions;
 
-    public GameObject ragdoll;
+    public GameObject root;
+    public GameObject vivox;
 
     #region Camera Movement Variables
 
@@ -159,7 +160,7 @@ public class GhostController : MonoBehaviour
     /// <param name="direction">La direction ou on regarde</param>
     private void Look(Vector2 direction)
     {
-        if(invertCamera)
+        if (invertCamera)
         {
             direction.y *= -1;
         }
@@ -180,20 +181,11 @@ public class GhostController : MonoBehaviour
     /// </summary>
     public void Respawn()
     {
-        Destroy(ragdoll);
+        Debug.Log("Respawn");
+        root.GetComponent<MonPlayerController>().enabled = true;
+        root.GetComponent<MonPlayerController>().Respawn();
+        vivox.transform.parent = root.transform;
 
-        gameObject.tag = "Player";
-
-        gameObject.GetComponent<MonPlayerController>().enabled = true;
-        gameObject.GetComponent<CapsuleCollider>().isTrigger = false;
-        gameObject.GetComponent<Animator>().enabled = true;
-        gameObject.GetComponent<Rigidbody>().isKinematic = false;
-        //Les parties du corps on les desactive pr rendre le joueur invisible
-        transform.GetChild(0).gameObject.SetActive(true);
-        transform.GetChild(1).gameObject.SetActive(true);
-
-
-        enabled = false;
+        Destroy(gameObject);
     }
-
 }

@@ -2,15 +2,12 @@ using UnityEngine;
 
 public class MultiplayerGameManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public bool soloMode = false;
 
-    // Update is called once per frame
-    void Update()
+    public static MultiplayerGameManager Instance;
+
+    private void Awake()
     {
-        
+        Instance = this;
     }
 }
