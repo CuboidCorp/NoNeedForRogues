@@ -7364,7 +7364,7 @@ GameObject:
   - component: {fileID: 9205699368199408415}
   m_Layer: 0
   m_Name: PersoAvecRagdoll
-  m_TagString: Player
+  m_TagString: Temp
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7690,15 +7690,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bdac682fc28fd7469587c9fb6f49a52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spells:
-  - Explosion
-  - Mort
-  - Fusroda
-  - Lumos
-  - Ragdoll
-  - Fireball
-  - Interact
-  - Open sesame
 --- !u!1 &6341838433386213884
 GameObject:
   m_ObjectHideFlags: 0

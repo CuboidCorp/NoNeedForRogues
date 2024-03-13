@@ -8,6 +8,12 @@ TagManager:
   - Collide
   - PlayerUI
   - PlayerGhost
+  - Wall
+  - Floor
+  - Roof
+  - AudioTap
+  - Temp
+  - Entity
   layers:
   - Default
   - TransparentFX

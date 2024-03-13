@@ -1,20 +1,59 @@
-using System;
 using Unity.Netcode;
-using UnityEngine.Events;
+using UnityEngine;
 
 /// <summary>
 /// A rajouter aux objets avec lesquels le joueur peut interagir (Boutons, portes, etc.)
+/// Il faut implementer la fonction HandleInteraction() pour definir le comportement de l'objet
 /// </summary>
 public abstract class Interactable : NetworkBehaviour
 {
+
+    /// <summary>
+    /// Si on peut interagir avec l'objet
+    /// </summary>
+    public bool isInteractable = true;
+
+    /// <summary>
+    /// Le sound effect a jouer quand on ne peut pas interagir avec l'objet
+    /// </summary>
+    //private 
+
     /// <summary>
     /// Quand on interagit avec l'objet
     /// </summary>
-    public abstract void OnInteract();
+    public virtual void OnInteract()
+    {
+        if(!isInteractable)
+        {
+            //TODO : Faire le sound effect qd on peut pas interagir
+            return;
+        }
+        SendInteractionServerRpc();
+    }
 
     /// <summary>
-    /// Classe d'evenement pour les actions à executer
+    /// Si qqn interagit avec le bouton on envoie un message au serv pr lui dire
     /// </summary>
-    [Serializable]
-    protected class FunctionAction : UnityEvent { }
+    [ServerRpc(RequireOwnership = false)]
+    private void SendInteractionServerRpc()
+    {
+        SendInteractionClientRpc();
+    }
+
+    /// <summary>
+    /// Le serveur envoie un message a tt le monde pr synchroniser l'interaction
+    /// </summary>
+    [ClientRpc]
+    private void SendInteractionClientRpc()
+    {
+        HandleInteraction();
+    }
+
+    /// <summary>
+    /// Gère l'interaction avec l'objet
+    /// </summary>
+    protected abstract void HandleInteraction();
+
+    
+
 }

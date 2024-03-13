@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Threading.Tasks;
+using Unity.Netcode;
 using Unity.Services.Authentication;
+using Unity.Services.Core;
 using Unity.Services.Vivox;
 using UnityEngine;
-public class VivoxVoiceConnexion : MonoBehaviour
+public class VivoxVoiceConnexion : NetworkBehaviour
 {
 
     private const string channelName = "Global";
@@ -28,6 +30,7 @@ public class VivoxVoiceConnexion : MonoBehaviour
     /// <returns>Quand l'initialisation est terminée</returns>
     public async Task InitVivox()
     {
+        await UnityServices.InitializeAsync(); 
         if (!AuthenticationService.Instance.IsSignedIn)
         {
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
@@ -38,8 +41,6 @@ public class VivoxVoiceConnexion : MonoBehaviour
         await servVivox.InitializeAsync();
         await servVivox.LoginAsync();
     }
-
-
 
     /// <summary>
     /// Rejoint le channel de chat 
@@ -68,6 +69,7 @@ public class VivoxVoiceConnexion : MonoBehaviour
         {
             await JoinPositionalChannelAsync();
         }
+        MultiplayerGameManager.Instance.ActiveAudioTaps();
 
     }
 

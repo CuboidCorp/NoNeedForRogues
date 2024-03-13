@@ -1,11 +1,10 @@
 using System.Collections;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
 [DisallowMultipleComponent]
-public class MonPlayerController : NetworkBehaviour
+public class MonPlayerController : Entity
 {
 
     private Rigidbody rb;
@@ -20,6 +19,8 @@ public class MonPlayerController : NetworkBehaviour
     [SerializeField] private float interactDistance = 5f;
 
     [SerializeField] private GameObject vivox;
+
+    private Vector3 lastCheckPoint = new(0,1,0);//Le dernier checkpoint où le joueur a été
 
     #region Camera Movement Variables
 
@@ -64,13 +65,6 @@ public class MonPlayerController : NetworkBehaviour
 
     #endregion
 
-    #region Combat Variables
-
-    public float vie = 10f;
-
-
-    #endregion
-
     #region Prefabs
     private GameObject ghostPlayerPrefab;
 
@@ -94,6 +88,7 @@ public class MonPlayerController : NetworkBehaviour
         playerActions.Run.started += ctx => StartRun();
         playerActions.Run.canceled += ctx => StopRun();
         playerActions.BasicAttack.started += ctx => StartBasicAttack();
+        playerActions.BasicAttack.performed += ctx => StopBasicAttack();
         playerActions.BasicAttack.canceled += ctx => StopBasicAttack();
         playerActions.LongAttack.started += ctx => StartLongAttack();
         playerActions.LongAttack.performed += ctx => StopLongAttack();
@@ -137,15 +132,20 @@ public class MonPlayerController : NetworkBehaviour
         DisableRagdoll();
         if (IsOwner) //Quand on est le proprietaire on passe en mode premiere personne et on desactive toutes les parties du corps sauf les mains
         {
+            if(MultiplayerGameManager.Instance.soloMode)
+            {
+                gameObject.tag = "Player";
+            }
             ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
             transform.position = new Vector3(0, 1, 0);
 
             await voiceConnexion.InitVivox();
+
         }
         else //Si on est pas le propriétaire du joueur, on desactive le script
         {
             gameObject.GetComponent<SpellRecognition>().enabled = false;
-            gameObject.GetComponent<VivoxVoiceConnexion>().enabled = false;
+            Destroy(vivox);
             cameraPivot.SetActive(false);
             enabled = false;
         }
@@ -351,9 +351,10 @@ public class MonPlayerController : NetworkBehaviour
         animator.SetTrigger("Died");
         StopEmotes();
 
-        gameObject.tag = "Ragdoll"; 
+        gameObject.tag = "Ragdoll";
 
         //On instancie la ragdoll
+        ChangerRenderCorps(ShadowCastingMode.On);
         EnableRagdoll();
 
         GameObject ghost = Instantiate(ghostPlayerPrefab, transform.position, transform.rotation);
@@ -372,10 +373,21 @@ public class MonPlayerController : NetworkBehaviour
     /// </summary>
     public void Respawn()
     {
+        transform.position = lastCheckPoint;
         gameObject.tag = "Player";
+        ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
         DisableRagdoll();
         gameObject.GetComponent<SpellRecognition>().enabled = true;
         cameraPivot.SetActive(true);
+    }
+
+    /// <summary>
+    /// Change le point de respawn du joueur
+    /// </summary>
+    /// <param name="position">Le nouveau point de checkpoint</param>
+    public void SetRespawnPoint(Vector3 position)
+    {
+        lastCheckPoint = position;
     }
     #endregion
 
@@ -387,7 +399,6 @@ public class MonPlayerController : NetworkBehaviour
     private void DisableRagdoll()
     {
         animator.enabled = true;
-        ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
         gameObject.GetComponent<CapsuleCollider>().enabled = true;
         gameObject.GetComponent<Rigidbody>().isKinematic = false;
         //On passe tous les rigidbodies des gosses en kinematic et on desactive les colliders
@@ -410,7 +421,6 @@ public class MonPlayerController : NetworkBehaviour
         animator.enabled = false;
         gameObject.GetComponent<CapsuleCollider>().enabled = false;
         gameObject.GetComponent<Rigidbody>().isKinematic = true;
-        ChangerRenderCorps(ShadowCastingMode.On);
         //On passe tous les rigidbodies des gosses en kinematic et on desactive les colliders
         foreach (Rigidbody rb in GetRagdollRigidbodies())
         {
@@ -439,8 +449,10 @@ public class MonPlayerController : NetworkBehaviour
     public IEnumerator SetRagdollTemp(float time)
     {
         controls.Disable();
+        ChangerRenderCorps(ShadowCastingMode.On);
         EnableRagdoll();
         yield return new WaitForSeconds(time);
+        ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
         DisableRagdoll();
         controls.Enable();
     }

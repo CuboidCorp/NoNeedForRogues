@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// A rajouter aux objets qui peuvent être ouverts (Portes, coffres, etc.)
 /// </summary>
-public class Openable : MonoBehaviour
+public class Openable : MonoBehaviour //Le joueur n'interagit pas avec donc pas besoin de sync ??
 {
     /// <summary>
     /// L'animator de l'objet

@@ -75,7 +75,7 @@ public class SpellRecognition : MonoBehaviour
     /// </summary>
     public void StopListening()
     {
-        if (recognizer.IsRunning)
+        if (recognizer != null && recognizer.IsRunning)
             recognizer.Stop();
     }
 

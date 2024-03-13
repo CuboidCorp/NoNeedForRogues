@@ -87,6 +87,7 @@ public class LobbyManager : MonoBehaviour
     {
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData("127.0.0.1", 7777);
         MultiplayerGameManager.Instance.soloMode = true;
+        MultiplayerGameManager.Instance.SetNbPlayersLobby(1);
         OnGameStarted?.Invoke(this, EventArgs.Empty);
         NetworkManager.Singleton.StartHost();
         Destroy(lobbyWindow);
@@ -508,6 +509,8 @@ public class LobbyManager : MonoBehaviour
                         { KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, relayCode) }
                     }
                 });
+
+                MultiplayerGameManager.Instance.SetNbPlayersLobby(nbPlayers);
 
                 joinedLobby = lobby;
             }

@@ -1,8 +1,5 @@
-using System;
 using System.Collections;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 /// <summary>
@@ -56,23 +53,14 @@ public class Bouton : Interactable {
     }
 
     /// <summary>
-    /// Quand on interagit avec l'objet
+    /// Gère l'interaction avec l'objet
     /// </summary>
-    public override void OnInteract()
+    protected override void HandleInteraction()
     {
-        if(IsHost)
-        {
-            SendInteractionClientRpc();
-            StopAllCoroutines();
-            animator.Play(pressAnimationName);
-            onClick.Invoke();
-            StartCoroutine(ResetState());
-        } 
-        else
-        {
-            SendInteractionServerRpc();
-        }
-        
+        StopAllCoroutines();
+        animator.Play(pressAnimationName);
+        onClick.Invoke();
+        StartCoroutine(ResetState());
     }
 
     /// <summary>
@@ -87,19 +75,7 @@ public class Bouton : Interactable {
         onReset.Invoke();
     }
 
-    [ServerRpc]
-    private void SendInteractionServerRpc()
-    {
-        OnInteract();
-    }
 
-    [ClientRpc]
-    private void SendInteractionClientRpc()
-    {
-        StopAllCoroutines();
-        animator.Play(pressAnimationName);
-        onClick.Invoke();
-        StartCoroutine(ResetState());
-    }
+    
 
 }
