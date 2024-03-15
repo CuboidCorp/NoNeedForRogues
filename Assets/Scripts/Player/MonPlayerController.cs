@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
@@ -20,7 +21,7 @@ public class MonPlayerController : Entity
 
     [SerializeField] private GameObject vivox;
 
-    private Vector3 lastCheckPoint = new(0,1,0);//Le dernier checkpoint où le joueur a été
+    private Vector3 lastCheckPoint = new(0, 1, 0);//Le dernier checkpoint où le joueur a été
 
     #region Camera Movement Variables
 
@@ -82,7 +83,7 @@ public class MonPlayerController : Entity
         uiActions = controls.UI;
 
         playerActions.Move.performed += ctx => OnMove(ctx);
-        playerActions.Move.canceled += ctx => moveInput=Vector2.zero;
+        playerActions.Move.canceled += ctx => moveInput = Vector2.zero;
         playerActions.Jump.performed += ctx => Jump();
         playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
         playerActions.Run.started += ctx => StartRun();
@@ -132,7 +133,7 @@ public class MonPlayerController : Entity
         DisableRagdoll();
         if (IsOwner) //Quand on est le proprietaire on passe en mode premiere personne et on desactive toutes les parties du corps sauf les mains
         {
-            if(MultiplayerGameManager.Instance.soloMode)
+            if (MultiplayerGameManager.Instance.soloMode)
             {
                 gameObject.tag = "Player";
             }
@@ -158,10 +159,10 @@ public class MonPlayerController : Entity
     {
         //On desactive les child 0 a 3 pr le premier child
         //Ce qui correspond à épaulières, genouières, ceinture, cape
-        for(int i= 0; i < 4; i++)
+        for (int i = 0; i < 4; i++)
         {
             //On recupere les skinned mesh renderer dans leurs enfants et on met leur option de rendu sur shadow only
-            foreach(SkinnedMeshRenderer smr in transform.GetChild(0).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
+            foreach (SkinnedMeshRenderer smr in transform.GetChild(0).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
             {
                 smr.shadowCastingMode = shadow;
             }
@@ -169,7 +170,7 @@ public class MonPlayerController : Entity
 
         //On desactive les child 0 a 7 pr le deuxieme child
         //Ce qui correspond à la tete, le torse, les cheveux, les jambes, les pieds, les moustaches, les yeux, les sourcils
-        for(int i= 0; i < 8; i++)
+        for (int i = 0; i < 8; i++)
         {
             //On recupere les skinned mesh renderer dans leurs enfants et on met leur option de rendu sur shadow only
             foreach (SkinnedMeshRenderer smr in transform.GetChild(1).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
@@ -303,8 +304,8 @@ public class MonPlayerController : Entity
     /// </summary>
     private void CheckGround()
     {
-        
-        if (Physics.Raycast(transform.position, transform.up*-1, .2f))
+
+        if (Physics.Raycast(transform.position, transform.up * -1, .2f))
         {
 #if UNITY_EDITOR
             Debug.DrawRay(transform.position, transform.up * -.2f, Color.green);
@@ -328,18 +329,40 @@ public class MonPlayerController : Entity
     /// </summary>
     /// <param name="damage">Le nombre de degats infligés</param>
     /// <returns>True si le joueur est mort, false sinon</returns>
-    public bool Damage(float damage)
+    public void Damage(float damage)
     {
+        if (!IsOwner)
+        {
+            //On gère les dégats sur chaque client pour éviter les problèmes de synchro
+            ClientRpcParams clientParams = new()
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { OwnerClientId } }
+            };
+            HandleDamageClientRpc(damage, clientParams);
+            return;
+        }
         StopEmotes();
         animator.SetTrigger("GotHurt");
         StopEmotes();
         vie -= damage;
-        if(vie <= 0)
+        if (vie <= 0)
         {
             Die();
-            return true;
+            return;
         }
-        return false;
+        return;
+    }
+
+    /// <summary>
+    /// Gère les dégats sur le client propriétaire
+    /// </summary>
+    /// <param name="clientRpcParams">Parametre de la rpc pr permettre de target un joueur en particulier</param>
+    /// <param name="damage">Les degats à infliger</param>
+    [ClientRpc]
+    private void HandleDamageClientRpc(float damage, ClientRpcParams clientRpcParams)
+    {
+        Debug.Log("HandleDamageClientRpc");
+        Damage(damage);
     }
 
     /// <summary>
@@ -347,7 +370,7 @@ public class MonPlayerController : Entity
     /// </summary>
     private void Die()
     {
-        Debug.Log("Mort");
+        Debug.Log("Mort" + OwnerClientId);
         animator.SetTrigger("Died");
         StopEmotes();
 
@@ -363,7 +386,7 @@ public class MonPlayerController : Entity
         vivox.transform.parent = ghost.transform;
 
         gameObject.GetComponent<SpellRecognition>().enabled = false;
-        cameraPivot.SetActive(false);   
+        cameraPivot.SetActive(false);
         enabled = false;
 
     }
@@ -371,7 +394,7 @@ public class MonPlayerController : Entity
     /// <summary>
     /// L'inverse de la mort, on remet le joueur en vie
     /// </summary>
-    public void Respawn()
+    public void Respawn() //TODO : Sync le respawn a tt les clients
     {
         transform.position = lastCheckPoint;
         gameObject.tag = "Player";
@@ -393,6 +416,7 @@ public class MonPlayerController : Entity
 
     #region Ragdoll
 
+    // TODO : Sync la ragdoll à tous les clients
     /// <summary>
     /// Desactive la ragdoll du joueur
     /// </summary>
@@ -406,7 +430,7 @@ public class MonPlayerController : Entity
         {
             rb.isKinematic = true;
         }
-        foreach(Collider col in transform.GetChild(2).GetComponentsInChildren<Collider>())
+        foreach (Collider col in transform.GetChild(2).GetComponentsInChildren<Collider>())
         {
             col.enabled = false;
         }
@@ -456,7 +480,6 @@ public class MonPlayerController : Entity
         DisableRagdoll();
         controls.Enable();
     }
-
 
     #endregion
 
@@ -601,7 +624,7 @@ public class MonPlayerController : Entity
     /// <param name="direction">La direction ou on regarde</param>
     private void Look(Vector2 direction)
     {
-        if(invertCamera)
+        if (invertCamera)
         {
             direction.y *= -1;
         }
@@ -625,7 +648,7 @@ public class MonPlayerController : Entity
 
         //On fait un draw ray pr voir si on touche un objet interactable
 #if UNITY_EDITOR
-        Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * interactDistance, Color.yellow,1f);
+        Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * interactDistance, Color.yellow, 1f);
 #endif
 
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDistance))

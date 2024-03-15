@@ -96,7 +96,9 @@ public class LobbyManager : MonoBehaviour
 
     private void Update()
     {
-        //HandleRefreshLobbyList(); // Disabled Auto Refresh for testing with multiple builds
+#if !UNITY_EDITOR
+        HandleRefreshLobbyList(); // Disabled Auto Refresh for testing with multiple builds
+#endif
         HandleLobbyHeartbeat();
         HandleLobbyPolling();
     }
@@ -500,6 +502,8 @@ public class LobbyManager : MonoBehaviour
             {
                 Debug.Log("Startgame");
 
+                MultiplayerGameManager.Instance.SetNbPlayersLobby(nbPlayers);
+
                 string relayCode = await RelayManager.Instance.CreateRelay(nbPlayers);
 
                 Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new UpdateLobbyOptions
@@ -509,8 +513,6 @@ public class LobbyManager : MonoBehaviour
                         { KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, relayCode) }
                     }
                 });
-
-                MultiplayerGameManager.Instance.SetNbPlayersLobby(nbPlayers);
 
                 joinedLobby = lobby;
             }

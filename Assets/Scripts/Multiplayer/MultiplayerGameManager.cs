@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Services.Vivox.AudioTaps;
 using UnityEngine;
@@ -5,7 +6,7 @@ using UnityEngine;
 /// <summary>
 /// Gère le mode multijoueur
 /// </summary>
-public class MultiplayerGameManager : MonoBehaviour
+public class MultiplayerGameManager : NetworkBehaviour
 {
     public bool soloMode = false;
 
@@ -16,6 +17,12 @@ public class MultiplayerGameManager : MonoBehaviour
     private static int nbTotalPlayers = 0;
 
     public static int nbConnectedPlayers = 0;
+
+    private ulong[] playersIds;
+
+    private ulong hostId;
+
+    private GameObject[] players;
 
     private void Awake()
     {
@@ -35,6 +42,7 @@ public class MultiplayerGameManager : MonoBehaviour
     public void SetNbPlayersLobby(int nb)
     {
         nbTotalPlayers = nb;
+        playersIds = new ulong[nb];
     }
 
     /// <summary>
@@ -56,16 +64,56 @@ public class MultiplayerGameManager : MonoBehaviour
     /// <param name="id">Player id</param>
     private void OnClientConnected(ulong id)
     {
+        if(!IsHost)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+            return;
+        }
+        playersIds[nbConnectedPlayers] = id;
+        if(nbConnectedPlayers == 0)
+        {
+            hostId = id;
+        }
+        nbConnectedPlayers++;
         Debug.Log("Player connected : "+id);
         Debug.Log(nbConnectedPlayers+ "/"+nbTotalPlayers);
-        GameObject player = GameObject.FindWithTag("Temp");
-        player.tag = "Player";
-        player.name = "Player" + id+1;
-        nbConnectedPlayers++;
         if(nbConnectedPlayers == nbTotalPlayers)
         {
             gameCanStart = true;
+            SendGameInfoClientRpc(nbTotalPlayers, playersIds);
         }
+        
+    }
+
+    /// <summary>
+    /// Send game info to all clients
+    /// </summary>
+    /// <param name="nbMaxPlayers">Le nb de joueurs</param>
+    /// <param name="allIds">Les id de tt les joueurs</param>
+    [ClientRpc]
+    private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds)
+    {
+        nbTotalPlayers = nbMaxPlayers;
+        Debug.Log("nbMaxPlayers"+nbMaxPlayers);
+        playersIds = allIds;
+        Debug.Log(allIds.Length);
+        players = new GameObject[nbMaxPlayers];
+        int cpt =0;
+        foreach (ulong id in allIds)
+        {
+            foreach (GameObject playerTemp in GameObject.FindGameObjectsWithTag("Temp"))
+            {
+                if(playerTemp.GetComponent<NetworkObject>().OwnerClientId == id)
+                {
+                    playerTemp.tag = "Player";
+                    playerTemp.name = "Player" + (id+1);
+                    players[cpt] = playerTemp;
+                    cpt++;
+                }
+            }
+        }
+        
     }
 
     /// <summary>
@@ -88,5 +136,10 @@ public class MultiplayerGameManager : MonoBehaviour
     public void TestSpeech()
     {
         Debug.Log("Speech");
+    }
+
+    public void HandleDeath(uint id)
+    {
+
     }
 }
