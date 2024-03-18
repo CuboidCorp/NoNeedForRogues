@@ -370,9 +370,11 @@ public class MonPlayerController : Entity
     /// </summary>
     private void Die()
     {
+        SendDeathServerRpc(OwnerClientId);
         Debug.Log("Mort" + OwnerClientId);
         animator.SetTrigger("Died");
         StopEmotes();
+        
 
         gameObject.tag = "Ragdoll";
 
@@ -391,6 +393,25 @@ public class MonPlayerController : Entity
 
     }
 
+    /// <summary>
+    /// Gère la mort quand on est pas le propriétaire du joueur
+    /// </summary>
+    public void HandleDeath()
+    {
+        animator.SetTrigger("Died");
+        StopEmotes();
+        gameObject.tag = "Ragdoll";
+        EnableRagdoll();
+    }
+
+    [ServerRpc]
+    private void SendDeathServerRpc(ulong ownerId)
+    {
+        MultiplayerGameManager.Instance.SyncDeath(ownerId);
+    }
+
+
+    //PR le respawn le serv envoie a tt le monde le respawn et le client proprietaire respawn, les autres resync
     /// <summary>
     /// L'inverse de la mort, on remet le joueur en vie
     /// </summary>
