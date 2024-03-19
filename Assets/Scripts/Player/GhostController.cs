@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -5,12 +6,20 @@ using UnityEngine.InputSystem;
 /// Controller type freecam pr quand on est mort
 /// </summary>
 [DisallowMultipleComponent]
-public class GhostController : MonoBehaviour
+public class GhostController : NetworkBehaviour
 {
     private PlayerControls controls;
     private PlayerControls.PlayerActions playerActions;
 
+    /// <summary>
+    /// La référence au joueur
+    /// </summary>
+    [HideInInspector]
     public GameObject root;
+    /// <summary>
+    /// L'objet vivox qui permet la connexion au chat vocal
+    /// </summary>
+    [HideInInspector]
     public GameObject vivox;
 
     #region Camera Movement Variables
@@ -151,6 +160,25 @@ public class GhostController : MonoBehaviour
 
     #endregion
 
+    /// <summary>
+    /// Quand l'objet est spawn, on désactive le script de mouvement du joueur
+    /// </summary>
+    public override void OnNetworkSpawn()
+    {
+        Debug.Log("Spawn mon owner est :" + OwnerClientId);
+        if(IsOwner)
+        {
+            //On active la caméra du joueur
+            transform.GetChild(0).gameObject.SetActive(true);
+            transform.GetChild(1).GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+        }
+        else
+        {
+            transform.GetChild(0).gameObject.SetActive(false);
+            enabled = false;
+        }
+    }
+
 
     #region Gestion de la caméra
 
@@ -181,7 +209,6 @@ public class GhostController : MonoBehaviour
     /// </summary>
     public void Respawn()
     {
-        Debug.Log("Respawn");
         root.GetComponent<MonPlayerController>().enabled = true;
         root.GetComponent<MonPlayerController>().Respawn();
         vivox.transform.parent = root.transform;

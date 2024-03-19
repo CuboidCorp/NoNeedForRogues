@@ -99,7 +99,7 @@ public class LobbyCreateUI : MonoBehaviour {
 
         lobbyName = "MyLobby";
         isPrivate = false;
-        maxPlayers = 4;
+        maxPlayers = 2;
         gameMode = LobbyManager.GameMode.Coop;
 
         UpdateText();

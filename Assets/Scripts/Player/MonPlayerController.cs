@@ -371,26 +371,64 @@ public class MonPlayerController : Entity
     private void Die()
     {
         SendDeathServerRpc(OwnerClientId);
-        Debug.Log("Mort" + OwnerClientId);
         animator.SetTrigger("Died");
+        gameObject.GetComponent<SpellRecognition>().enabled = false;
         StopEmotes();
         
-
         gameObject.tag = "Ragdoll";
-
-        //On instancie la ragdoll
         ChangerRenderCorps(ShadowCastingMode.On);
+
+        SyncRagdollStateServerRpc(OwnerClientId, true);
         EnableRagdoll();
 
+        controls.Disable();
+        SpawnGhostPlayerServerRpc(OwnerClientId);
+    }
+
+    /// <summary>
+    /// Demande au serveur de spawn le ghost du joueur
+    /// </summary>
+    /// <param name="ownerId">L'id du joueur qui spawn son ghost</param>
+    [ServerRpc(RequireOwnership = false)]
+    private void SpawnGhostPlayerServerRpc(ulong ownerId)
+    {
         GameObject ghost = Instantiate(ghostPlayerPrefab, transform.position, transform.rotation);
+        ghost.name = "GhostPlayer" + OwnerClientId;
+        ghost.GetComponent<NetworkObject>().Spawn();
+        ghost.GetComponent<NetworkObject>().ChangeOwnership(ownerId);
+
+        HandleGhostSpawnClientRpc(ghost);
+    }
+
+    /// <summary>
+    /// Permet de gérer le spawn du ghost sur le client
+    /// </summary>
+    /// <param name="networkRef">La reference à l'objet</param>
+    [ClientRpc]
+    private void HandleGhostSpawnClientRpc(NetworkObjectReference networkRef)
+    {
+        GameObject ghostObj = (GameObject)networkRef;
+        ghostObj.name = "GhostPlayer" + ghostObj.GetComponent<NetworkObject>().OwnerClientId;
+        Debug.Log("Ghost Owner"+ghostObj.GetComponent<NetworkObject>().OwnerClientId+" Mon Owner"+OwnerClientId);
+        if(ghostObj.GetComponent<NetworkObject>().OwnerClientId == OwnerClientId)
+        {
+            OnGhostSpawn();
+        }
+    }
+
+    /// <summary>
+    /// Quand le ghost est spawn, on le lie au joueur
+    /// </summary>
+    private void OnGhostSpawn()
+    {
+        GameObject ghost = GameObject.Find("GhostPlayer"+OwnerClientId);
         ghost.GetComponent<GhostController>().root = gameObject;
         ghost.GetComponent<GhostController>().vivox = vivox;
         vivox.transform.parent = ghost.transform;
 
-        gameObject.GetComponent<SpellRecognition>().enabled = false;
+        
         cameraPivot.SetActive(false);
         enabled = false;
-
     }
 
     /// <summary>
@@ -401,17 +439,18 @@ public class MonPlayerController : Entity
         animator.SetTrigger("Died");
         StopEmotes();
         gameObject.tag = "Ragdoll";
-        EnableRagdoll();
     }
 
+    /// <summary>
+    /// Envoie l'information de la mort du joueur au serveur
+    /// </summary>
+    /// <param name="ownerId">L'id du joueur mort</param>
     [ServerRpc]
     private void SendDeathServerRpc(ulong ownerId)
     {
         MultiplayerGameManager.Instance.SyncDeath(ownerId);
     }
 
-
-    //PR le respawn le serv envoie a tt le monde le respawn et le client proprietaire respawn, les autres resync
     /// <summary>
     /// L'inverse de la mort, on remet le joueur en vie
     /// </summary>
@@ -420,9 +459,18 @@ public class MonPlayerController : Entity
         transform.position = lastCheckPoint;
         gameObject.tag = "Player";
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
+        SyncRagdollStateServerRpc(OwnerClientId, false);
         DisableRagdoll();
         gameObject.GetComponent<SpellRecognition>().enabled = true;
         cameraPivot.SetActive(true);
+    }
+
+    /// <summary>
+    /// Handle le respawn d'un joueur dont on est pas propriétaire
+    /// </summary>
+    public void HandleRespawn()
+    {
+        gameObject.tag = "Player";
     }
 
     /// <summary>
@@ -437,11 +485,10 @@ public class MonPlayerController : Entity
 
     #region Ragdoll
 
-    // TODO : Sync la ragdoll à tous les clients
     /// <summary>
     /// Desactive la ragdoll du joueur
     /// </summary>
-    private void DisableRagdoll()
+    public void DisableRagdoll()
     {
         animator.enabled = true;
         gameObject.GetComponent<CapsuleCollider>().enabled = true;
@@ -461,7 +508,7 @@ public class MonPlayerController : Entity
     /// <summary>
     /// Active la ragdoll du joueur
     /// </summary>
-    private void EnableRagdoll()
+    public void EnableRagdoll()
     {
         animator.enabled = false;
         gameObject.GetComponent<CapsuleCollider>().enabled = false;
@@ -475,6 +522,17 @@ public class MonPlayerController : Entity
         {
             col.enabled = true;
         }
+    }
+
+    /// <summary>
+    /// Permet de sync l'etat de la ragdoll d'un joueur aux autres
+    /// </summary>
+    /// <param name="playerId">Le joueur qui change l'etat de sa ragdoll</param>
+    /// <param name="ragdollActive">Si la ragdoll deviient active ou inactive</param>
+    [ServerRpc]
+    private void SyncRagdollStateServerRpc(ulong playerId, bool ragdollActive)
+    {
+        MultiplayerGameManager.Instance.SyncRagdoll(playerId, ragdollActive);
     }
 
     /// <summary>
@@ -495,9 +553,11 @@ public class MonPlayerController : Entity
     {
         controls.Disable();
         ChangerRenderCorps(ShadowCastingMode.On);
+        SyncRagdollStateServerRpc(OwnerClientId, true);
         EnableRagdoll();
         yield return new WaitForSeconds(time);
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
+        SyncRagdollStateServerRpc(OwnerClientId, false);
         DisableRagdoll();
         controls.Enable();
     }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using Unity.Services.Vivox.AudioTaps;
@@ -78,8 +77,6 @@ public class MultiplayerGameManager : NetworkBehaviour
             hostId = id;
         }
         nbConnectedPlayers++;
-        Debug.Log("Player connected : " + id);
-        Debug.Log(nbConnectedPlayers + "/" + nbTotalPlayers);
         if (nbConnectedPlayers == nbTotalPlayers)
         {
             gameCanStart = true;
@@ -97,9 +94,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds)
     {
         nbTotalPlayers = nbMaxPlayers;
-        Debug.Log("nbMaxPlayers" + nbMaxPlayers);
         playersIds = allIds;
-        Debug.Log(allIds.Length);
         players = new GameObject[nbMaxPlayers];
         int cpt = 0;
         foreach (ulong id in allIds)
@@ -109,7 +104,7 @@ public class MultiplayerGameManager : NetworkBehaviour
                 if (playerTemp.GetComponent<NetworkObject>().OwnerClientId == id)
                 {
                     playerTemp.tag = "Player";
-                    playerTemp.name = "Player" + (id + 1);
+                    playerTemp.name = "Player" + id;
                     players[cpt] = playerTemp;
                     cpt++;
                 }
@@ -139,6 +134,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         Debug.Log("Speech");
     }
+
+
+
+    #region Death
 
     /// <summary>
     /// Sync la mort d'un joueur
@@ -173,6 +172,95 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
+    #endregion
+
+    #region Respawn
+
+    /// <summary>
+    /// Sync le respawn d'un joueur
+    /// </summary>
+    /// <param name="playerId">L'id du joueur ressucité</param>
+    public void SyncRespawn(ulong playerId) //Appelé par le serveur
+    {
+        SyncResClientRpc(playerId, GetIdsSaufJoueurs(playerId));
+    }
+
+    /// <summary>
+    /// Envoie à tous les autres joueurs l'id du joueur ressucité
+    /// </summary>
+    /// <param name="resPlayerId">L'id du player ressucité</param>
+    /// <param name="clientRpcParams">Les client rpcParams pr concerner tous les joueurs sauf le joueur mort</param>
+    [ClientRpc]
+    private void SyncResClientRpc(ulong resPlayerId, ClientRpcParams clientRpcParams)
+    {
+        HandleResurrection(resPlayerId);
+    }
+
+    /// <summary>
+    /// Cette fonction permet de gérer la résurrection d'un joueur qui n'est pas le joueur qui revient de parmi les morts
+    /// </summary>
+    /// <param name="id">L'id du joueur ressucité</param>
+    private void HandleResurrection(ulong id)
+    {
+        int playerIndex = Array.IndexOf(playersIds, id);
+        if (playerIndex != -1)
+        {
+            players[playerIndex].GetComponent<MonPlayerController>().HandleRespawn();
+        }
+    }
+
+    #endregion
+
+    #region SyncRagdoll
+
+    /// <summary>
+    /// Sync l'etat de la ragdoll d'un joueur aux autres
+    /// </summary>
+    /// <param name="playerId">L'id du joueur à ragdoll</param>
+    /// <param name="ragdollActive">L'etat de la ragdoll</param>
+    public void SyncRagdoll(ulong playerId, bool ragdollActive)
+    {
+        SyncRagdollClientRpc(playerId, ragdollActive, GetIdsSaufJoueurs(playerId));
+    }
+
+    /// <summary>
+    /// Envoie à tous les autres joueurs l'id du joueur à ragdoll ou non
+    /// </summary>
+    /// <param name="playerId">L'id du joueur à ragdoll</param>
+    /// <param name="ragdollActive">L'etat de la ragdoll</param>
+    /// <param name="clientRpcParams">Les client rpcParams pr concerner tous les joueurs sauf le joueur mort</param>
+    [ClientRpc]
+    private void SyncRagdollClientRpc(ulong playerId, bool ragdollActive, ClientRpcParams clientRpcParams)
+    {
+        HandleRagdoll(playerId, ragdollActive);
+    }
+
+    /// <summary>
+    /// Handle la ragdoll d'un joueur sur les autres
+    /// </summary>
+    /// <param name="playerId">L'id du joueur à ragdoll</param>
+    /// <param name="ragdollActive">Si on active ou desactive la ragdoll</param>
+    private void HandleRagdoll(ulong playerId, bool ragdollActive)
+    {
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if (playerIndex != -1)
+        {
+            if(ragdollActive)
+            {
+                players[playerIndex].GetComponent<MonPlayerController>().EnableRagdoll();
+            }
+            else
+            {
+                players[playerIndex].GetComponent<MonPlayerController>().DisableRagdoll();
+            }
+            
+        }
+    }
+
+    #endregion
+
+    #region ClientRpcParams
+
     /// <summary>
     /// Renvoie les client rpc params pour envoyer une id à tous les autres joueurs
     /// </summary>
@@ -206,5 +294,7 @@ public class MultiplayerGameManager : NetworkBehaviour
                 TargetClientIds = otherPlayerIds
             }
         };
-    }
+    } 
+
+    #endregion
 }
