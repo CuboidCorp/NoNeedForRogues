@@ -180,8 +180,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// Sync le respawn d'un joueur
     /// </summary>
     /// <param name="playerId">L'id du joueur ressucité</param>
-    public void SyncRespawn(ulong playerId) //Appelé par le serveur
+    [ServerRpc(RequireOwnership = false)]
+    public void SyncRespawnServerRpc(NetworkObjectReference obj,ulong playerId) //Appelé par le serveur
     {
+        Destroy((GameObject)obj);
         SyncResClientRpc(playerId, GetIdsSaufJoueurs(playerId));
     }
 

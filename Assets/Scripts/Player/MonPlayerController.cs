@@ -408,16 +408,21 @@ public class MonPlayerController : Entity
     private void HandleGhostSpawnClientRpc(NetworkObjectReference networkRef)
     {
         GameObject ghostObj = (GameObject)networkRef;
+        Debug.Log("Etat pivot" + ghostObj.transform.GetChild(0).gameObject.activeSelf);
         ghostObj.name = "GhostPlayer" + ghostObj.GetComponent<NetworkObject>().OwnerClientId;
-        Debug.Log("Ghost Owner"+ghostObj.GetComponent<NetworkObject>().OwnerClientId+" Mon Owner"+OwnerClientId);
-        if(ghostObj.GetComponent<NetworkObject>().OwnerClientId == OwnerClientId)
+        if(ghostObj.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
         {
             OnGhostSpawn();
+        }
+        else
+        {
+            ghostObj.transform.GetChild(0).gameObject.SetActive(false);
+            ghostObj.GetComponent<GhostController>().enabled = false;
         }
     }
 
     /// <summary>
-    /// Quand le ghost est spawn, on le lie au joueur
+    /// Quand le ghost est spawn et que c'est le notre, on le lie au joueur
     /// </summary>
     private void OnGhostSpawn()
     {
@@ -425,8 +430,8 @@ public class MonPlayerController : Entity
         ghost.GetComponent<GhostController>().root = gameObject;
         ghost.GetComponent<GhostController>().vivox = vivox;
         vivox.transform.parent = ghost.transform;
-
-        
+        ghost.transform.GetChild(0).gameObject.SetActive(true); //Le camera pivot du ghost
+        ghost.transform.GetChild(1).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.ShadowsOnly;
         cameraPivot.SetActive(false);
         enabled = false;
     }

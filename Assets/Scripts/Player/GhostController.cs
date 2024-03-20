@@ -160,26 +160,6 @@ public class GhostController : NetworkBehaviour
 
     #endregion
 
-    /// <summary>
-    /// Quand l'objet est spawn, on désactive le script de mouvement du joueur
-    /// </summary>
-    public override void OnNetworkSpawn()
-    {
-        Debug.Log("Spawn mon owner est :" + OwnerClientId);
-        if(IsOwner)
-        {
-            //On active la caméra du joueur
-            transform.GetChild(0).gameObject.SetActive(true);
-            transform.GetChild(1).GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
-        }
-        else
-        {
-            transform.GetChild(0).gameObject.SetActive(false);
-            enabled = false;
-        }
-    }
-
-
     #region Gestion de la caméra
 
     /// <summary>
@@ -213,6 +193,6 @@ public class GhostController : NetworkBehaviour
         root.GetComponent<MonPlayerController>().Respawn();
         vivox.transform.parent = root.transform;
 
-        Destroy(gameObject);
+        MultiplayerGameManager.Instance.SyncRespawnServerRpc(gameObject, OwnerClientId);
     }
 }
