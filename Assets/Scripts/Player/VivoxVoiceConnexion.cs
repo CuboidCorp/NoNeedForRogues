@@ -50,9 +50,12 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         if (!AuthenticationService.Instance.IsSignedIn)
         {
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            MultiplayerGameManager.Instance.SetDataSolo(OwnerClientId, AuthenticationService.Instance.PlayerId);
         }
         servVivox = VivoxService.Instance;
         servVivox.LoggedIn += OnLoggedIn;
+        servVivox.ParticipantAddedToChannel += ParticipantAdded;
+        servVivox.ParticipantRemovedFromChannel += ParticipantRemoved;
         servVivox.LoggedOut += OnLoggedOut;
         await servVivox.InitializeAsync();
         await servVivox.LoginAsync();
@@ -76,7 +79,6 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     private async void OnLoggedIn()
     {
-        Debug.Log("Vivox Logged In");
         if (MultiplayerGameManager.Instance.soloMode)
         {
             await servVivox.JoinEchoChannelAsync("EchoTest", ChatCapability.AudioOnly);
@@ -90,11 +92,32 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     }
 
     /// <summary>
+    /// Quand le participant est ajouté au channel
+    /// </summary>
+    /// <param name="vivoxParticipant">Le participant ajouté</param>
+    private void ParticipantAdded(VivoxParticipant vivoxParticipant)
+    {
+        if(vivoxParticipant.PlayerId != AuthenticationService.Instance.PlayerId)
+        {
+            vivoxParticipant.CreateVivoxParticipantTap(); //TODO : Trouver un moyen de le sync en fonction de l'id
+        }
+        
+    }
+
+    /// <summary>
+    /// Enleve un participant du channel
+    /// </summary>
+    /// <param name="vivoxParticipant">Le participant qui se deconnecte</param>
+    private void ParticipantRemoved(VivoxParticipant vivoxParticipant)
+    {
+        vivoxParticipant.DestroyVivoxParticipantTap();
+    }
+
+    /// <summary>
     /// Quand on se deconnecte de Vivox on quitte tous les channels
     /// </summary>
     private async void OnLoggedOut()
     {
-        Debug.Log("Vivox Logged Out");
         StopAllCoroutines();
         await servVivox.LeaveAllChannelsAsync();
         await servVivox.LogoutAsync();

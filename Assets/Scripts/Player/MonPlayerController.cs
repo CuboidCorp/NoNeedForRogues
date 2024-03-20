@@ -3,6 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using Unity.Services.Authentication;
 
 [DisallowMultipleComponent]
 public class MonPlayerController : Entity
@@ -361,7 +362,6 @@ public class MonPlayerController : Entity
     [ClientRpc]
     private void HandleDamageClientRpc(float damage, ClientRpcParams clientRpcParams)
     {
-        Debug.Log("HandleDamageClientRpc");
         Damage(damage);
     }
 
@@ -408,7 +408,6 @@ public class MonPlayerController : Entity
     private void HandleGhostSpawnClientRpc(NetworkObjectReference networkRef)
     {
         GameObject ghostObj = (GameObject)networkRef;
-        Debug.Log("Etat pivot" + ghostObj.transform.GetChild(0).gameObject.activeSelf);
         ghostObj.name = "GhostPlayer" + ghostObj.GetComponent<NetworkObject>().OwnerClientId;
         if(ghostObj.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
         {
@@ -459,7 +458,7 @@ public class MonPlayerController : Entity
     /// <summary>
     /// L'inverse de la mort, on remet le joueur en vie
     /// </summary>
-    public void Respawn() //TODO : Sync le respawn a tt les clients
+    public void Respawn()
     {
         transform.position = lastCheckPoint;
         gameObject.tag = "Player";
@@ -592,7 +591,6 @@ public class MonPlayerController : Entity
     /// </summary>
     private void StartLongAttack()
     {
-        Debug.Log("LongAttack");
         GetComponent<SpellRecognition>().StartListening();
         animator.SetTrigger("isLongAttacking");
     }
@@ -602,7 +600,6 @@ public class MonPlayerController : Entity
     /// </summary>
     private void StopLongAttack()
     {
-        Debug.Log("StopLongAttack");
         GetComponent<SpellRecognition>().StopListening();
         animator.SetBool("isLongAttacking", false);
     }

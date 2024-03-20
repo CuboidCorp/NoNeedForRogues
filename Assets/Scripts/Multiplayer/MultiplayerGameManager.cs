@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Unity.Netcode;
+using Unity.Services.Authentication;
 using Unity.Services.Vivox.AudioTaps;
 using UnityEngine;
 
@@ -19,10 +20,19 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     public static int nbConnectedPlayers = 0;
 
+    /// <summary>
+    /// Les ids des joueurs selon Netcode pr gameobject
+    /// </summary>
     private ulong[] playersIds;
 
-    private ulong hostId;
+    /// <summary>
+    /// Les ids des joueurs pr l'authentification (Utilisé pr vivox)
+    /// </summary>
+    private string[] authServicePlayerIds; 
 
+    /// <summary>
+    /// Les gameobjects des joueurs
+    /// </summary>
     private GameObject[] players;
 
     private void Awake()
@@ -37,6 +47,14 @@ public class MultiplayerGameManager : NetworkBehaviour
     }
 
     /// <summary>
+    /// Quand le gameManager a bien load
+    /// </summary>
+    public override void OnNetworkSpawn()
+    {
+        SendPlayerInfoServerRpc(OwnerClientId, AuthenticationService.Instance.PlayerId);
+    }
+
+    /// <summary>
     /// Set le nombre de joueurs dans le lobby qui vont jouer
     /// </summary>
     /// <param name="nb">Le nombre de joueur</param>
@@ -44,6 +62,19 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         nbTotalPlayers = nb;
         playersIds = new ulong[nb];
+        authServicePlayerIds = new string[nb];
+        authServicePlayerIds[^1] = "";
+    }
+
+    /// <summary>
+    /// Set les données du joueur en solo
+    /// </summary>
+    /// <param name="id">L'id netcode for gameobjects</param>
+    /// <param name="authId">L'id authentification</param>
+    public void SetDataSolo(ulong id, string authId)
+    {
+        playersIds[0] = id;
+        authServicePlayerIds[0] = authId;
     }
 
     /// <summary>
@@ -72,17 +103,7 @@ public class MultiplayerGameManager : NetworkBehaviour
             return;
         }
         playersIds[nbConnectedPlayers] = id;
-        if (nbConnectedPlayers == 0)
-        {
-            hostId = id;
-        }
         nbConnectedPlayers++;
-        if (nbConnectedPlayers == nbTotalPlayers)
-        {
-            gameCanStart = true;
-            SendGameInfoClientRpc(nbTotalPlayers, playersIds);
-        }
-
     }
 
     /// <summary>
@@ -91,11 +112,12 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="nbMaxPlayers">Le nb de joueurs</param>
     /// <param name="allIds">Les id de tt les joueurs</param>
     [ClientRpc]
-    private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds)
+    private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds, NetworkStringArray playerIds)
     {
         nbTotalPlayers = nbMaxPlayers;
         playersIds = allIds;
         players = new GameObject[nbMaxPlayers];
+        authServicePlayerIds = playerIds.Array;
         int cpt = 0;
         foreach (ulong id in allIds)
         {
@@ -135,7 +157,39 @@ public class MultiplayerGameManager : NetworkBehaviour
         Debug.Log("Speech");
     }
 
+    /// <summary>
+    /// Envoie les infos du joueur courant au serveur
+    /// </summary>
+    [ServerRpc(RequireOwnership = false)]
+    public void SendPlayerInfoServerRpc(ulong ownerId, string authId)
+    {
+        AddAuthPlayerId(ownerId, authId);
+    }
 
+    /// <summary>
+    /// Ajoute l'id du joueur authentifié
+    /// </summary>
+    /// <param name="playerId">L'id netcode</param>
+    /// <param name="authServiceId">L'id unity auth</param>
+    private void AddAuthPlayerId(ulong playerId, string authServiceId)
+    {
+        Debug.Log("AddAuthPlayerId : " + playerId+ " authService : "+authServiceId);
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if (playerIndex != -1)
+        {
+            authServicePlayerIds[playerIndex] = authServiceId;
+        }
+        if(nbConnectedPlayers == nbTotalPlayers)
+        {
+            gameCanStart = true;
+            NetworkStringArray array = new()
+            {
+                Array = authServicePlayerIds
+            };
+
+            SendGameInfoClientRpc(nbTotalPlayers, playersIds, array);
+        }
+    }
 
     #region Death
 

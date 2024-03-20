@@ -14,7 +14,9 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private TMPro.TMP_InputField inputField;
 
     private string Profile = "Original";
+#if UNITY_EDITOR
     private string filename = "originalInfo.json";
+
 
     private void Start()
     {
@@ -24,6 +26,9 @@ public class MainMenuUI : MonoBehaviour
             Profile = "Clone";
         }
     }
+#else
+    private string filename = "playerInfo.json";
+#endif
 
     /// <summary>
     /// Lance le jeu si le joueur à un fichier de sauvegarde
@@ -141,9 +146,10 @@ public class MainMenuUI : MonoBehaviour
         DontDestroyOnLoad(playerInfoGameObject);
 
         await UnityServices.InitializeAsync();
+#if UNITY_EDITOR
         AuthenticationService.Instance.SwitchProfile(Profile);
+#endif
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        Debug.Log(AuthenticationService.Instance.PlayerId);
         //On se deplace vers le TavernLobby
         SceneManager.LoadScene("TavernLobby");
     }
