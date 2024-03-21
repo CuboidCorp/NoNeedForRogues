@@ -99,7 +99,9 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         if(vivoxParticipant.PlayerId != AuthenticationService.Instance.PlayerId)
         {
-            vivoxParticipant.CreateVivoxParticipantTap(); //TODO : Trouver un moyen de le sync en fonction de l'id
+            GameObject tap = vivoxParticipant.CreateVivoxParticipantTap("Tap "+vivoxParticipant.PlayerId); 
+            tap.transform.SetParent(MultiplayerGameManager.Instance.TapHolder.transform);
+            MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant); 
         }
         
     }

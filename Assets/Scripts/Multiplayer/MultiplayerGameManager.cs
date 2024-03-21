@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using Unity.Services.Authentication;
+using Unity.Services.Vivox;
 using Unity.Services.Vivox.AudioTaps;
 using UnityEngine;
+using UnityEngine.Audio;
 
 /// <summary>
 /// Gère le mode multijoueur
@@ -21,6 +24,11 @@ public class MultiplayerGameManager : NetworkBehaviour
     public static int nbConnectedPlayers = 0;
 
     /// <summary>
+    /// Le gameobject qui contient les taps (Participant tap, Audio tap, etc)
+    /// </summary>
+    public GameObject TapHolder;
+
+    /// <summary>
     /// Les ids des joueurs selon Netcode pr gameobject
     /// </summary>
     private ulong[] playersIds;
@@ -28,12 +36,15 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <summary>
     /// Les ids des joueurs pr l'authentification (Utilisé pr vivox)
     /// </summary>
-    private string[] authServicePlayerIds; 
+    private Dictionary<string,VivoxParticipant> authServicePlayerIds; 
 
     /// <summary>
     /// Les gameobjects des joueurs
     /// </summary>
     private GameObject[] players;
+
+    //Les audio mixers pr les voix
+    private AudioMixer mainMixer;
 
     private void Awake()
     {
@@ -42,6 +53,7 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private void Start()
     {
+        mainMixer = Resources.Load<AudioMixer>("Audio/Main");
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
     }
@@ -62,8 +74,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         nbTotalPlayers = nb;
         playersIds = new ulong[nb];
-        authServicePlayerIds = new string[nb];
-        authServicePlayerIds[^1] = "";
     }
 
     /// <summary>
@@ -74,7 +84,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void SetDataSolo(ulong id, string authId)
     {
         playersIds[0] = id;
-        authServicePlayerIds[0] = authId;
+        authServicePlayerIds.Add(authId,null);
     }
 
     /// <summary>
@@ -117,7 +127,10 @@ public class MultiplayerGameManager : NetworkBehaviour
         nbTotalPlayers = nbMaxPlayers;
         playersIds = allIds;
         players = new GameObject[nbMaxPlayers];
-        authServicePlayerIds = playerIds.Array;
+        foreach (string playerId in playerIds.Array)
+        {
+            authServicePlayerIds.Add(playerId, null);
+        }
         int cpt = 0;
         foreach (ulong id in allIds)
         {
@@ -177,18 +190,28 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, playerId);
         if (playerIndex != -1)
         {
-            authServicePlayerIds[playerIndex] = authServiceId;
+            authServicePlayerIds.Add(authServiceId, null);
         }
         if(nbConnectedPlayers == nbTotalPlayers)
         {
             gameCanStart = true;
             NetworkStringArray array = new()
             {
-                Array = authServicePlayerIds
+                Array = authServicePlayerIds.Keys.ToArray()
             };
 
             SendGameInfoClientRpc(nbTotalPlayers, playersIds, array);
         }
+    }
+
+    /// <summary>
+    /// Ajoute le participant tap d'un joueur au dictionnaire des participants
+    /// </summary>
+    /// <param name="authId">L'id du joueur connecté</param>
+    /// <param name="vivox">Le participant associé au vivox particpant</param>
+    public void AddPlayerVivoxInfo(string authId, VivoxParticipant vivox)
+    {
+        authServicePlayerIds[authId] = vivox;
     }
 
     #region Death
@@ -223,6 +246,9 @@ public class MultiplayerGameManager : NetworkBehaviour
         if (playerIndex != -1)
         {
             players[playerIndex].GetComponent<MonPlayerController>().HandleDeath();
+            string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
+            //On veut remplacer l'audio source de son particpant tap par celle avec le evil mixer group
+            authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("DeadVoice")[0];
         }
     }
 
@@ -262,6 +288,9 @@ public class MultiplayerGameManager : NetworkBehaviour
         if (playerIndex != -1)
         {
             players[playerIndex].GetComponent<MonPlayerController>().HandleRespawn();
+            string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
+            //On veut remplacer l'audio source de son particpant tap par celle avec main mixer group
+            authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Master")[0];
         }
     }
 
