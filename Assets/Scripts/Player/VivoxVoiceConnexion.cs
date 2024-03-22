@@ -15,7 +15,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <summary>
     /// La distance max pr entendre qqn
     /// </summary>
-    [SerializeField] private int maxDistance = 64;
+    public const int maxDistance = 32;
     /// <summary>
     /// La distance min pr entendre a 100% qqn
     /// </summary>
@@ -100,7 +100,9 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         if(vivoxParticipant.PlayerId != AuthenticationService.Instance.PlayerId)
         {
             GameObject tap = vivoxParticipant.CreateVivoxParticipantTap("Tap "+vivoxParticipant.PlayerId); 
-            tap.transform.SetParent(MultiplayerGameManager.Instance.TapHolder.transform);
+            MultiplayerGameManager.Instance.AddParamToParticipantAudioSource(vivoxParticipant.ParticipantTapAudioSource);
+            Transform playerTransform = MultiplayerGameManager.Instance.GetPlayerTransformFromAuthId(vivoxParticipant.PlayerId);
+            tap.transform.SetParent(playerTransform); //Pas de null check = Programmation de gros porc ici flemme
             MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant); 
         }
         

@@ -415,9 +415,10 @@ public class MonPlayerController : Entity
         }
         else
         {
+            MultiplayerGameManager.Instance.MovePlayerTapToGhost(ghostObj.GetComponent<NetworkObject>().OwnerClientId);
             ghostObj.transform.GetChild(0).gameObject.SetActive(false);
             ghostObj.GetComponent<GhostController>().enabled = false;
-        }
+        } 
     }
 
     /// <summary>

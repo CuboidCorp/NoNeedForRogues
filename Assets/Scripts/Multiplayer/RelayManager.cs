@@ -38,8 +38,6 @@ public class RelayManager : MonoBehaviour
 
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(alloc.AllocationId);
 
-            Debug.Log("Join code: " + joinCode);
-
             RelayServerData relayServerData = new(alloc, "dtls");
 
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
