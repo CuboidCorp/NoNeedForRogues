@@ -49,11 +49,12 @@ public class MultiplayerGameManager : NetworkBehaviour
     private void Awake()
     {
         Instance = this;
+        mainMixer = Resources.Load<AudioMixer>("Audio/Main");
+        authServicePlayerIds = new Dictionary<string, VivoxParticipant>();
     }
 
     private void Start()
-    {
-        mainMixer = Resources.Load<AudioMixer>("Audio/Main");
+    { 
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
     }
@@ -114,6 +115,11 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
         playersIds[nbConnectedPlayers] = id;
         nbConnectedPlayers++;
+        if (nbConnectedPlayers == nbTotalPlayers)
+        {
+            gameCanStart = true;
+            SendGameInfoClientRpc(nbTotalPlayers, playersIds);
+        }
     }
 
     /// <summary>
@@ -122,15 +128,12 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="nbMaxPlayers">Le nb de joueurs</param>
     /// <param name="allIds">Les id de tt les joueurs</param>
     [ClientRpc]
-    private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds, NetworkStringArray playerIds)
+    private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds)
     {
         nbTotalPlayers = nbMaxPlayers;
         playersIds = allIds;
         players = new GameObject[nbMaxPlayers];
-        foreach (string playerId in playerIds.Array)
-        {
-            authServicePlayerIds.Add(playerId, null);
-        }
+
         int cpt = 0;
         foreach (ulong id in allIds)
         {
@@ -191,16 +194,6 @@ public class MultiplayerGameManager : NetworkBehaviour
         if (playerIndex != -1)
         {
             authServicePlayerIds.Add(authServiceId, null);
-        }
-        if(nbConnectedPlayers == nbTotalPlayers)
-        {
-            gameCanStart = true;
-            NetworkStringArray array = new()
-            {
-                Array = authServicePlayerIds.Keys.ToArray()
-            };
-
-            SendGameInfoClientRpc(nbTotalPlayers, playersIds, array);
         }
     }
 
