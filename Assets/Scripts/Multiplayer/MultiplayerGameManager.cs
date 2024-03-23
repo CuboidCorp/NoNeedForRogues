@@ -87,7 +87,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void SetDataSolo(ulong id, string authId)
     {
         playersIds[0] = id;
-        authServicePlayerIds.Add(authId,null);
         playersStates = new PlayerState[1];
         playersStates[0] = PlayerState.Alive;
     }
