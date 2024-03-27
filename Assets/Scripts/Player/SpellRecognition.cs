@@ -7,6 +7,16 @@ public class SpellRecognition : MonoBehaviour
 {
     private KeywordRecognizer recognizer;
 
+    private const float explosionRange = 5;
+    private const float explosionForce = 10; //Les degats aussi
+
+    private const float lightIntensity = 1;
+    private const float lightTime = 5;
+
+    private const float ragdollTime = 3;
+
+    private const float interactRange = 10;
+
     void Start()
     {
         recognizer = new KeywordRecognizer(SpellList.spells);
@@ -28,19 +38,19 @@ public class SpellRecognition : MonoBehaviour
         switch (args.text)
         {
             case "Explosion":
-                SpellList.Explosion(transform, 5, 10);
+                SpellList.Explosion(transform, explosionRange, explosionForce);
                 break;
             case "Lumos":
             case "Lumosse":
                 //On prend le vecteur qui est la direction de la caméra du joueur *2f et on prend la nouvelle position de ce vecteur
                 Vector3 posLight = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 2f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
-                SpellList.Lumos(posLight, 1, 5);
+                MultiplayerGameManager.Instance.SummonLightballServerRpc(posLight, lightIntensity, lightTime);
                 break;
             case "Mort":
                 gameObject.GetComponent<MonPlayerController>().Damage(1000);
                 break;
             case "Ragdoll":
-                StartCoroutine(gameObject.GetComponent<MonPlayerController>().SetRagdollTemp(3));
+                StartCoroutine(gameObject.GetComponent<MonPlayerController>().SetRagdollTemp(ragdollTime));
                 break;
             case "Boule de feu":
             case "Fireball":
@@ -49,11 +59,11 @@ public class SpellRecognition : MonoBehaviour
             case "Open sesame":
             case "Ouvre toi sesame":
             case "Sesame ouvre toi":
-                SpellList.OpenSesame(gameObject.GetComponent<MonPlayerController>().playerCamera.transform, 10);
+                SpellList.OpenSesame(gameObject.GetComponent<MonPlayerController>().playerCamera.transform, interactRange);
                 break;
             case "Interact":
             case "Interaction":
-                gameObject.GetComponent<MonPlayerController>().InteractSpell(10);
+                gameObject.GetComponent<MonPlayerController>().InteractSpell(interactRange);
                 break;
             case "FusRoDah":
                 //SpellList.FusRoDah();

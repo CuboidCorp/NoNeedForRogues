@@ -474,7 +474,25 @@ public class MultiplayerGameManager : NetworkBehaviour
                 TargetClientIds = otherPlayerIds
             }
         };
-    } 
+    }
+
+    #endregion
+
+    #region Spells
+
+    /// <summary>
+    /// Permet de spawn un objet quelconque pr tous les joueurs
+    /// </summary>
+    /// <param name="obj">L'objet a spawn</param>
+    [ServerRpc(RequireOwnership = false)]
+    internal void SummonLightballServerRpc(Vector3 pos, float intensity, float time)
+    {
+        Debug.Log("Summon light ball");
+        GameObject lightBall = Instantiate(Resources.Load<GameObject>("Sorts/LightBall"), pos, Quaternion.identity);
+        lightBall.GetComponent<Light>().intensity = intensity;
+        lightBall.AddComponent<Temporary>().StartCoroutine(nameof(Temporary.DestroyIn), time);
+        lightBall.GetComponent<NetworkObject>().Spawn();
+    }
 
     #endregion
 

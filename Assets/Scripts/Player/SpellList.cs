@@ -53,20 +53,6 @@ public class SpellList : MonoBehaviour
     }
 
     /// <summary>
-    /// Crée une lumière à l'endroit souhaité, soit au curseur du joueur
-    /// </summary>
-    /// <param name="pos">Position ou l'instantier</param>
-    /// <param name="intensity">L'intensite de la lumiere</param>
-    /// <param name="time">Le temps de survie de la lumiere</param>
-    public static void Lumos(Vector3 pos, float intensity, float time)
-    {
-        GameObject lightBall = Instantiate(Resources.Load<GameObject>("Sorts/LightBall"), pos, Quaternion.identity);
-        lightBall.GetComponent<Light>().intensity = intensity;
-        lightBall.AddComponent<Temporary>().StartCoroutine("DestroyIn", time);
-
-    }
-
-    /// <summary>
     /// TODO : faire la fireball et le sort
     /// </summary>
     /// <param name="target"></param>
