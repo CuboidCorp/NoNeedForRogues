@@ -100,7 +100,14 @@ public class MultiplayerGameManager : NetworkBehaviour
 
         foreach (GameObject tap in audioTaps)
         {
-            tap.GetComponent<VivoxAudioTap>().enabled = true;
+            if(soloMode)
+            {
+                tap.GetComponent<VivoxAudioTap>().ChannelName = VivoxVoiceConnexion.echoChannelName;
+            }
+            else
+            {
+                tap.GetComponent<VivoxAudioTap>().ChannelName = VivoxVoiceConnexion.channelName;
+            }
         }
     }
 

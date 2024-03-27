@@ -8,7 +8,9 @@ using UnityEngine;
 public class VivoxVoiceConnexion : NetworkBehaviour
 {
 
-    private const string channelName = "Global";
+    public const string channelName = "Global";
+    public const string echoChannelName = "EchoTest";
+
     private IVivoxService servVivox;
 
     #region Config Channel
@@ -81,7 +83,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         if (MultiplayerGameManager.Instance.soloMode)
         {
-            await servVivox.JoinEchoChannelAsync("EchoTest", ChatCapability.AudioOnly);
+            await servVivox.JoinEchoChannelAsync(echoChannelName, ChatCapability.AudioOnly);
         }
         else
         {
