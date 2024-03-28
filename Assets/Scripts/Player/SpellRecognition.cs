@@ -68,6 +68,15 @@ public class SpellRecognition : MonoBehaviour
             case "FusRoDah":
                 //SpellList.FusRoDah();
                 break;
+            case "Attraper":
+                gameObject.GetComponent<PickUpController>().TryGrabObject();
+                break;
+            case "Lancer":
+                gameObject.GetComponent<PickUpController>().ThrowObject();
+                break;
+            case "Lacher":
+                gameObject.GetComponent<PickUpController>().DropObject();
+                break;
         }
     }
 

@@ -20,14 +20,15 @@ public class MonPlayerController : Entity
 
     [SerializeField] private float interactDistance = 5f;
 
-    [SerializeField] private GameObject vivox;
+    private GameObject vivox;
 
     private Vector3 lastCheckPoint = new(0, 1, 0);//Le dernier checkpoint où le joueur a été
 
     #region Camera Movement Variables
 
-    public Camera playerCamera;
-    [SerializeField] private GameObject cameraPivot;
+    [Header("Camera Movement Variables")]
+    [HideInInspector] public Camera playerCamera; //TODO : Voir pk c'est public
+    [SerializeField] private GameObject cameraPivot; //Le gameObject de la camera
 
     [SerializeField] private bool invertCamera = false;
     [SerializeField] private float mouseSensitivity = 100f;
@@ -44,7 +45,7 @@ public class MonPlayerController : Entity
     #endregion
 
     #region Movement Variables
-
+    [Header("Movement Variables")]
     #region Moving
     [SerializeField] private Transform groundCheck;
     [SerializeField] private Vector2 moveInput;
@@ -67,10 +68,8 @@ public class MonPlayerController : Entity
 
     #endregion
 
-    #region Prefabs
     private GameObject ghostPlayerPrefab;
-
-    #endregion 
+    private GameObject grabZonePrefab;
 
     private VivoxVoiceConnexion voiceConnexion;
 
@@ -111,11 +110,14 @@ public class MonPlayerController : Entity
 
         animator = transform.GetComponentInChildren<Animator>();
 
+        playerCamera = cameraPivot.GetComponent<Camera>();
+
+        vivox = transform.GetChild(transform.childCount - 1).gameObject;
         voiceConnexion = vivox.GetComponent<VivoxVoiceConnexion>();
 
         //On recupere le prefab de la ragdoll
         ghostPlayerPrefab = Resources.Load<GameObject>("Perso/GhostPlayer");
-
+        grabZonePrefab = Resources.Load<GameObject>("Perso/GrabZone");
 
         //On randomize le joueur
 
@@ -138,6 +140,16 @@ public class MonPlayerController : Entity
             {
                 gameObject.tag = "Player";
             }
+
+            cameraPivot.AddComponent<NetworkObject>();
+            cameraPivot.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
+            cameraPivot.transform.parent = transform;
+            Transform grabZone = Instantiate(grabZonePrefab).transform;
+            grabZone.localPosition = new Vector3(0, 1.5f, 1.5f);
+            grabZone.gameObject.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
+            grabZone.parent = cameraPivot.transform;
+            gameObject.GetComponent<PickUpController>().holdArea = grabZone;
+
             ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
             transform.position = new Vector3(0, 1, 0);
 
@@ -147,6 +159,7 @@ public class MonPlayerController : Entity
         else //Si on est pas le propriétaire du joueur, on desactive le script
         {
             gameObject.GetComponent<SpellRecognition>().enabled = false;
+            gameObject.GetComponent<PickUpController>().enabled = false;
             Destroy(vivox);
             cameraPivot.SetActive(false);
             enabled = false;
@@ -373,6 +386,8 @@ public class MonPlayerController : Entity
         SendDeathServerRpc(OwnerClientId);
         animator.SetTrigger("Died");
         gameObject.GetComponent<SpellRecognition>().enabled = false;
+        gameObject.GetComponent<PickUpController>().DropObject();
+        gameObject.GetComponent<PickUpController>().enabled = false;
         StopEmotes();
         
         gameObject.tag = "Ragdoll";
@@ -466,6 +481,7 @@ public class MonPlayerController : Entity
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
         SyncRagdollStateServerRpc(OwnerClientId, false);
         DisableRagdoll();
+        gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;
         cameraPivot.SetActive(true);
     }

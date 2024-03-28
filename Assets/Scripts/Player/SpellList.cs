@@ -5,7 +5,7 @@ using UnityEngine;
 /// </summary>
 public class SpellList : MonoBehaviour
 {
-    public static string[] spells = { "Explosion", "Ragdoll", "Lumos", "Lumosse", "Mort", "FusRoDah", "Fireball", "Boule de feu", "Interact", "Interaction", "Open sesame", "Ouvre toi sesame" };
+    public static string[] spells = { "Explosion", "Ragdoll", "Lumos", "Lumosse", "Mort", "FusRoDah", "Fireball", "Boule de feu", "Interact", "Interaction", "Open sesame", "Ouvre toi sesame", "Attraper" ,"Lancer", "Lacher" };
 
 
 

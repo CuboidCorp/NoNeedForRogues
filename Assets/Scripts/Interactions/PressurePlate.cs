@@ -64,6 +64,10 @@ public class PressurePlate : NetworkBehaviour
         {
             SendEnterServerRpc(other.GetComponent<Entity>().poids);
         }
+        if(other.CompareTag("PickUp"))
+        {
+            SendEnterServerRpc(other.GetComponent<WeightedObject>().weight);
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -71,6 +75,10 @@ public class PressurePlate : NetworkBehaviour
         if (other.CompareTag("Player") || other.CompareTag("Entity"))
         {
             SendExitServerRpc(other.GetComponent<Entity>().poids);
+        }
+        if (other.CompareTag("PickUp"))
+        {
+            SendExitServerRpc(other.GetComponent<WeightedObject>().weight);
         }
     }
 
