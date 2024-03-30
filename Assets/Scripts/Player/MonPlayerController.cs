@@ -3,7 +3,6 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
-using Unity.Services.Authentication;
 
 [DisallowMultipleComponent]
 public class MonPlayerController : Entity
@@ -24,11 +23,12 @@ public class MonPlayerController : Entity
 
     private Vector3 lastCheckPoint = new(0, 1, 0);//Le dernier checkpoint où le joueur a été
 
-    #region Camera Movement Variables
+    #region Camera Variables
 
     [Header("Camera Movement Variables")]
     [HideInInspector] public Camera playerCamera; //TODO : Voir pk c'est public
     [SerializeField] private GameObject cameraPivot; //Le gameObject de la camera
+    private GameObject playerUI; //Le gameObject de l'UI du joueur
 
     [SerializeField] private bool invertCamera = false;
     [SerializeField] private float mouseSensitivity = 100f;
@@ -118,6 +118,8 @@ public class MonPlayerController : Entity
         //On recupere le prefab de la ragdoll
         ghostPlayerPrefab = Resources.Load<GameObject>("Perso/GhostPlayer");
         grabZonePrefab = Resources.Load<GameObject>("Perso/GrabZone");
+        playerUI = PlayerUI.Instance.gameObject;
+
 
         //On randomize le joueur
 
@@ -144,6 +146,9 @@ public class MonPlayerController : Entity
             cameraPivot.AddComponent<NetworkObject>();
             cameraPivot.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
             cameraPivot.transform.parent = transform;
+
+            playerUI.SetActive(true);
+
             Transform grabZone = Instantiate(grabZonePrefab).transform;
             grabZone.localPosition = new Vector3(0, 1.5f, 1.5f);
             grabZone.gameObject.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
@@ -231,6 +236,7 @@ public class MonPlayerController : Entity
     {
         MovePlayer();
         CheckGround();
+        CheckInteract();
     }
 
     #region Movement
@@ -334,6 +340,28 @@ public class MonPlayerController : Entity
             isGrounded = false;
         }
         animator.SetBool("isGrounded", isGrounded);
+    }
+
+    /// <summary>
+    /// Vérifie si le joueur peut interagir avec un objet et active l'ui en conséquence
+    /// </summary>
+    private void CheckInteract()
+    {
+        if(Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDistance))
+        {
+            if(hit.collider.TryGetComponent(out Interactable interactable))
+            {
+                playerUI.GetComponent<PlayerUI>().ShowInteractText(interactable.GetInteractText());
+            }
+            else
+            {
+                playerUI.GetComponent<PlayerUI>().HideInteractText();
+            }
+        }
+        else
+        {
+            playerUI.GetComponent<PlayerUI>().HideInteractText();
+        }
     }
 
     #region Degats et Mort
@@ -740,6 +768,8 @@ public class MonPlayerController : Entity
 
     #endregion
 
+    #region Interactions
+
     /// <summary>
     /// Permet d'interagir avec les objets qui sont interactables
     /// </summary>
@@ -770,14 +800,17 @@ public class MonPlayerController : Entity
 #if UNITY_EDITOR
         Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * interactDist, Color.yellow, 1f);
 #endif
-
+        Debug.Log("Interact spell" +interactDist);
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDist))
         {
+            Debug.Log("Hit : " + hit.collider.name);
             if (hit.collider.TryGetComponent(out Interactable interactable))
             {
                 interactable.OnInteract();
             }
         }
     }
+
+    #endregion
 
 }

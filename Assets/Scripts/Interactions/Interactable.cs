@@ -14,6 +14,11 @@ public abstract class Interactable : NetworkBehaviour
     public bool isInteractable = true;
 
     /// <summary>
+    /// Le texte a afficher qd on peut interagir avec l'objet
+    /// </summary>
+    public string interactText;
+
+    /// <summary>
     /// Le sound effect a jouer quand on ne peut pas interagir avec l'objet
     /// </summary>
     //private 
@@ -29,6 +34,15 @@ public abstract class Interactable : NetworkBehaviour
             return;
         }
         SendInteractionServerRpc();
+    }
+
+    /// <summary>
+    /// Renvoie le texte a afficher qd on peut interagir avec l'objet
+    /// </summary>
+    /// <returns>Le string qui correspond au texte d'interaction</returns>
+    public string GetInteractText()
+    {
+        return interactText;
     }
 
     /// <summary>

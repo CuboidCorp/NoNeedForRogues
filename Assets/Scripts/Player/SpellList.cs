@@ -53,17 +53,6 @@ public class SpellList : MonoBehaviour
     }
 
     /// <summary>
-    /// TODO : faire la fireball et le sort
-    /// </summary>
-    /// <param name="target"></param>
-    /// <param name="radius"></param>
-    /// <param name="degats"></param>
-    public static void Fireball(Transform target, float radius, float degats)
-    {
-        //On instancie une fireball et on lui donne une force d'explosion
-    }
-
-    /// <summary>
     /// On cast un ray d'une certaine distance depuis la position de la caméra du joueur, si le premier truc qu'on touche possede un script Openable, on l'ouvre
     /// </summary>
     /// <param name="source">Le transform de la cam du joueur</param>
@@ -74,10 +63,11 @@ public class SpellList : MonoBehaviour
 #if UNITY_EDITOR
         Debug.DrawRay(source.position, source.forward * distanceInteract, Color.yellow, 1f);
 #endif
+        Debug.Log("Open sesame");
 
         if (Physics.Raycast(source.position, source.forward, out RaycastHit hit, distanceInteract))
         {
-            if (hit.collider.TryGetComponent(out Openable openable))
+            if (hit.transform.TryGetComponent(out Openable openable)) //On utilise hit.transform pr chopper le parent qui a un rigidbody
             {
                 openable.Open();
             }
@@ -86,10 +76,8 @@ public class SpellList : MonoBehaviour
 
     //TODO : Spells a faire : 
     /**
-     * Lumos -> Spawn une lightball
      * FusRoDah -> Ragdoll le joueur target (si y en a) et force explosion sur lui
      * Fireball -> Spawn une fireball qui fait une petite explosion
-     * Open sesame -> Ouvre une porte ou tout objet ouvrable
      * 
      */
 
