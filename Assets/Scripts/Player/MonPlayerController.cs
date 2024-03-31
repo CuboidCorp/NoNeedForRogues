@@ -143,17 +143,7 @@ public class MonPlayerController : Entity
                 gameObject.tag = "Player";
             }
 
-            cameraPivot.AddComponent<NetworkObject>();
-            cameraPivot.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-            cameraPivot.transform.parent = transform;
-
             playerUI.SetActive(true);
-
-            Transform grabZone = Instantiate(grabZonePrefab).transform;
-            grabZone.localPosition = new Vector3(0, 1.5f, 1.5f);
-            grabZone.gameObject.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-            grabZone.parent = cameraPivot.transform;
-            gameObject.GetComponent<PickUpController>().holdArea = grabZone;
 
             ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
             transform.position = new Vector3(0, 1, 0);
@@ -437,8 +427,7 @@ public class MonPlayerController : Entity
     {
         GameObject ghost = Instantiate(ghostPlayerPrefab, transform.position, transform.rotation);
         ghost.name = "GhostPlayer" + OwnerClientId;
-        ghost.GetComponent<NetworkObject>().Spawn();
-        ghost.GetComponent<NetworkObject>().ChangeOwnership(ownerId);
+        ghost.GetComponent<NetworkObject>().SpawnWithOwnership(ownerId);
 
         HandleGhostSpawnClientRpc(ghost);
     }

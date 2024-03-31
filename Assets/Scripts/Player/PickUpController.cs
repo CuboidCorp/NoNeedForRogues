@@ -3,7 +3,7 @@ using UnityEngine;
 public class PickUpController : MonoBehaviour
 {
     [Header("Pick Up Settings")]
-    [HideInInspector] public Transform holdArea;
+    [SerializeField] public Transform holdArea;
     [SerializeField] private Camera playerCam;
     private GameObject heldObj;
     private Rigidbody heldObjRb;
@@ -46,8 +46,6 @@ public class PickUpController : MonoBehaviour
         heldObjRb.useGravity = false;
         heldObjRb.drag = 10;
         heldObjRb.constraints = RigidbodyConstraints.FreezeRotation;
-
-        heldObj.transform.SetParent(holdArea);
     }
 
     /// <summary>
@@ -63,8 +61,6 @@ public class PickUpController : MonoBehaviour
         heldObjRb.useGravity = true;
         heldObjRb.drag = 1;
         heldObjRb.constraints = RigidbodyConstraints.None;
-
-        heldObj.transform.parent = null;
 
         heldObjRb = null;
         heldObj = null;
@@ -83,8 +79,6 @@ public class PickUpController : MonoBehaviour
         heldObjRb.drag = 1;
         heldObjRb.constraints = RigidbodyConstraints.None;
         heldObjRb.AddForce(playerCam.transform.forward * throwForce, ForceMode.Impulse);
-
-        heldObj.transform.parent = null;
 
         heldObjRb = null;
         heldObj = null;
@@ -106,7 +100,8 @@ public class PickUpController : MonoBehaviour
         if(Vector3.Distance(heldObj.transform.position, holdArea.position) > 0.1f)
         {
             Vector3 moveDirection = (holdArea.position - heldObj.transform.position);
-            heldObjRb.AddForce(pickupForce * moveDirection);
+            heldObjRb.AddForce(pickupForce * moveDirection); //Le addForce est pas super fluide mais a moins de chance de passer à travers les murs
+            //heldObj.transform.position = Vector3.Lerp(heldObj.transform.position, holdArea.position, 0.1f); //Le lerp a un problème : il peut passer à travers les murs
         }
         else
         {
