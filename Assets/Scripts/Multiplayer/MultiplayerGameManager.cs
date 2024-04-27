@@ -56,9 +56,12 @@ public class MultiplayerGameManager : NetworkBehaviour
     }
 
     private void Start()
-    { 
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+    {
+        if (!soloMode) //Car le start de LobbyManager est appelé avant celui de MultiplayerGameManager
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        }
     }
 
     /// <summary>
@@ -82,13 +85,13 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <summary>
     /// Set les données du joueur en solo
     /// </summary>
-    /// <param name="id">L'id netcode for gameobjects</param>
-    /// <param name="authId">L'id authentification</param>
-    public void SetDataSolo(ulong id, string authId)
+    public void SetDataSolo()
     {
-        playersIds[0] = id;
+        playersIds = new ulong[1];
         playersStates = new PlayerState[1];
         playersStates[0] = PlayerState.Alive;
+        players = new GameObject[1];
+        gameCanStart = true;
     }
 
     /// <summary>
@@ -112,10 +115,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     }
 
     /// <summary>
-    /// When a player is connected
+    /// Quand un joueur autre se connecte
     /// </summary>
     /// <param name="id">Player id</param>
-    private void OnClientConnected(ulong id)
+    public void OnClientConnected(ulong id)
     {
         if (!IsHost)
         {
@@ -125,11 +128,21 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
         playersIds[nbConnectedPlayers] = id;
         nbConnectedPlayers++;
-        if (nbConnectedPlayers == nbTotalPlayers)
+        if(soloMode)
+        {
+            players[0] = GameObject.FindWithTag("Player");
+            SpawnGrabZoneServerRpc(id);
+        }
+        else if (nbConnectedPlayers == nbTotalPlayers)
         {
             gameCanStart = true;
             SendGameInfoClientRpc(nbTotalPlayers, playersIds);
+            foreach (ulong playerId in playersIds)
+            {
+                SpawnGrabZoneServerRpc(playerId);
+            }
         }
+        
     }
 
     /// <summary>
@@ -169,7 +182,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// When a player is disconnected
     /// </summary>
     /// <param name="id">Player id </param>
-    private void OnClientDisconnected(ulong id)
+    public void OnClientDisconnected(ulong id)
     {
         nbConnectedPlayers--;
         if (nbConnectedPlayers < nbTotalPlayers)
@@ -210,7 +223,20 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
-
+    /// <summary>
+    /// Renvoie le gameobject du joueur correspondant à l'id netcode
+    /// </summary>
+    /// <param name="playerId">L'id netcode recherché</param>
+    /// <returns>Le gameObject du joueur ou null si erreur</returns>
+    public GameObject GetPlayerById(ulong playerId)
+    {
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if (playerIndex != -1)
+        {
+            return players[playerIndex];
+        }
+        return null;
+    }
 
     #region Vivox Utils
 
@@ -494,6 +520,44 @@ public class MultiplayerGameManager : NetworkBehaviour
         lightBall.GetComponent<NetworkObject>().Spawn();
     }
 
+    #endregion
+
+    #region GrabZone
+
+
+    /// <summary>
+    /// ServerRpc pr spawn la grab zone
+    /// </summary>
+    /// <param name="OwnerId"></param>
+    [ServerRpc(RequireOwnership = false)]
+    private void SpawnGrabZoneServerRpc(ulong OwnerId)
+    {
+        GameObject copyCam = new("CopyCam" + OwnerId);
+        copyCam.AddComponent<NetworkObject>();
+        copyCam.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerId);
+        GameObject grabZone = new("GrabZone" + OwnerId);
+        grabZone.AddComponent<NetworkObject>();
+        grabZone.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerId);
+        grabZone.transform.parent = copyCam.transform;
+        grabZone.transform.localPosition = new Vector3(0, 0, 1.5f);
+        ChangeParentClientRpc(copyCam);
+    }
+
+    [ClientRpc]
+    private void ChangeParentClientRpc(NetworkObjectReference networkRef)
+    {
+        GameObject copyCam = (GameObject)networkRef;
+        ulong ownerId = copyCam.GetComponent<NetworkObject>().OwnerClientId;
+        GameObject player = GetPlayerById(ownerId);
+        copyCam.transform.parent = player.transform;
+        copyCam.transform.localPosition = new Vector3(0, 1.6f, -.1f);
+        if (OwnerClientId == ownerId)
+        {
+            //On met la grab zone dans le playerController
+            player.GetComponent<MonPlayerController>().copyCam = copyCam;
+            player.GetComponent<PickUpController>().holdArea = copyCam.transform.GetChild(0);
+        }
+    }
     #endregion
 
     /// <summary>

@@ -31,37 +31,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7388833849250685836}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &29625563416097168
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8496584772368034053}
-  m_Layer: 0
-  m_Name: GrabZone
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8496584772368034053
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 29625563416097168}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.1, z: 1.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1075378867558917200}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &40126740745295250
 GameObject:
   m_ObjectHideFlags: 0
@@ -7428,6 +7397,7 @@ MonoBehaviour:
   seed: 0
   interactDistance: 5
   playerCamera: {fileID: 567784544684724839}
+  copyCam: {fileID: 0}
   cameraPivot: {fileID: 7823187933646535831}
   invertCamera: 0
   mouseSensitivity: 100
@@ -7464,7 +7434,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d5f2077c3889ea41b8ce06d0fd0fb4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  holdArea: {fileID: 8496584772368034053}
+  holdArea: {fileID: 0}
   playerCam: {fileID: 567784544684724839}
   pickupRange: 5
   pickupForce: 150
@@ -9121,8 +9091,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 1.7, z: -0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 8496584772368034053}
+  m_Children: []
   m_Father: {fileID: 8328293433109390074}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &567784544684724839

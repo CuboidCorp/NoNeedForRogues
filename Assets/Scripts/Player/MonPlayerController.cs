@@ -27,6 +27,7 @@ public class MonPlayerController : Entity
 
     [Header("Camera Movement Variables")]
     [HideInInspector] public Camera playerCamera; //TODO : Voir pk c'est public
+    [HideInInspector] public GameObject copyCam; //Le parent de la grabzone
     [SerializeField] private GameObject cameraPivot; //Le gameObject de la camera
     private GameObject playerUI; //Le gameObject de l'UI du joueur
 
@@ -68,8 +69,9 @@ public class MonPlayerController : Entity
 
     #endregion
 
+    #region Prefabs
     private GameObject ghostPlayerPrefab;
-    private GameObject grabZonePrefab;
+    #endregion
 
     private VivoxVoiceConnexion voiceConnexion;
 
@@ -117,7 +119,6 @@ public class MonPlayerController : Entity
 
         //On recupere le prefab de la ragdoll
         ghostPlayerPrefab = Resources.Load<GameObject>("Perso/GhostPlayer");
-        grabZonePrefab = Resources.Load<GameObject>("Perso/GrabZone");
         playerUI = PlayerUI.Instance.gameObject;
 
 
@@ -751,6 +752,11 @@ public class MonPlayerController : Entity
         pitch = Mathf.Clamp(pitch, -minLookAngle, minLookAngle);
 
         playerCamera.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
+        if (copyCam != null)
+        {
+            copyCam.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
+        }
+
 
         transform.eulerAngles = new Vector3(0.0f, yaw, 0.0f);
     }

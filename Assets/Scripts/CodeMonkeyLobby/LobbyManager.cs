@@ -87,8 +87,10 @@ public class LobbyManager : MonoBehaviour
     {
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData("127.0.0.1", 7777);
         MultiplayerGameManager.Instance.soloMode = true;
-        MultiplayerGameManager.Instance.SetNbPlayersLobby(1);
+        MultiplayerGameManager.Instance.SetDataSolo();
         OnGameStarted?.Invoke(this, EventArgs.Empty);
+        NetworkManager.Singleton.OnClientConnectedCallback += MultiplayerGameManager.Instance.OnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback += MultiplayerGameManager.Instance.OnClientDisconnected;
         NetworkManager.Singleton.StartHost();
         Destroy(lobbyWindow);
         Destroy(gameObject);

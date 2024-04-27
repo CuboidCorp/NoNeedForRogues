@@ -52,7 +52,6 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         if (!AuthenticationService.Instance.IsSignedIn)
         {
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            MultiplayerGameManager.Instance.SetDataSolo(OwnerClientId, AuthenticationService.Instance.PlayerId);
         }
         servVivox = VivoxService.Instance;
         servVivox.LoggedIn += OnLoggedIn;

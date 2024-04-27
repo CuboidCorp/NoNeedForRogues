@@ -35213,8 +35213,8 @@ GameObject:
   - component: {fileID: 7323338146264068244}
   - component: {fileID: 9124650523428688196}
   - component: {fileID: 9124650523428688195}
-  - component: {fileID: 9124650523428688199}
   - component: {fileID: 9124650523428688194}
+  - component: {fileID: 9124650523428688199}
   - component: {fileID: 9124650523428688198}
   - component: {fileID: 9124650523428688197}
   m_Layer: 0
@@ -35348,6 +35348,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 10
+  isHeld:
+    m_InternalValue: 0
 --- !u!222 &9176838077164822742
 CanvasRenderer:
   m_ObjectHideFlags: 0

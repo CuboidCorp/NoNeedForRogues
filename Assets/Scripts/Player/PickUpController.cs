@@ -3,7 +3,7 @@ using UnityEngine;
 public class PickUpController : MonoBehaviour
 {
     [Header("Pick Up Settings")]
-    [SerializeField] public Transform holdArea;
+    public Transform holdArea;
     [SerializeField] private Camera playerCam;
     private GameObject heldObj;
     private Rigidbody heldObjRb;
@@ -28,6 +28,10 @@ public class PickUpController : MonoBehaviour
         {
             if (hit.collider.CompareTag("PickUp"))
             {
+                if(hit.collider.gameObject.GetComponent<WeightedObject>().isHeld.Value == true)
+                {
+                    return false;
+                }
                 PickupObject(hit.collider.gameObject);
                 return true;
             }
@@ -38,14 +42,17 @@ public class PickUpController : MonoBehaviour
     /// <summary>
     /// On pick up l'objet
     /// </summary>
-    /// <param name="gameObject">Le gameObject qu'on pick up</param>
-    private void PickupObject(GameObject gameObject)
+    /// <param name="objetRamasse">Le gameObject qu'on pick up</param>
+    private void PickupObject(GameObject objetRamasse)
     {
-        heldObj = gameObject;
+        heldObj = objetRamasse;
+        heldObj.GetComponent<WeightedObject>().isHeld.Value = true;
         heldObjRb = heldObj.GetComponent<Rigidbody>();
         heldObjRb.useGravity = false;
         heldObjRb.drag = 10;
         heldObjRb.constraints = RigidbodyConstraints.FreezeRotation;
+
+        heldObj.transform.SetParent(holdArea);
     }
 
     /// <summary>
@@ -58,9 +65,12 @@ public class PickUpController : MonoBehaviour
             return;
         }
         //On le drop
+        heldObj.GetComponent<WeightedObject>().isHeld.Value = false;
         heldObjRb.useGravity = true;
         heldObjRb.drag = 1;
         heldObjRb.constraints = RigidbodyConstraints.None;
+
+        heldObj.transform.parent = null;
 
         heldObjRb = null;
         heldObj = null;
@@ -75,10 +85,13 @@ public class PickUpController : MonoBehaviour
         {
             return;
         }
+        heldObj.GetComponent<WeightedObject>().isHeld.Value = false;
         heldObjRb.useGravity = true;
         heldObjRb.drag = 1;
         heldObjRb.constraints = RigidbodyConstraints.None;
         heldObjRb.AddForce(playerCam.transform.forward * throwForce, ForceMode.Impulse);
+        
+        heldObj.transform.parent = null;
 
         heldObjRb = null;
         heldObj = null;
@@ -97,11 +110,10 @@ public class PickUpController : MonoBehaviour
     /// </summary>
     private void MoveObject()
     {
-        if(Vector3.Distance(heldObj.transform.position, holdArea.position) > 0.1f)
+        if (Vector3.Distance(heldObj.transform.position, holdArea.position) > 0.1f)
         {
             Vector3 moveDirection = (holdArea.position - heldObj.transform.position);
-            heldObjRb.AddForce(pickupForce * moveDirection); //Le addForce est pas super fluide mais a moins de chance de passer à travers les murs
-            //heldObj.transform.position = Vector3.Lerp(heldObj.transform.position, holdArea.position, 0.1f); //Le lerp a un problème : il peut passer à travers les murs
+            heldObjRb.AddForce(pickupForce * moveDirection);
         }
         else
         {
