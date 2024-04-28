@@ -6,29 +6,49 @@ using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using ParrelSync;
+using TMPro;
 
 public class MainMenuUI : MonoBehaviour
 {
     [SerializeField] private GameObject mainMenu;
     [SerializeField] private GameObject popupMenu;
+    [SerializeField] private GameObject errorPopup;
     [SerializeField] private TMPro.TMP_InputField inputField;
 
     private string Profile = "Original";
 #if UNITY_EDITOR
     private string filename = "originalInfo.json";
 
+#else
+    private string filename = "playerInfo.json";
+#endif
 
     private void Start()
     {
-        if(ClonesManager.IsClone())
+#if UNITY_EDITOR
+        if (ClonesManager.IsClone())
         {
             filename = "cloneInfo.json";
             Profile = "Clone";
         }
-    }
-#else
-    private string filename = "playerInfo.json";
 #endif
+        GameObject errorHandler = GameObject.FindGameObjectWithTag("ErrorHandler");
+        if(errorHandler != null)
+        {
+            ShowError(errorHandler.GetComponent<ErrorHandler>().message);   
+            Destroy(errorHandler);
+        }
+    }
+
+    /// <summary>
+    /// Affiche un message d'erreur
+    /// </summary>
+    /// <param name="message">Le message à afficher</param>
+    private void ShowError(string message)
+    {
+        errorPopup.SetActive(true);
+        errorPopup.GetComponentInChildren<TMP_Text>().text = message;
+    }
 
     /// <summary>
     /// Lance le jeu si le joueur à un fichier de sauvegarde

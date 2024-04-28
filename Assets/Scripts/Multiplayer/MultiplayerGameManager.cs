@@ -7,6 +7,7 @@ using Unity.Services.Vivox;
 using Unity.Services.Vivox.AudioTaps;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Gère le mode multijoueur
@@ -48,10 +49,17 @@ public class MultiplayerGameManager : NetworkBehaviour
     //Les audio mixers pr les voix
     private AudioMixer mainMixer;
 
+    #region Prefabs
+    private GameObject copyCamPrefab;
+    private GameObject grabZonePrefab;
+    #endregion
+
     private void Awake()
     {
         Instance = this;
         mainMixer = Resources.Load<AudioMixer>("Audio/Main");
+        copyCamPrefab = Resources.Load<GameObject>("Perso/CopyCam");
+        grabZonePrefab = Resources.Load<GameObject>("Perso/GrabZone");
         authServicePlayerIds = new Dictionary<string, VivoxParticipant>();
     }
 
@@ -120,7 +128,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="id">Player id</param>
     public void OnClientConnected(ulong id)
     {
-        if (!IsHost)
+        if (!IsHost) //Le reste du comportement est donc uniquement géré par le serveur
         {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
@@ -131,7 +139,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         if(soloMode)
         {
             players[0] = GameObject.FindWithTag("Player");
-            SpawnGrabZoneServerRpc(id);
+            SpawnGrabZone(id);
         }
         else if (nbConnectedPlayers == nbTotalPlayers)
         {
@@ -139,10 +147,23 @@ public class MultiplayerGameManager : NetworkBehaviour
             SendGameInfoClientRpc(nbTotalPlayers, playersIds);
             foreach (ulong playerId in playersIds)
             {
-                SpawnGrabZoneServerRpc(playerId);
+                SpawnGrabZone(playerId);
             }
         }
         
+    }
+
+    private void Update()
+    {
+        if(NetworkManager.Singleton.ShutdownInProgress)
+        {
+            Debug.Log("Crash frere/Hote qui se tire");
+            NetworkManager.Singleton.Shutdown();
+            GameObject error = new("ErrorHandler");
+            error.AddComponent<ErrorHandler>();
+            error.GetComponent<ErrorHandler>().message = "T'as crash ou l'hote s'est tiré";
+            SceneManager.LoadSceneAsync("MenuPrincipal");
+        }
     }
 
     /// <summary>
@@ -178,12 +199,61 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     }
 
+    #region Utilitaires
+
+    /// <summary>
+    /// Permet de changer le parent d'un networkObject en passant par le serveur
+    /// </summary>
+    /// <param name="pere">Le nouveau père du network objet (Doit être un network object)</param>
+    /// <param name="fils">Le network object a reparenter</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void ChangeParentServerRpc(NetworkObjectReference pere, NetworkObjectReference fils)
+    {
+        ((GameObject)fils).transform.parent = ((GameObject)pere).transform;
+        ((GameObject)fils).transform.localPosition = Vector3.zero;
+    }
+
+    /// <summary>
+    /// Permet d'enlever un parent d'un networkObject en passant par le serveur
+    /// </summary>
+    /// <param name="fils">L'objet dont on veut enlever le parent</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void RemoveParentServerRpc(NetworkObjectReference fils)
+    {
+        ((GameObject)fils).transform.parent = null;
+    }
+
+    /// <summary>
+    /// Renvoie le gameobject du joueur correspondant à l'id netcode
+    /// </summary>
+    /// <param name="playerId">L'id netcode recherché</param>
+    /// <returns>Le gameObject du joueur ou null si erreur</returns>
+    public GameObject GetPlayerById(ulong playerId)
+    {
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if (playerIndex != -1)
+        {
+            return players[playerIndex];
+        }
+        return null;
+    }
+    #endregion
+
     /// <summary>
     /// When a player is disconnected
     /// </summary>
     /// <param name="id">Player id </param>
-    public void OnClientDisconnected(ulong id)
+    public void OnClientDisconnected(ulong id) //TODO : Handle la vrai deconnection genre message de deconnection
     {
+        if(NetworkManager.Singleton.LocalClientId == id) //Si on s'est fait deconnecter
+        {
+            Debug.Log("Disconnected");
+            NetworkManager.Singleton.Shutdown();
+            GameObject error = new("ErrorHandler");
+            error.AddComponent<ErrorHandler>();
+            error.GetComponent<ErrorHandler>().message = "Vous avez été déconnecté";
+            SceneManager.LoadSceneAsync("MenuPrincipal");
+        }
         nbConnectedPlayers--;
         if (nbConnectedPlayers < nbTotalPlayers)
         {
@@ -221,21 +291,6 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             authServicePlayerIds.Add(authServiceId, null);
         }
-    }
-
-    /// <summary>
-    /// Renvoie le gameobject du joueur correspondant à l'id netcode
-    /// </summary>
-    /// <param name="playerId">L'id netcode recherché</param>
-    /// <returns>Le gameObject du joueur ou null si erreur</returns>
-    public GameObject GetPlayerById(ulong playerId)
-    {
-        int playerIndex = Array.IndexOf(playersIds, playerId);
-        if (playerIndex != -1)
-        {
-            return players[playerIndex];
-        }
-        return null;
     }
 
     #region Vivox Utils
@@ -341,7 +396,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="playerId">L'id du joueur mort</param>
     public void SyncDeath(ulong playerId) //Appelé par le serveur
     {
-        SyncDeathClientRpc(playerId, GetIdsSaufJoueurs(playerId));
+        SyncDeathClientRpc(playerId, SendRpcToPlayersExcept(playerId));
     }
 
     /// <summary>
@@ -381,7 +436,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void SyncRespawnServerRpc(NetworkObjectReference obj,ulong playerId) //Appelé par le serveur
     {
         Destroy((GameObject)obj);
-        SyncResClientRpc(playerId, GetIdsSaufJoueurs(playerId));
+        SyncResClientRpc(playerId, SendRpcToPlayersExcept(playerId));
     }
 
     /// <summary>
@@ -426,7 +481,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="ragdollActive">L'etat de la ragdoll</param>
     public void SyncRagdoll(ulong playerId, bool ragdollActive)
     {
-        SyncRagdollClientRpc(playerId, ragdollActive, GetIdsSaufJoueurs(playerId));
+        SyncRagdollClientRpc(playerId, ragdollActive, SendRpcToPlayersExcept(playerId));
     }
 
     /// <summary>
@@ -471,7 +526,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// Renvoie les client rpc params pour envoyer une id à tous les autres joueurs
     /// </summary>
     /// <returns>La client rpc params avec les bonnes info</returns>
-    private ClientRpcParams GetIdAutresJoueurs()
+    private ClientRpcParams SendRpcToOtherPlayers()
     {
         ulong[] otherPlayerIds = playersIds.Where(id => id != OwnerClientId).ToArray();
 
@@ -489,7 +544,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     /// <param name="playerExclu">L'id du player exclu</param>
     /// <returns>La client rpc params avec les bonnes info</returns>
-    private ClientRpcParams GetIdsSaufJoueurs(ulong playerExclu)
+    private ClientRpcParams SendRpcToPlayersExcept(ulong playerExclu)
     {
         ulong[] otherPlayerIds = playersIds.Where(id => id != playerExclu).ToArray();
 
@@ -498,6 +553,22 @@ public class MultiplayerGameManager : NetworkBehaviour
             Send = new ClientRpcSendParams
             {
                 TargetClientIds = otherPlayerIds
+            }
+        };
+    }
+
+    /// <summary>
+    /// Renvoie les client rpc params pour envoyer une rpc à un joueur
+    /// </summary>
+    /// <param name="player">Le joueur a qui envoyer la rpc</param>
+    /// <returns>La client RPC params avec les bonnes infos</returns>
+    private ClientRpcParams SendRpcToPlayer(ulong player)
+    {
+        return new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = new ulong[] { player }
             }
         };
     }
@@ -523,40 +594,41 @@ public class MultiplayerGameManager : NetworkBehaviour
     #endregion
 
     #region GrabZone
-
-
     /// <summary>
     /// ServerRpc pr spawn la grab zone
     /// </summary>
-    /// <param name="OwnerId"></param>
-    [ServerRpc(RequireOwnership = false)]
-    private void SpawnGrabZoneServerRpc(ulong OwnerId)
+    /// <param name="ownerId">L'id de l'owner de la grabzone</param>
+    private void SpawnGrabZone(ulong ownerId)
     {
-        GameObject copyCam = new("CopyCam" + OwnerId);
-        copyCam.AddComponent<NetworkObject>();
-        copyCam.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerId);
-        GameObject grabZone = new("GrabZone" + OwnerId);
-        grabZone.AddComponent<NetworkObject>();
-        grabZone.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerId);
+        GameObject copyCam = Instantiate(copyCamPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        copyCam.name = "CopyCam" + ownerId;
+        copyCam.GetComponent<NetworkObject>().SpawnWithOwnership(ownerId);
+        GameObject grabZone = Instantiate(grabZonePrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        grabZone.name = "GrabZone" + ownerId;
+        grabZone.GetComponent<NetworkObject>().SpawnWithOwnership(ownerId);
         grabZone.transform.parent = copyCam.transform;
         grabZone.transform.localPosition = new Vector3(0, 0, 1.5f);
-        ChangeParentClientRpc(copyCam);
-    }
 
-    [ClientRpc]
-    private void ChangeParentClientRpc(NetworkObjectReference networkRef)
-    {
-        GameObject copyCam = (GameObject)networkRef;
-        ulong ownerId = copyCam.GetComponent<NetworkObject>().OwnerClientId;
         GameObject player = GetPlayerById(ownerId);
         copyCam.transform.parent = player.transform;
         copyCam.transform.localPosition = new Vector3(0, 1.6f, -.1f);
-        if (OwnerClientId == ownerId)
-        {
-            //On met la grab zone dans le playerController
-            player.GetComponent<MonPlayerController>().copyCam = copyCam;
-            player.GetComponent<PickUpController>().holdArea = copyCam.transform.GetChild(0);
-        }
+        ChangeParentClientRpc(copyCam, SendRpcToPlayer(ownerId));
+    }
+
+    [ClientRpc]
+    private void ChangeParentClientRpc(NetworkObjectReference networkRef,ClientRpcParams clientRpcParams)
+    {
+        GameObject copyCam = (GameObject)networkRef;
+        
+        ulong ownerId = copyCam.GetComponent<NetworkObject>().OwnerClientId;
+        copyCam.name = "CopyCam" + ownerId;
+        copyCam.transform.localPosition = new Vector3(0, 1.6f, -.1f);
+        copyCam.transform.GetChild(0).localPosition = new Vector3(0, 0, 1.5f);
+        copyCam.transform.GetChild(0).gameObject.name = "GrabZone" + ownerId;
+        GameObject player = GetPlayerById(ownerId);
+        //On met la grab zone dans le playerController
+        player.GetComponent<MonPlayerController>().copyCam = copyCam;
+        player.GetComponent<PickUpController>().holdArea = copyCam.transform.GetChild(0);
     }
     #endregion
 

@@ -15,6 +15,7 @@ TagManager:
   - Temp
   - Entity
   - PickUp
+  - ErrorHandler
   layers:
   - Default
   - TransparentFX

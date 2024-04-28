@@ -3,6 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 [DisallowMultipleComponent]
 public class MonPlayerController : Entity
@@ -807,5 +808,44 @@ public class MonPlayerController : Entity
     }
 
     #endregion
+
+    #region Menu Pause
+
+    /// <summary>
+    /// Ouvre le menu de pause
+    /// </summary>
+    private void OpenPauseMenu()
+    {
+        //TODO : Pause Menu
+
+
+    }
+
+    /// <summary>
+    /// Ferme le menu de pause
+    /// </summary>
+    private void ClosePauseMenu()
+    {
+
+    }
+
+    /// <summary>
+    /// Permet de se déconnecter du jeu et de revenir au menu principal
+    /// </summary>
+    public void Disconnect()
+    {
+        NetworkManager.Singleton.Shutdown();
+        SceneManager.LoadScene("MenuPrincipal");
+    }
+
+    /// <summary>
+    /// Fonction qui gère la logique de quitter le jeu (Alt+F4)
+    /// </summary>
+    private void QuitGame()
+    {
+        NetworkManager.Singleton.Shutdown();
+    }
+    #endregion
+
 
 }

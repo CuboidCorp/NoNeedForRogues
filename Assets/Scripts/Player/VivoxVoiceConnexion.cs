@@ -104,6 +104,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
             MultiplayerGameManager.Instance.AddParamToParticipantAudioSource(vivoxParticipant.ParticipantTapAudioSource);
             Transform playerTransform = MultiplayerGameManager.Instance.GetPlayerTransformFromAuthId(vivoxParticipant.PlayerId);
             tap.transform.SetParent(playerTransform); //Pas de null check = Programmation de gros porc ici flemme
+            tap.transform.localPosition = new Vector3(0,1.6f,0);
             MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant); 
         }
         

@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class PickUpController : MonoBehaviour
@@ -46,13 +47,10 @@ public class PickUpController : MonoBehaviour
     private void PickupObject(GameObject objetRamasse)
     {
         heldObj = objetRamasse;
-        heldObj.GetComponent<WeightedObject>().isHeld.Value = true;
+        heldObj.GetComponent<WeightedObject>().ChangeState(true);
         heldObjRb = heldObj.GetComponent<Rigidbody>();
-        heldObjRb.useGravity = false;
-        heldObjRb.drag = 10;
-        heldObjRb.constraints = RigidbodyConstraints.FreezeRotation;
-
-        heldObj.transform.SetParent(holdArea);
+        SetHeldObjRbParamsServerRpc(heldObj, true);
+        MultiplayerGameManager.Instance.ChangeParentServerRpc(holdArea.gameObject, heldObj);
     }
 
     /// <summary>
@@ -65,12 +63,10 @@ public class PickUpController : MonoBehaviour
             return;
         }
         //On le drop
-        heldObj.GetComponent<WeightedObject>().isHeld.Value = false;
-        heldObjRb.useGravity = true;
-        heldObjRb.drag = 1;
-        heldObjRb.constraints = RigidbodyConstraints.None;
+        heldObj.GetComponent<WeightedObject>().ChangeState(false);
+        SetHeldObjRbParamsServerRpc(heldObj, false);
 
-        heldObj.transform.parent = null;
+        MultiplayerGameManager.Instance.RemoveParentServerRpc(heldObj);
 
         heldObjRb = null;
         heldObj = null;
@@ -85,16 +81,39 @@ public class PickUpController : MonoBehaviour
         {
             return;
         }
-        heldObj.GetComponent<WeightedObject>().isHeld.Value = false;
-        heldObjRb.useGravity = true;
-        heldObjRb.drag = 1;
-        heldObjRb.constraints = RigidbodyConstraints.None;
+        heldObj.GetComponent<WeightedObject>().ChangeState(false);
+        SetHeldObjRbParamsServerRpc(heldObj, false);
         heldObjRb.AddForce(playerCam.transform.forward * throwForce, ForceMode.Impulse);
-        
-        heldObj.transform.parent = null;
+
+        MultiplayerGameManager.Instance.RemoveParentServerRpc(heldObj);
 
         heldObjRb = null;
         heldObj = null;
+    }
+
+    /// <summary>
+    /// Envoie une serverRpc pour changer les paramètres du rigidbody de l'objet tenu
+    /// </summary>
+    /// <param name="networkObjectReference">La réference à l'objet tenu</param>
+    /// <param name="estTenu">Si l'objet est tenu ou non</param>
+    [ServerRpc(RequireOwnership = false)]
+    private void SetHeldObjRbParamsServerRpc(NetworkObjectReference networkObjectReference, bool estTenu)
+    {
+        Rigidbody rb = ((GameObject)networkObjectReference).GetComponent<Rigidbody>();
+        if (estTenu)
+        {
+            rb.useGravity = false;
+            rb.drag = 10;
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+        else
+        {
+            heldObjRb.useGravity = true;
+            heldObjRb.drag = 1;
+            heldObjRb.constraints = RigidbodyConstraints.None;
+        }
+        
+        
     }
 
     private void Update()
