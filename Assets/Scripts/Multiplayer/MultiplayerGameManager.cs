@@ -248,7 +248,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         if(NetworkManager.Singleton.LocalClientId == id) //Si on s'est fait deconnecter
         {
-            Debug.Log("Disconnected");
             Cursor.lockState = CursorLockMode.None;
             NetworkManager.Singleton.Shutdown();
             GameObject error = new("ErrorHandler");
@@ -386,6 +385,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         audioSource.maxDistance = VivoxVoiceConnexion.maxDistance;
         audioSource.minDistance = VivoxVoiceConnexion.minAudibleDistance;
+        audioSource.rolloffMode = AudioRolloffMode.Linear;
         audioSource.spatialBlend = 1;
     }
 

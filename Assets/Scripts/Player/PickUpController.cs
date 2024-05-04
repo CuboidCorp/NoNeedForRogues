@@ -50,6 +50,7 @@ public class PickUpController : NetworkBehaviour
         heldObj.GetComponent<WeightedObject>().ChangeState(true);
         heldObjRb = heldObj.GetComponent<Rigidbody>();
         SetHeldObjRbParamsServerRpc(heldObj, true);
+        heldObjRb.isKinematic = false;
         MultiplayerGameManager.Instance.ChangeParentServerRpc(holdArea.gameObject, heldObj);
     }
 
@@ -100,7 +101,6 @@ public class PickUpController : NetworkBehaviour
     private void SetHeldObjRbParamsServerRpc(NetworkObjectReference networkObjectReference, bool estTenu)
     {
         Rigidbody rb = ((GameObject)networkObjectReference).GetComponent<Rigidbody>();
-        Debug.Log("Changer RB");
         if (estTenu)
         {
             rb.useGravity = false;
@@ -109,9 +109,9 @@ public class PickUpController : NetworkBehaviour
         }
         else
         {
-            heldObjRb.useGravity = true;
-            heldObjRb.drag = 1;
-            heldObjRb.constraints = RigidbodyConstraints.None;
+            rb.useGravity = true;
+            rb.drag = 1;
+            rb.constraints = RigidbodyConstraints.None;
         }
         
         
