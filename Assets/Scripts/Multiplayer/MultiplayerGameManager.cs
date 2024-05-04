@@ -158,6 +158,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         if(NetworkManager.Singleton.ShutdownInProgress)
         {
             Debug.Log("Crash frere/Hote qui se tire");
+            Cursor.lockState = CursorLockMode.None;
             NetworkManager.Singleton.Shutdown();
             GameObject error = new("ErrorHandler");
             error.AddComponent<ErrorHandler>();
@@ -248,6 +249,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         if(NetworkManager.Singleton.LocalClientId == id) //Si on s'est fait deconnecter
         {
             Debug.Log("Disconnected");
+            Cursor.lockState = CursorLockMode.None;
             NetworkManager.Singleton.Shutdown();
             GameObject error = new("ErrorHandler");
             error.AddComponent<ErrorHandler>();
@@ -383,6 +385,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void AddParamToParticipantAudioSource(AudioSource audioSource)
     {
         audioSource.maxDistance = VivoxVoiceConnexion.maxDistance;
+        audioSource.minDistance = VivoxVoiceConnexion.minAudibleDistance;
         audioSource.spatialBlend = 1;
     }
 

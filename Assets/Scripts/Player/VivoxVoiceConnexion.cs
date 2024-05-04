@@ -17,11 +17,11 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <summary>
     /// La distance max pr entendre qqn
     /// </summary>
-    public const int maxDistance = 32;
+    public const int maxDistance = 64;
     /// <summary>
     /// La distance min pr entendre a 100% qqn
     /// </summary>
-    [SerializeField] private int minAudibleDistance = 5;
+    public const int minAudibleDistance = 20;
 
     /// <summary>
     /// ???????? Je sais pas en vrai et flemme

@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class PickUpController : MonoBehaviour
+public class PickUpController : NetworkBehaviour
 {
     [Header("Pick Up Settings")]
     public Transform holdArea;
@@ -100,6 +100,7 @@ public class PickUpController : MonoBehaviour
     private void SetHeldObjRbParamsServerRpc(NetworkObjectReference networkObjectReference, bool estTenu)
     {
         Rigidbody rb = ((GameObject)networkObjectReference).GetComponent<Rigidbody>();
+        Debug.Log("Changer RB");
         if (estTenu)
         {
             rb.useGravity = false;

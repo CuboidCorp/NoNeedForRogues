@@ -12,7 +12,6 @@ public class MonPlayerController : Entity
     private Rigidbody rb;
     private PlayerControls controls;
     private PlayerControls.PlayerActions playerActions;
-    private PlayerControls.UIActions uiActions;
 
     [SerializeField] private int seed = 0;
 
@@ -30,7 +29,6 @@ public class MonPlayerController : Entity
     [HideInInspector] public Camera playerCamera; //TODO : Voir pk c'est public
     [HideInInspector] public GameObject copyCam; //Le parent de la grabzone
     [SerializeField] private GameObject cameraPivot; //Le gameObject de la camera
-    private GameObject playerUI; //Le gameObject de l'UI du joueur
 
     [SerializeField] private bool invertCamera = false;
     [SerializeField] private float mouseSensitivity = 100f;
@@ -83,7 +81,6 @@ public class MonPlayerController : Entity
     {
         controls = new PlayerControls();
         playerActions = controls.Player;
-        uiActions = controls.UI;
 
         playerActions.Move.performed += ctx => OnMove(ctx);
         playerActions.Move.canceled += ctx => moveInput = Vector2.zero;
@@ -111,20 +108,17 @@ public class MonPlayerController : Entity
         playerActions.Emote9.started += ctx => StartEmote9();
         playerActions.Emote10.started += ctx => StartEmote10();
 
+        playerActions.Pause.performed += ctx => PlayerUIManager.Instance.ShowPauseMenu(playerActions);
+
         animator = transform.GetComponentInChildren<Animator>();
-
         playerCamera = cameraPivot.GetComponent<Camera>();
-
         vivox = transform.GetChild(transform.childCount - 1).gameObject;
         voiceConnexion = vivox.GetComponent<VivoxVoiceConnexion>();
 
         //On recupere le prefab de la ragdoll
         ghostPlayerPrefab = Resources.Load<GameObject>("Perso/GhostPlayer");
-        playerUI = PlayerUI.Instance.gameObject;
-
 
         //On randomize le joueur
-
         if (seed == 0)
         {
             seed = Random.Range(0, 100000);
@@ -145,7 +139,7 @@ public class MonPlayerController : Entity
                 gameObject.tag = "Player";
             }
 
-            playerUI.SetActive(true);
+            PlayerUIManager.Instance.AfficherPlayerUi();
 
             ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
             transform.position = new Vector3(0, 1, 0);
@@ -198,8 +192,6 @@ public class MonPlayerController : Entity
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-
-        Cursor.lockState = CursorLockMode.Locked;
 
         moveSpeed = walkSpeed;
         playerCamera.fieldOfView = fov;
@@ -343,16 +335,16 @@ public class MonPlayerController : Entity
         {
             if(hit.collider.TryGetComponent(out Interactable interactable))
             {
-                playerUI.GetComponent<PlayerUI>().ShowInteractText(interactable.GetInteractText());
+                PlayerUIManager.Instance.ShowInteractText(interactable.GetInteractText());
             }
             else
             {
-                playerUI.GetComponent<PlayerUI>().HideInteractText();
+                PlayerUIManager.Instance.HideInteractText();
             }
         }
         else
         {
-            playerUI.GetComponent<PlayerUI>().HideInteractText();
+            PlayerUIManager.Instance.HideInteractText();
         }
     }
 
@@ -808,44 +800,5 @@ public class MonPlayerController : Entity
     }
 
     #endregion
-
-    #region Menu Pause
-
-    /// <summary>
-    /// Ouvre le menu de pause
-    /// </summary>
-    private void OpenPauseMenu()
-    {
-        //TODO : Pause Menu
-
-
-    }
-
-    /// <summary>
-    /// Ferme le menu de pause
-    /// </summary>
-    private void ClosePauseMenu()
-    {
-
-    }
-
-    /// <summary>
-    /// Permet de se déconnecter du jeu et de revenir au menu principal
-    /// </summary>
-    public void Disconnect()
-    {
-        NetworkManager.Singleton.Shutdown();
-        SceneManager.LoadScene("MenuPrincipal");
-    }
-
-    /// <summary>
-    /// Fonction qui gère la logique de quitter le jeu (Alt+F4)
-    /// </summary>
-    private void QuitGame()
-    {
-        NetworkManager.Singleton.Shutdown();
-    }
-    #endregion
-
 
 }
