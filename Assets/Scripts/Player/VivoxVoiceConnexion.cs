@@ -1,4 +1,4 @@
-using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Services.Authentication;
@@ -28,19 +28,20 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     [SerializeField] private float audioFadeIntensity = 1.0f;
 
+    private readonly List<VivoxParticipant> participants = new();
+
     #endregion
-    [SerializeField] private float updateInterval = .5f; // en s
 
-    private IEnumerator UpdateVivox3DPos()
-    {
-        while (true)
-        {
-            servVivox.Set3DPosition(gameObject, channelName);
-            yield return new WaitForSeconds(updateInterval);
-        }
-    }
-
-    #region Vivox
+    //private void Update()
+    //{
+    //    foreach (VivoxParticipant participant in participants)
+    //    {
+    //        if (participant.SpeechDetected)
+    //        {
+    //            Debug.Log("Speech detected from " + participant.PlayerId); //TODO stocker le Go du joueur et activer l'icon de speech
+    //        }
+    //    }
+    //}
 
     /// <summary>
     /// Initialisation de Vivox
@@ -72,7 +73,6 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         Channel3DProperties channel3DProperties = new(maxDistance, minAudibleDistance, audioFadeIntensity, AudioFadeModel.InverseByDistance);
         ChannelOptions channelOptions = null;
         await servVivox.JoinPositionalChannelAsync(channelName, chat, channel3DProperties, channelOptions);
-        StartCoroutine(UpdateVivox3DPos());
     }
 
     /// <summary>
@@ -100,6 +100,8 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         if(vivoxParticipant.PlayerId != AuthenticationService.Instance.PlayerId)
         {
+            participants.Add(vivoxParticipant);
+            //vivoxParticipant.SpeechDetected
             GameObject tap = vivoxParticipant.CreateVivoxParticipantTap("Tap "+vivoxParticipant.PlayerId); 
             MultiplayerGameManager.Instance.AddParamToParticipantAudioSource(vivoxParticipant.ParticipantTapAudioSource);
             Transform playerTransform = MultiplayerGameManager.Instance.GetPlayerTransformFromAuthId(vivoxParticipant.PlayerId);
@@ -116,6 +118,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <param name="vivoxParticipant">Le participant qui se deconnecte</param>
     private void ParticipantRemoved(VivoxParticipant vivoxParticipant)
     {
+        participants.Remove(vivoxParticipant);
         vivoxParticipant.DestroyVivoxParticipantTap();
     }
 
@@ -124,9 +127,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     private async void OnLoggedOut()
     {
-        StopAllCoroutines();
         await servVivox.LeaveAllChannelsAsync();
         await servVivox.LogoutAsync();
     }
-    #endregion
 }

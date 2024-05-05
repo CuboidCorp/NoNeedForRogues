@@ -46,6 +46,8 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     private GameObject[] players;
 
+    private string[] playerNames;
+
     //Les audio mixers pr les voix
     private AudioMixer mainMixer;
 
@@ -77,7 +79,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     public override void OnNetworkSpawn()
     {
-        SendPlayerInfoServerRpc(OwnerClientId, AuthenticationService.Instance.PlayerId);
+        SendPlayerInfoServerRpc(OwnerClientId, AuthenticationService.Instance.PlayerId, FindObjectOfType<DataHolder>().PlayerInfo.playerName);
     }
 
     /// <summary>
@@ -88,6 +90,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         nbTotalPlayers = nb;
         playersIds = new ulong[nb];
+        playerNames = new string[nb];
     }
 
     /// <summary>
@@ -99,6 +102,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         playersStates = new PlayerState[1];
         playersStates[0] = PlayerState.Alive;
         players = new GameObject[1];
+        playerNames = new string[1];
         gameCanStart = true;
     }
 
@@ -139,12 +143,17 @@ public class MultiplayerGameManager : NetworkBehaviour
         if(soloMode)
         {
             players[0] = GameObject.FindWithTag("Player");
+            playerNames[0] = "SOLO";
             SpawnGrabZone(id);
         }
         else if (nbConnectedPlayers == nbTotalPlayers)
         {
             gameCanStart = true;
-            SendGameInfoClientRpc(nbTotalPlayers, playersIds);
+            NetworkStringArray stringArray = new()
+            {
+                Array = playerNames
+            };
+            SendGameInfoClientRpc(nbTotalPlayers, playersIds, stringArray);
             foreach (ulong playerId in playersIds)
             {
                 SpawnGrabZone(playerId);
@@ -173,11 +182,12 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="nbMaxPlayers">Le nb de joueurs</param>
     /// <param name="allIds">Les id de tt les joueurs</param>
     [ClientRpc]
-    private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds)
+    private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds, NetworkStringArray allNames)
     {
         nbTotalPlayers = nbMaxPlayers;
         playersIds = allIds;
         players = new GameObject[nbMaxPlayers];
+        playerNames = allNames.Array;
         playersStates = new PlayerState[nbMaxPlayers];
         for (int i = 0; i < nbMaxPlayers; i++)
         {
@@ -192,6 +202,7 @@ public class MultiplayerGameManager : NetworkBehaviour
                 {
                     playerTemp.tag = "Player";
                     playerTemp.name = "Player" + id;
+
                     players[cpt] = playerTemp;
                     cpt++;
                 }
@@ -249,6 +260,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         if(NetworkManager.Singleton.LocalClientId == id) //Si on s'est fait deconnecter
         {
             Cursor.lockState = CursorLockMode.None;
+            MonPlayerController.instanceLocale.gameObject.GetComponent<PickUpController>().DropObject();
             NetworkManager.Singleton.Shutdown();
             GameObject error = new("ErrorHandler");
             error.AddComponent<ErrorHandler>();
@@ -263,21 +275,13 @@ public class MultiplayerGameManager : NetworkBehaviour
     }
 
     /// <summary>
-    /// Test qd on parle 
-    /// TODO : Pr utiliser faudrait le mettre dans une boucle update avec affichage d'une icone qd on parle
-    /// </summary>
-    public void TestSpeech()
-    {
-        Debug.Log("Speech");
-    }
-
-    /// <summary>
     /// Envoie les infos du joueur courant au serveur
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
-    public void SendPlayerInfoServerRpc(ulong ownerId, string authId)
+    public void SendPlayerInfoServerRpc(ulong ownerId, string authId, string playerName)
     {
         AddAuthPlayerId(ownerId, authId);
+        AddPlayerName(ownerId, playerName);
     }
 
     /// <summary>
@@ -293,6 +297,19 @@ public class MultiplayerGameManager : NetworkBehaviour
             authServicePlayerIds.Add(authServiceId, null);
         }
     }
+    /// <summary>
+    /// Ajoute un player name au serveur
+    /// </summary>
+    /// <param name="playerId"></param>
+    /// <param name="playerName"></param>
+    private void AddPlayerName(ulong playerId, string playerName)
+    {
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if (playerIndex != -1)
+        {
+            playerNames[playerIndex] = playerName;
+        }
+    }   
 
     #region Vivox Utils
 

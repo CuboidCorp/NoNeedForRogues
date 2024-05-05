@@ -13,6 +13,8 @@ public class MonPlayerController : Entity
     private PlayerControls controls;
     private PlayerControls.PlayerActions playerActions;
 
+    [HideInInspector] public static MonPlayerController instanceLocale;
+
     [SerializeField] private int seed = 0;
 
     private Animator animator;
@@ -22,6 +24,8 @@ public class MonPlayerController : Entity
     private GameObject vivox;
 
     private Vector3 lastCheckPoint = new(0, 1, 0);//Le dernier checkpoint où le joueur a été
+
+    [SerializeField] private GameObject playerUI;
 
     #region Camera Variables
 
@@ -138,7 +142,7 @@ public class MonPlayerController : Entity
             {
                 gameObject.tag = "Player";
             }
-
+            instanceLocale = this;
             PlayerUIManager.Instance.AfficherPlayerUi();
 
             ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
@@ -346,6 +350,11 @@ public class MonPlayerController : Entity
         {
             PlayerUIManager.Instance.HideInteractText();
         }
+    }
+
+    private void CheckSpeaking()
+    {
+        
     }
 
     #region Degats et Mort
@@ -801,4 +810,11 @@ public class MonPlayerController : Entity
 
     #endregion
 
+    /// <summary>
+    /// On gère si qqn quitte le jeu
+    /// </summary>
+    public void OnApplicationQuit()
+    {
+        NetworkManager.Singleton.Shutdown();
+    }
 }

@@ -111,6 +111,7 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void Disconnect()
     {
+        MonPlayerController.instanceLocale.gameObject.GetComponent<PickUpController>().DropObject();
         NetworkManager.Singleton.Shutdown();
         SceneManager.LoadScene("MenuPrincipal");
     }
