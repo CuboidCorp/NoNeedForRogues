@@ -1,9 +1,9 @@
 using System.Collections;
 using Unity.Netcode;
+using Unity.Services.Authentication;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
-using UnityEngine.SceneManagement;
 
 [DisallowMultipleComponent]
 public class MonPlayerController : Entity
@@ -116,8 +116,8 @@ public class MonPlayerController : Entity
 
         animator = transform.GetComponentInChildren<Animator>();
         playerCamera = cameraPivot.GetComponent<Camera>();
-        vivox = transform.GetChild(transform.childCount - 1).gameObject;
-        voiceConnexion = vivox.GetComponent<VivoxVoiceConnexion>();
+        voiceConnexion = transform.GetComponentInChildren<VivoxVoiceConnexion>();
+        vivox = voiceConnexion.gameObject;
 
         //On recupere le prefab de la ragdoll
         ghostPlayerPrefab = Resources.Load<GameObject>("Perso/GhostPlayer");
@@ -136,6 +136,7 @@ public class MonPlayerController : Entity
     {
         gameObject.GetComponent<PlayerRandomizer>().Randomize(seed);
         DisableRagdoll();
+        Debug.Log("MonPlayerCOntroller " + IsOwner);
         if (IsOwner) //Quand on est le proprietaire on passe en mode premiere personne et on desactive toutes les parties du corps sauf les mains
         {
             if (MultiplayerGameManager.Instance.soloMode)
@@ -143,12 +144,16 @@ public class MonPlayerController : Entity
                 gameObject.tag = "Player";
             }
             instanceLocale = this;
+
             PlayerUIManager.Instance.AfficherPlayerUi();
 
             ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
             transform.position = new Vector3(0, 1, 0);
 
             await voiceConnexion.InitVivox();
+
+            string name = FindObjectOfType<DataHolder>() != null ? FindObjectOfType<DataHolder>().PlayerInfo.playerName : "ERREUR";
+            MultiplayerGameManager.Instance.SendPlayerInfoServerRpc(OwnerClientId, AuthenticationService.Instance.PlayerId, name);
 
         }
         else //Si on est pas le propriétaire du joueur, on desactive le script
@@ -335,9 +340,9 @@ public class MonPlayerController : Entity
     /// </summary>
     private void CheckInteract()
     {
-        if(Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDistance))
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDistance))
         {
-            if(hit.collider.TryGetComponent(out Interactable interactable))
+            if (hit.collider.TryGetComponent(out Interactable interactable))
             {
                 PlayerUIManager.Instance.ShowInteractText(interactable.GetInteractText());
             }
@@ -354,7 +359,7 @@ public class MonPlayerController : Entity
 
     private void CheckSpeaking()
     {
-        
+
     }
 
     #region Degats et Mort
@@ -410,7 +415,7 @@ public class MonPlayerController : Entity
         gameObject.GetComponent<PickUpController>().DropObject();
         gameObject.GetComponent<PickUpController>().enabled = false;
         StopEmotes();
-        
+
         gameObject.tag = "Ragdoll";
         ChangerRenderCorps(ShadowCastingMode.On);
 
@@ -444,7 +449,7 @@ public class MonPlayerController : Entity
     {
         GameObject ghostObj = (GameObject)networkRef;
         ghostObj.name = "GhostPlayer" + ghostObj.GetComponent<NetworkObject>().OwnerClientId;
-        if(ghostObj.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
+        if (ghostObj.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
         {
             OnGhostSpawn();
         }
@@ -453,7 +458,7 @@ public class MonPlayerController : Entity
             MultiplayerGameManager.Instance.MovePlayerTapToGhost(ghostObj.GetComponent<NetworkObject>().OwnerClientId);
             ghostObj.transform.GetChild(0).gameObject.SetActive(false);
             ghostObj.GetComponent<GhostController>().enabled = false;
-        } 
+        }
     }
 
     /// <summary>
@@ -461,7 +466,7 @@ public class MonPlayerController : Entity
     /// </summary>
     private void OnGhostSpawn()
     {
-        GameObject ghost = GameObject.Find("GhostPlayer"+OwnerClientId);
+        GameObject ghost = GameObject.Find("GhostPlayer" + OwnerClientId);
         ghost.GetComponent<GhostController>().root = gameObject;
         ghost.GetComponent<GhostController>().vivox = vivox;
         vivox.transform.parent = ghost.transform;
@@ -797,7 +802,7 @@ public class MonPlayerController : Entity
 #if UNITY_EDITOR
         Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * interactDist, Color.yellow, 1f);
 #endif
-        Debug.Log("Interact spell" +interactDist);
+        Debug.Log("Interact spell" + interactDist);
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDist))
         {
             Debug.Log("Hit : " + hit.collider.name);

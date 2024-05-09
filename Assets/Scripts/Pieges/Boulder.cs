@@ -60,7 +60,7 @@ public class Boulder : MonoBehaviour
         {
             collision.gameObject.GetComponent<MonPlayerController>().Damage(damage);
         }
-        if(collision.gameObject.CompareTag("Wall"))
+        if (collision.gameObject.CompareTag("Wall"))
         {
             //Debug.Log("Wall");
             Destroy(gameObject);
@@ -79,7 +79,7 @@ public class Boulder : MonoBehaviour
     {
         if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 1f))
         {
-            if(hit.collider.CompareTag("Floor"))
+            if (hit.collider.CompareTag("Floor"))
             {
                 Launch();
             }

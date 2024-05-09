@@ -49,7 +49,8 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <returns>Quand l'initialisation est terminée</returns>
     public async Task InitVivox()
     {
-        await UnityServices.InitializeAsync(); 
+        Debug.Log("Init VIvox");
+        await UnityServices.InitializeAsync();
         if (!AuthenticationService.Instance.IsSignedIn)
         {
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
@@ -98,18 +99,18 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <param name="vivoxParticipant">Le participant ajouté</param>
     private void ParticipantAdded(VivoxParticipant vivoxParticipant)
     {
-        if(vivoxParticipant.PlayerId != AuthenticationService.Instance.PlayerId)
+        if (vivoxParticipant.PlayerId != AuthenticationService.Instance.PlayerId)
         {
             participants.Add(vivoxParticipant);
             //vivoxParticipant.SpeechDetected
-            GameObject tap = vivoxParticipant.CreateVivoxParticipantTap("Tap "+vivoxParticipant.PlayerId); 
+            GameObject tap = vivoxParticipant.CreateVivoxParticipantTap("Tap " + vivoxParticipant.PlayerId);
             MultiplayerGameManager.Instance.AddParamToParticipantAudioSource(vivoxParticipant.ParticipantTapAudioSource);
             Transform playerTransform = MultiplayerGameManager.Instance.GetPlayerTransformFromAuthId(vivoxParticipant.PlayerId);
             tap.transform.SetParent(playerTransform); //Pas de null check = Programmation de gros porc ici flemme
-            tap.transform.localPosition = new Vector3(0,1.6f,0);
-            MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant); 
+            tap.transform.localPosition = new Vector3(0, 1.6f, 0);
+            MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant);
         }
-        
+
     }
 
     /// <summary>

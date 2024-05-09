@@ -7575,6 +7575,7 @@ MonoBehaviour:
   poids: 20
   seed: 0
   interactDistance: 5
+  playerUI: {fileID: 1230768740262115316}
   playerCamera: {fileID: 567784544684724839}
   copyCam: {fileID: 0}
   cameraPivot: {fileID: 7823187933646535831}
@@ -10576,7 +10577,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioFadeIntensity: 1
-  updateInterval: 0.5
 --- !u!1 &8624056060723373383
 GameObject:
   m_ObjectHideFlags: 0

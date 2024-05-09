@@ -39,7 +39,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <summary>
     /// Les ids des joueurs pr l'authentification (Utilisé pr vivox)
     /// </summary>
-    private Dictionary<string,VivoxParticipant> authServicePlayerIds; 
+    private Dictionary<string, VivoxParticipant> authServicePlayerIds;
 
     /// <summary>
     /// Les gameobjects des joueurs
@@ -75,14 +75,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     }
 
     /// <summary>
-    /// Quand le gameManager a bien load
-    /// </summary>
-    public override void OnNetworkSpawn()
-    {
-        SendPlayerInfoServerRpc(OwnerClientId, AuthenticationService.Instance.PlayerId, FindObjectOfType<DataHolder>().PlayerInfo.playerName);
-    }
-
-    /// <summary>
     /// Set le nombre de joueurs dans le lobby qui vont jouer
     /// </summary>
     /// <param name="nb">Le nombre de joueur</param>
@@ -115,7 +107,7 @@ public class MultiplayerGameManager : NetworkBehaviour
 
         foreach (GameObject tap in audioTaps)
         {
-            if(soloMode)
+            if (soloMode)
             {
                 tap.GetComponent<VivoxAudioTap>().ChannelName = VivoxVoiceConnexion.echoChannelName;
             }
@@ -140,7 +132,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
         playersIds[nbConnectedPlayers] = id;
         nbConnectedPlayers++;
-        if(soloMode)
+        if (soloMode)
         {
             players[0] = GameObject.FindWithTag("Player");
             playerNames[0] = "SOLO";
@@ -159,12 +151,12 @@ public class MultiplayerGameManager : NetworkBehaviour
                 SpawnGrabZone(playerId);
             }
         }
-        
+
     }
 
     private void Update()
     {
-        if(NetworkManager.Singleton.ShutdownInProgress)
+        if (NetworkManager.Singleton.ShutdownInProgress)
         {
             Debug.Log("Crash frere/Hote qui se tire");
             Cursor.lockState = CursorLockMode.None;
@@ -257,7 +249,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="id">Player id </param>
     public void OnClientDisconnected(ulong id) //TODO : Handle la vrai deconnection genre message de deconnection
     {
-        if(NetworkManager.Singleton.LocalClientId == id) //Si on s'est fait deconnecter
+        if (NetworkManager.Singleton.LocalClientId == id) //Si on s'est fait deconnecter
         {
             Cursor.lockState = CursorLockMode.None;
             MonPlayerController.instanceLocale.gameObject.GetComponent<PickUpController>().DropObject();
@@ -309,7 +301,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             playerNames[playerIndex] = playerName;
         }
-    }   
+    }
 
     #region Vivox Utils
 
@@ -363,7 +355,7 @@ public class MultiplayerGameManager : NetworkBehaviour
             }
         }
         return null;
-    } 
+    }
 
     /// <summary>
     /// Renvoie le transform du joueur correspondant à l'id netcode (Ne marche que si le joueur est mort et que son ghost a spawn)
@@ -393,7 +385,7 @@ public class MultiplayerGameManager : NetworkBehaviour
             authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("DeadVoice")[0];
         }
     }
-    
+
     /// <summary>
     /// Permet de parametrer l'audio source d'un participant tap pr avoir le son 3d dans la bonne distance
     /// </summary>
@@ -453,7 +445,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     /// <param name="playerId">L'id du joueur ressucité</param>
     [ServerRpc(RequireOwnership = false)]
-    public void SyncRespawnServerRpc(NetworkObjectReference obj,ulong playerId) //Appelé par le serveur
+    public void SyncRespawnServerRpc(NetworkObjectReference obj, ulong playerId) //Appelé par le serveur
     {
         Destroy((GameObject)obj);
         SyncResClientRpc(playerId, SendRpcToPlayersExcept(playerId));
@@ -526,7 +518,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, playerId);
         if (playerIndex != -1)
         {
-            if(ragdollActive)
+            if (ragdollActive)
             {
                 players[playerIndex].GetComponent<MonPlayerController>().EnableRagdoll();
             }
@@ -534,7 +526,7 @@ public class MultiplayerGameManager : NetworkBehaviour
             {
                 players[playerIndex].GetComponent<MonPlayerController>().DisableRagdoll();
             }
-            
+
         }
     }
 
@@ -636,10 +628,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void ChangeParentClientRpc(NetworkObjectReference networkRef,ClientRpcParams clientRpcParams)
+    private void ChangeParentClientRpc(NetworkObjectReference networkRef, ClientRpcParams clientRpcParams)
     {
         GameObject copyCam = (GameObject)networkRef;
-        
+
         ulong ownerId = copyCam.GetComponent<NetworkObject>().OwnerClientId;
         copyCam.name = "CopyCam" + ownerId;
         copyCam.transform.localPosition = new Vector3(0, 1.6f, -.1f);

@@ -4,7 +4,7 @@ using UnityEngine;
 public class PickUpController : NetworkBehaviour
 {
     [Header("Pick Up Settings")]
-    public Transform holdArea;
+    [HideInInspector] public Transform holdArea;
     [SerializeField] private Camera playerCam;
     private GameObject heldObj;
     private Rigidbody heldObjRb;
@@ -21,7 +21,7 @@ public class PickUpController : NetworkBehaviour
     /// <returns>L'objet à attraper</returns>
     public bool TryGrabObject()
     {
-        if(heldObj != null)
+        if (heldObj != null)
         {
             return false;
         }
@@ -29,7 +29,7 @@ public class PickUpController : NetworkBehaviour
         {
             if (hit.collider.CompareTag("PickUp"))
             {
-                if(hit.collider.gameObject.GetComponent<WeightedObject>().isHeld.Value == true)
+                if (hit.collider.gameObject.GetComponent<WeightedObject>().isHeld.Value == true)
                 {
                     return false;
                 }
@@ -59,7 +59,7 @@ public class PickUpController : NetworkBehaviour
     /// </summary>
     public void DropObject()
     {
-        if(heldObj == null)
+        if (heldObj == null)
         {
             return;
         }
@@ -113,13 +113,11 @@ public class PickUpController : NetworkBehaviour
             rb.drag = 1;
             rb.constraints = RigidbodyConstraints.None;
         }
-        
-        
     }
 
     private void Update()
     {
-        if(heldObj != null)
+        if (heldObj != null)
         {
             MoveObject();
         }
@@ -140,6 +138,4 @@ public class PickUpController : NetworkBehaviour
             heldObjRb.velocity = Vector3.zero;
         }
     }
-
-
 }

@@ -172,7 +172,7 @@ public class LobbyManager : MonoBehaviour
                 }
                 else if (joinedLobby.Data[KEY_START_GAME].Value != "0")
                 {
-                    if(!IsLobbyHost())
+                    if (!IsLobbyHost())
                     {
                         RelayManager.Instance.JoinRelay(joinedLobby.Data[KEY_START_GAME].Value);
                     }

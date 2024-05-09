@@ -6,7 +6,8 @@ using UnityEngine.Serialization;
 /// A rajouter aux elements avec lesquels le joueur peut interagir 
 /// Les objets de type Bouton se reinitialisent apres un certain temps
 /// </summary>
-public class Bouton : Interactable {
+public class Bouton : Interactable
+{
 
     /// <summary>
     /// L'animator du bouton
@@ -76,6 +77,6 @@ public class Bouton : Interactable {
     }
 
 
-    
+
 
 }
