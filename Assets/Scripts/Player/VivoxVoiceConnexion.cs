@@ -49,7 +49,6 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <returns>Quand l'initialisation est terminée</returns>
     public async Task InitVivox()
     {
-        Debug.Log("Init VIvox");
         await UnityServices.InitializeAsync();
         if (!AuthenticationService.Instance.IsSignedIn)
         {

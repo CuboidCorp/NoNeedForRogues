@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
-using Unity.Services.Authentication;
 using Unity.Services.Vivox;
 using Unity.Services.Vivox.AudioTaps;
 using UnityEngine;
@@ -131,39 +130,25 @@ public class MultiplayerGameManager : NetworkBehaviour
             return;
         }
         playersIds[nbConnectedPlayers] = id;
-        nbConnectedPlayers++;
+
         if (soloMode)
         {
             players[0] = GameObject.FindWithTag("Player");
             playerNames[0] = "SOLO";
             SpawnGrabZone(id);
         }
-        else if (nbConnectedPlayers == nbTotalPlayers)
-        {
-            gameCanStart = true;
-            NetworkStringArray stringArray = new()
-            {
-                Array = playerNames
-            };
-            SendGameInfoClientRpc(nbTotalPlayers, playersIds, stringArray);
-            foreach (ulong playerId in playersIds)
-            {
-                SpawnGrabZone(playerId);
-            }
-        }
 
     }
 
     private void Update()
     {
-        if (NetworkManager.Singleton.ShutdownInProgress)
+        if (NetworkManager.Singleton.ShutdownInProgress) //TODO est prok aussi quand on se deconnecte tt court
         {
-            Debug.Log("Crash frere/Hote qui se tire");
             Cursor.lockState = CursorLockMode.None;
             NetworkManager.Singleton.Shutdown();
-            GameObject error = new("ErrorHandler");
-            error.AddComponent<ErrorHandler>();
-            error.GetComponent<ErrorHandler>().message = "T'as crash ou l'hote s'est tiré";
+            //GameObject error = new("ErrorHandler");
+            //error.AddComponent<ErrorHandler>();
+            //error.GetComponent<ErrorHandler>().message = "T'as crash ou l'hote s'est tiré";
             SceneManager.LoadSceneAsync("MenuPrincipal");
         }
     }
@@ -176,6 +161,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ClientRpc]
     private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds, NetworkStringArray allNames)
     {
+        Debug.Log("Ouais on a un array");
         nbTotalPlayers = nbMaxPlayers;
         playersIds = allIds;
         players = new GameObject[nbMaxPlayers];
@@ -274,6 +260,32 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         AddAuthPlayerId(ownerId, authId);
         AddPlayerName(ownerId, playerName);
+        nbConnectedPlayers++;
+        if (nbConnectedPlayers == nbTotalPlayers)
+        {
+            GameSetup();
+        }
+    }
+
+    /// <summary>
+    /// Setup du jeu une fois que tous les joueurs sont connectés
+    /// </summary>
+    private void GameSetup()
+    {
+        gameCanStart = true;
+        foreach (string valeur in playerNames)
+        {
+            Debug.Log("Nom : " + valeur);
+        }
+        NetworkStringArray stringArray = new()
+        {
+            Array = playerNames
+        };
+        SendGameInfoClientRpc(nbTotalPlayers, playersIds, stringArray);
+        foreach (ulong playerId in playersIds)
+        {
+            SpawnGrabZone(playerId);
+        }
     }
 
     /// <summary>
