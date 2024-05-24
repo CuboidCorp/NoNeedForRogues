@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 8828001872036938623}
   - component: {fileID: 4628705126493625252}
   - component: {fileID: 192193754205176098}
-  - component: {fileID: 6691076068603771327}
   m_Layer: 0
   m_Name: Treas3
   m_TagString: Untagged
@@ -84,17 +83,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6691076068603771327
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7720328289739947311}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 433072c9f171b4640951ce616b74d079, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  size: {x: 2, y: 2, z: 2}
-  type: 1

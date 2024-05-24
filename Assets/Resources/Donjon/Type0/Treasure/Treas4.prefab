@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6077923179620774535}
   - component: {fileID: 7610690820836262468}
   - component: {fileID: 7779779480057491268}
-  - component: {fileID: 5685572989067451064}
   m_Layer: 0
   m_Name: Treas4
   m_TagString: Untagged
@@ -84,17 +83,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &5685572989067451064
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4830951750490073293}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 433072c9f171b4640951ce616b74d079, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  size: {x: 4, y: 4, z: 6}
-  type: 1

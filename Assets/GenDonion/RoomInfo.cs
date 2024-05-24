@@ -1,8 +1,7 @@
 using UnityEngine;
 
-public class RoomInfo : MonoBehaviour
+public class RoomInfo
 {
-    [HideInInspector]
     public BoundsInt bounds;
 
 

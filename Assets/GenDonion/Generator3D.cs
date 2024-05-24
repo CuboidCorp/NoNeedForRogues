@@ -74,70 +74,44 @@ public class Generator3D : MonoBehaviour
 
         PlaceRooms();
         Triangulate();
+        //DebugDelaunay();
         CreateHallways();
-        PathfindHallways();
+        DebugHallways();
+        //PathfindHallways();
     }
 
     void PlaceRooms()
     {
-        for (int i = 0; i < roomCount; i++) //TODO faire avec un while plutot
+        int placedRooms = 0;
+        int maxAttempts = 1000; // Nombre maximum d'essais pour placer toutes les salles
+
+        while (placedRooms < roomCount && maxAttempts > 0)
         {
+            // Sélection du type de salle aléatoire
+            int roomType = random.Next(0, 3);
+            GameObject futureRoom = roomType switch
+            {
+                1 => treasureRooms[random.Next(0, treasureRooms.Length)], // Treasure
+                2 => puzzleRooms[random.Next(0, puzzleRooms.Length)], // Puzzle
+                _ => normalRooms[random.Next(0, normalRooms.Length)] // Normal
+            };
+
+            // Taille de la salle
+            Vector3Int roomSize = Vector3Int.RoundToInt(futureRoom.transform.localScale);
+
+            // Génération de la position en fonction de la taille de la salle
             Vector3Int location = new(
-                random.Next(0, size.x),
-                random.Next(0, size.y),
-                random.Next(0, size.z)
+                random.Next(0, size.x - roomSize.x),
+                random.Next(0, size.y - roomSize.y),
+                random.Next(0, size.z - roomSize.z)
             );
 
-            //On prend un type de salle au hasard
-            //Donc on prend une salle au hasard de ce type
-            //Et on la place si possible
+            BoundsInt roomBounds = new(location, roomSize);
+            BoundsInt roomBuffer = new(location + new Vector3Int(-1, 0, -1), roomSize + new Vector3Int(2, 0, 2));
 
-            //Il faudra changer les poids de chaque salle une fois mais plus tard lol
-            int roomType = random.Next(0, 3);
-            GameObject futureRoom;
-            RoomInfo infoFutRoom;
-            switch (roomType)
+            if (IsPositionValid(roomBounds, roomBuffer))
             {
-                case 1:
-                    //Treasure
-                    futureRoom = treasureRooms[random.Next(0, treasureRooms.Length)];
-                    infoFutRoom = futureRoom.GetComponent<RoomInfo>();
-                    break;
-                case 2:
-                    //Puzzle
-                    futureRoom = puzzleRooms[random.Next(0, puzzleRooms.Length)];
-                    infoFutRoom = futureRoom.GetComponent<RoomInfo>();
-                    break;
-                default:
-                    //Normal
-                    futureRoom = normalRooms[random.Next(0, normalRooms.Length)];
-                    infoFutRoom = futureRoom.GetComponent<RoomInfo>();
-                    break;
-            }
-
-            bool estPlacable = true;
-            BoundsInt roomBounds = new(location, Vector3Int.RoundToInt(futureRoom.transform.localScale));
-            infoFutRoom.bounds = roomBounds;
-            BoundsInt roomBuffer = new(location + new Vector3Int(-1, 0, -1), Vector3Int.RoundToInt(futureRoom.transform.localScale) + new Vector3Int(2, 0, 2));
-
-            foreach (RoomInfo room in rooms) //Pour que ce soit plus stylé on place les salles avec au minimun un certain espace entre elles
-            {
-                if (room.IsIntersectingWith(roomBuffer))
-                {
-                    estPlacable = false;
-                    break;
-                }
-            }
-
-            if (roomBounds.xMin < 0 || roomBounds.xMax >= size.x
-                || roomBounds.yMin < 0 || roomBounds.yMax >= size.y
-                || roomBounds.zMin < 0 || roomBounds.zMax >= size.z)
-            {
-                estPlacable = false;
-            }
-
-            if (estPlacable)
-            {
+                RoomInfo infoFutRoom = new() { bounds = roomBounds };
                 rooms.Add(infoFutRoom);
                 PlaceRoom(roomBounds.position, futureRoom);
 
@@ -145,9 +119,41 @@ public class Generator3D : MonoBehaviour
                 {
                     grid[pos] = CellType.Room;
                 }
+
+                placedRooms++;
             }
+
+            maxAttempts--;
+        }
+
+        if (maxAttempts <= 0)
+        {
+            Debug.LogWarning("Placement des salles arrêté après avoir atteint le nombre maximum d'essais.");
         }
     }
+
+    bool IsPositionValid(BoundsInt roomBounds, BoundsInt roomBuffer)
+    {
+        // Vérification des limites
+        if (roomBounds.xMin < 0 || roomBounds.xMax > size.x
+            || roomBounds.yMin < 0 || roomBounds.yMax > size.y
+            || roomBounds.zMin < 0 || roomBounds.zMax > size.z)
+        {
+            return false;
+        }
+
+        // Vérification des collisions avec les salles existantes
+        foreach (RoomInfo room in rooms)
+        {
+            if (room.IsIntersectingWith(roomBuffer))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 
     void Triangulate()
     {
@@ -155,10 +161,19 @@ public class Generator3D : MonoBehaviour
 
         foreach (RoomInfo room in rooms)
         {
-            vertices.Add(new Vertex<RoomInfo>((Vector3)room.bounds.position + ((Vector3)room.bounds.size) / 2, room));
+            vertices.Add(new Vertex<RoomInfo>(room.bounds.center, room));
+            Debug.Log("DELAUNAY : pos1 " + room.bounds.position + " center : " + room.bounds.center);
         }
 
         delaunay = Delaunay3D.Triangulate(vertices);
+    }
+
+    void DebugDelaunay()
+    {
+        foreach (Delaunay3D.Edge edge in delaunay.Edges)
+        {
+            Debug.DrawLine(edge.U.Position, edge.V.Position, Color.red, 100, false);
+        }
     }
 
     void CreateHallways()
@@ -173,7 +188,7 @@ public class Generator3D : MonoBehaviour
         List<Prim.Edge> minimumSpanningTree = Prim.MinimumSpanningTree(edges, edges[0].U);
 
         selectedEdges = new HashSet<Prim.Edge>(minimumSpanningTree);
-        var remainingEdges = new HashSet<Prim.Edge>(edges);
+        HashSet<Prim.Edge> remainingEdges = new(edges);
         remainingEdges.ExceptWith(selectedEdges);
 
         foreach (Prim.Edge edge in remainingEdges)
@@ -185,9 +200,25 @@ public class Generator3D : MonoBehaviour
         }
     }
 
+
+
+    void DebugHallways()
+    {
+        foreach (Prim.Edge edge in selectedEdges)
+        {
+            RoomInfo startRoom = (edge.U as Vertex<RoomInfo>).Item;
+            RoomInfo endRoom = (edge.V as Vertex<RoomInfo>).Item;
+
+            Vector3 startPos = startRoom.bounds.center;
+            Vector3 endPos = endRoom.bounds.center;
+
+            Debug.DrawLine(startPos, endPos, Color.blue, 100, false);
+        }
+    }
+
     void PathfindHallways()
     {
-        DungeonPathfinder3D aStar = new DungeonPathfinder3D(size);
+        DungeonPathfinder3D aStar = new(size);
 
         foreach (Prim.Edge edge in selectedEdges)
         {
@@ -299,7 +330,7 @@ public class Generator3D : MonoBehaviour
                     }
                 }
 
-                foreach (var pos in path)
+                foreach (Vector3Int pos in path)
                 {
                     if (grid[pos] == CellType.Hallway)
                     {

@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 4641706374232095804}
   - component: {fileID: 5781373880834625870}
   - component: {fileID: 8474554556726201387}
-  - component: {fileID: 1397571571427937331}
   m_Layer: 0
   m_Name: Room2
   m_TagString: Untagged
@@ -84,17 +83,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &1397571571427937331
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2352701397241343742}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 433072c9f171b4640951ce616b74d079, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  size: {x: 10, y: 3, z: 5}
-  type: 0
