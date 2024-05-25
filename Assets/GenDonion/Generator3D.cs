@@ -79,11 +79,8 @@ public class Generator3D : MonoBehaviour
 
         PlaceRooms();
         Triangulate();
-        //DebugDelaunay();
         CreateHallways();
-        //DebugHallways();
         PathfindHallways();
-        //DebugGrid();
     }
 
     void PlaceRooms()
@@ -105,7 +102,7 @@ public class Generator3D : MonoBehaviour
             // Taille de la salle
             Vector3Int roomSize = Vector3Int.RoundToInt(futureRoom.transform.localScale);
 
-            if (roomSize.x > size.x || roomSize.y > size.y || roomSize.z > size.z)
+            if (roomSize.x > size.x || roomSize.y > size.y || roomSize.z > size.z) //TODO : Gérer les salles trop grandes
             {
                 //Debug.LogWarning("La salle est trop grande pour la taille de la grille.");
                 maxAttempts--;
@@ -133,7 +130,6 @@ public class Generator3D : MonoBehaviour
                     cptTaille++;
                     grid[pos] = CellType.Room;
                 }
-                Debug.Log("Taille de la salle : " + cptTaille);
 
                 placedRooms++;
             }
