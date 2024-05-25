@@ -402,7 +402,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   seed: 0
   size: {x: 30, y: 5, z: 30}
-  roomCount: 5
+  roomCount: 10
   ty: 0
   RoomHolder: {fileID: 468632862}
   HallwayStairsHolder: {fileID: 246180790}

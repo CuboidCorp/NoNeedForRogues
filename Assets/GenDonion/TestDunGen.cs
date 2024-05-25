@@ -1,4 +1,5 @@
 using UnityEngine;
+using static UnityEditor.FilePathAttribute;
 
 public class TestDunGen : MonoBehaviour
 {
@@ -7,10 +8,15 @@ public class TestDunGen : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GameObject go1 = Instantiate(cubePrefab, new Vector3(0, 0, 0), Quaternion.identity);
-        go1.transform.localScale = new Vector3(1, 1, 1);
+        Vector3Int location = new(0, 0, 0);
+        Vector3Int roomSize = Vector3Int.FloorToInt(cubePrefab.transform.localScale);
 
-        GameObject go2 = Instantiate(cubePrefab, new Vector3(0, 0, 0), Quaternion.identity);
-        go2.transform.localScale = new Vector3(2, 2, 2);
+        BoundsInt roomBounds = new(location, roomSize);
+        Instantiate(cubePrefab, roomBounds.center, Quaternion.identity);
+        foreach (Vector3Int vector3Int in roomBounds.allPositionsWithin)
+        {
+            //Debug.Log(vector3Int);
+            Debug.DrawLine(vector3Int, vector3Int + Vector3.up, Color.red, 1000);
+        }
     }
 }

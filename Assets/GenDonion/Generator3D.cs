@@ -79,10 +79,11 @@ public class Generator3D : MonoBehaviour
 
         PlaceRooms();
         Triangulate();
-        DebugDelaunay();
+        //DebugDelaunay();
         CreateHallways();
-        DebugHallways();
+        //DebugHallways();
         PathfindHallways();
+        //DebugGrid();
     }
 
     void PlaceRooms()
@@ -126,11 +127,13 @@ public class Generator3D : MonoBehaviour
                 RoomInfo infoFutRoom = new() { bounds = roomBounds };
                 rooms.Add(infoFutRoom);
                 PlaceRoom(roomBounds.center, futureRoom);
-
+                int cptTaille = 0;
                 foreach (Vector3Int pos in roomBounds.allPositionsWithin)
                 {
+                    cptTaille++;
                     grid[pos] = CellType.Room;
                 }
+                Debug.Log("Taille de la salle : " + cptTaille);
 
                 placedRooms++;
             }
@@ -180,8 +183,6 @@ public class Generator3D : MonoBehaviour
         delaunay = Delaunay3D.Triangulate(vertices);
     }
 
-
-
     void CreateHallways()
     {
         List<Prim.Edge> edges = new();
@@ -229,6 +230,33 @@ public class Generator3D : MonoBehaviour
         {
             //Debug.Log("DELAUNAY : pos1 " + edge.U.Position + " pos2 : " + edge.V.Position);
             Debug.DrawLine(edge.U.Position, edge.V.Position, Color.red, 100, false);
+        }
+    }
+
+    void DebugGrid()
+    {
+        for (int x = 0; x < size.x; x++)
+        {
+            for (int y = 0; y < size.y; y++)
+            {
+                for (int z = 0; z < size.z; z++)
+                {
+                    Vector3Int pos = new(x, y, z);
+
+                    switch (grid[pos])
+                    {
+                        case CellType.Room:
+                            Debug.DrawLine(pos, pos + Vector3.up, Color.green, 100, false);
+                            break;
+                        case CellType.Hallway:
+                            Debug.DrawLine(pos, pos + Vector3.up, Color.blue, 100, false);
+                            break;
+                        case CellType.Stairs:
+                            Debug.DrawLine(pos, pos + Vector3.up, Color.yellow, 100, false);
+                            break;
+                    }
+                }
+            }
         }
     }
     #endregion
@@ -361,7 +389,8 @@ public class Generator3D : MonoBehaviour
 
     void PlaceCube(Vector3Int location, Vector3Int size, Material material)
     {
-        GameObject go = Instantiate(tempPrefab, location, Quaternion.identity);
+        GameObject go = Instantiate(tempPrefab, HallwayStairsHolder);
+        go.transform.SetPositionAndRotation(location + new Vector3(0.5f, 0.5f, 0.5f), Quaternion.identity);
         go.GetComponent<Transform>().localScale = size;
         go.GetComponent<MeshRenderer>().material = material;
     }
