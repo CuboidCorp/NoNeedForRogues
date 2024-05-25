@@ -1,9 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Random = System.Random;
 using Graphs;
-
+//Ecrit par November
 public class Generator3D : MonoBehaviour
 {
     enum CellType
@@ -29,6 +28,12 @@ public class Generator3D : MonoBehaviour
     int roomCount;
     [SerializeField]
     DungeonType ty;
+    [SerializeField]
+    private Transform RoomHolder;
+    [SerializeField]
+    private Transform HallwayStairsHolder;
+
+    [Header("Temp")]
     [SerializeField]
     GameObject tempPrefab;
     [SerializeField]
@@ -74,10 +79,10 @@ public class Generator3D : MonoBehaviour
 
         PlaceRooms();
         Triangulate();
-        //DebugDelaunay();
+        DebugDelaunay();
         CreateHallways();
         DebugHallways();
-        //PathfindHallways();
+        PathfindHallways();
     }
 
     void PlaceRooms()
@@ -99,6 +104,13 @@ public class Generator3D : MonoBehaviour
             // Taille de la salle
             Vector3Int roomSize = Vector3Int.RoundToInt(futureRoom.transform.localScale);
 
+            if (roomSize.x > size.x || roomSize.y > size.y || roomSize.z > size.z)
+            {
+                //Debug.LogWarning("La salle est trop grande pour la taille de la grille.");
+                maxAttempts--;
+                continue;
+            }
+
             // Génération de la position en fonction de la taille de la salle
             Vector3Int location = new(
                 random.Next(0, size.x - roomSize.x),
@@ -113,7 +125,7 @@ public class Generator3D : MonoBehaviour
             {
                 RoomInfo infoFutRoom = new() { bounds = roomBounds };
                 rooms.Add(infoFutRoom);
-                PlaceRoom(roomBounds.position, futureRoom);
+                PlaceRoom(roomBounds.center, futureRoom);
 
                 foreach (Vector3Int pos in roomBounds.allPositionsWithin)
                 {
@@ -162,19 +174,13 @@ public class Generator3D : MonoBehaviour
         foreach (RoomInfo room in rooms)
         {
             vertices.Add(new Vertex<RoomInfo>(room.bounds.center, room));
-            Debug.Log("DELAUNAY : pos1 " + room.bounds.position + " center : " + room.bounds.center);
+            //Debug.Log("DELAUNAY : pos1 " + room.bounds.position + " center : " + room.bounds.center);
         }
 
         delaunay = Delaunay3D.Triangulate(vertices);
     }
 
-    void DebugDelaunay()
-    {
-        foreach (Delaunay3D.Edge edge in delaunay.Edges)
-        {
-            Debug.DrawLine(edge.U.Position, edge.V.Position, Color.red, 100, false);
-        }
-    }
+
 
     void CreateHallways()
     {
@@ -202,6 +208,7 @@ public class Generator3D : MonoBehaviour
 
 
 
+    #region Debug
     void DebugHallways()
     {
         foreach (Prim.Edge edge in selectedEdges)
@@ -215,6 +222,17 @@ public class Generator3D : MonoBehaviour
             Debug.DrawLine(startPos, endPos, Color.blue, 100, false);
         }
     }
+
+    void DebugDelaunay()
+    {
+        foreach (Delaunay3D.Edge edge in delaunay.Edges)
+        {
+            //Debug.Log("DELAUNAY : pos1 " + edge.U.Position + " pos2 : " + edge.V.Position);
+            Debug.DrawLine(edge.U.Position, edge.V.Position, Color.red, 100, false);
+        }
+    }
+    #endregion
+
 
     void PathfindHallways()
     {
@@ -266,8 +284,8 @@ public class Generator3D : MonoBehaviour
 
                     int xDir = Mathf.Clamp(delta.x, -1, 1);
                     int zDir = Mathf.Clamp(delta.z, -1, 1);
-                    Vector3Int verticalOffset = new Vector3Int(0, delta.y, 0);
-                    Vector3Int horizontalOffset = new Vector3Int(xDir, 0, zDir);
+                    Vector3Int verticalOffset = new(0, delta.y, 0);
+                    Vector3Int horizontalOffset = new(xDir, 0, zDir);
 
                     if (!grid.InBounds(a.Position + verticalOffset)
                         || !grid.InBounds(a.Position + horizontalOffset)
@@ -353,11 +371,11 @@ public class Generator3D : MonoBehaviour
     /// </summary>
     /// <param name="location">L'endroit ou placé la salle</param>
     /// <param name="roomToPlace">La salle a placer</param>
-    void PlaceRoom(Vector3Int location, GameObject roomToPlace)
+    void PlaceRoom(Vector3 location, GameObject roomToPlace)
     {
         //Placer la vraie salle
-        Instantiate(roomToPlace, location, Quaternion.identity);
-
+        GameObject go = Instantiate(roomToPlace, RoomHolder);
+        go.transform.SetPositionAndRotation(location, Quaternion.identity);
     }
 
     void PlaceHallway(Vector3Int location)
