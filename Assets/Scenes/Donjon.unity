@@ -133,7 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 246180790}
   m_Layer: 0
-  m_Name: StairHallWaysHolder
+  m_Name: HallwayHolder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -371,6 +371,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1858053135
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1858053136}
+  m_Layer: 0
+  m_Name: StairHolder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1858053136
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1858053135}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1901875908
 GameObject:
   m_ObjectHideFlags: 0
@@ -405,10 +436,8 @@ MonoBehaviour:
   roomCount: 10
   ty: 0
   RoomHolder: {fileID: 468632862}
-  HallwayStairsHolder: {fileID: 246180790}
-  tempPrefab: {fileID: 334930456915234098, guid: f7fe0c0e16218934d974b909e38eef87, type: 3}
-  tempStairMaterial: {fileID: 2100000, guid: 6222208507808554d8b5c082799cfaa7, type: 2}
-  tempHallwayMaterial: {fileID: 2100000, guid: e82014deeb1497c40bf1af174ecf7ee5, type: 2}
+  HallwayHolder: {fileID: 0}
+  StairHolder: {fileID: 0}
 --- !u!4 &1901875910
 Transform:
   m_ObjectHideFlags: 0
@@ -433,3 +462,4 @@ SceneRoots:
   - {fileID: 1901875910}
   - {fileID: 468632862}
   - {fileID: 246180790}
+  - {fileID: 1858053136}

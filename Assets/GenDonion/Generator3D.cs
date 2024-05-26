@@ -5,6 +5,24 @@ using Graphs;
 //Ecrit par November
 public class Generator3D : MonoBehaviour
 {
+    class Room
+    {
+        public BoundsInt bounds;
+
+
+        /// <summary>
+        /// Vérifie si la salle est en collision avec une pseudo-salle
+        /// </summary>
+        /// <param name="boundsInt">Les coordonnées fictive de la pseudo salle</param>
+        /// <returns>True si les deux salles sont en collision, false sinon</returns>
+        public bool IsIntersectingWith(BoundsInt boundsInt)
+        {
+            return !((bounds.position.x >= (boundsInt.position.x + boundsInt.size.x)) || ((bounds.position.x + bounds.size.x) <= boundsInt.position.x)
+                || (bounds.position.y >= (boundsInt.position.y + boundsInt.size.y)) || ((bounds.position.y + bounds.size.y) <= boundsInt.position.y)
+                || (bounds.position.z >= (boundsInt.position.z + boundsInt.size.z)) || ((bounds.position.z + bounds.size.z) <= boundsInt.position.z));
+        }
+
+    }
     enum CellType
     {
         None,
@@ -31,35 +49,31 @@ public class Generator3D : MonoBehaviour
     [SerializeField]
     private Transform RoomHolder;
     [SerializeField]
-    private Transform HallwayStairsHolder;
-
-    [Header("Temp")]
+    private Transform HallwayHolder;
     [SerializeField]
-    GameObject tempPrefab;
-    [SerializeField]
-    Material tempStairMaterial;
-    [SerializeField]
-    Material tempHallwayMaterial;
-
+    private Transform StairHolder;
     #region Prefabs
 
     private GameObject[] normalRooms;
     private GameObject[] treasureRooms;
     private GameObject[] puzzleRooms;
+    private GameObject[] hallways;//TODO : Temporairement on utilise que la hallway 0
+    private GameObject[] stairs;//TODO : Temporairement on utilise que la stair 0 (
 
     #endregion
 
     Random random;
     Grid3D<CellType> grid;
-    List<RoomInfo> rooms;
+    List<Room> rooms;
     Delaunay3D delaunay;
     HashSet<Prim.Edge> selectedEdges;
+    Vector3 cellSize = new(1, 1, 1);
 
     void Start()
     {
         random = new Random(seed);
         grid = new Grid3D<CellType>(size, Vector3Int.zero);
-        rooms = new List<RoomInfo>();
+        rooms = new List<Room>();
 
         switch (ty)
         {
@@ -67,13 +81,18 @@ public class Generator3D : MonoBehaviour
                 normalRooms = Resources.LoadAll<GameObject>("Donjon/Type0/Normal");
                 treasureRooms = Resources.LoadAll<GameObject>("Donjon/Type0/Treasure");
                 puzzleRooms = Resources.LoadAll<GameObject>("Donjon/Type0/Puzzle");
+                hallways = Resources.LoadAll<GameObject>("Donjon/Type0/Hallways");
+                stairs = Resources.LoadAll<GameObject>("Donjon/Type0/Stairs");
                 break;
             case DungeonType.Type1:
-                throw new System.NotImplementedException("Pas fait encore mon gars"); //TODO Faire le type 1
-                //normalRooms = Resources.LoadAll<GameObject>("Rooms/Type1/Normal");
-                //treasureRooms = Resources.LoadAll<GameObject>("Rooms/Type1/Treasure");
-                //puzzleRooms = Resources.LoadAll<GameObject>("Rooms/Type1/Puzzle");
-                //break;
+                //throw new System.NotImplementedException("Pas fait encore mon gars"); //TODO Faire le type 1
+                cellSize = new Vector3(4.8f, 4.8f, 4.8f);
+                normalRooms = Resources.LoadAll<GameObject>("Donjon/Type1/Normal");
+                treasureRooms = Resources.LoadAll<GameObject>("Donjon/Type1/Treasure");
+                puzzleRooms = Resources.LoadAll<GameObject>("Donjon/Type1/Puzzle");
+                hallways = Resources.LoadAll<GameObject>("Donjon/Type1/Hallways");
+                stairs = Resources.LoadAll<GameObject>("Donjon/Type1/Stairs");
+                break;
         }
 
 
@@ -121,7 +140,7 @@ public class Generator3D : MonoBehaviour
 
             if (IsPositionValid(roomBounds, roomBuffer))
             {
-                RoomInfo infoFutRoom = new() { bounds = roomBounds };
+                Room infoFutRoom = new() { bounds = roomBounds };
                 rooms.Add(infoFutRoom);
                 PlaceRoom(roomBounds.center, futureRoom);
                 int cptTaille = 0;
@@ -154,7 +173,7 @@ public class Generator3D : MonoBehaviour
         }
 
         // Vérification des collisions avec les salles existantes
-        foreach (RoomInfo room in rooms)
+        foreach (Room room in rooms)
         {
             if (room.IsIntersectingWith(roomBuffer))
             {
@@ -170,9 +189,9 @@ public class Generator3D : MonoBehaviour
     {
         List<Vertex> vertices = new();
 
-        foreach (RoomInfo room in rooms)
+        foreach (Room room in rooms)
         {
-            vertices.Add(new Vertex<RoomInfo>(room.bounds.center, room));
+            vertices.Add(new Vertex<Room>(room.bounds.center, room));
             //Debug.Log("DELAUNAY : pos1 " + room.bounds.position + " center : " + room.bounds.center);
         }
 
@@ -210,8 +229,8 @@ public class Generator3D : MonoBehaviour
     {
         foreach (Prim.Edge edge in selectedEdges)
         {
-            RoomInfo startRoom = (edge.U as Vertex<RoomInfo>).Item;
-            RoomInfo endRoom = (edge.V as Vertex<RoomInfo>).Item;
+            Room startRoom = (edge.U as Vertex<Room>).Item;
+            Room endRoom = (edge.V as Vertex<Room>).Item;
 
             Vector3 startPos = startRoom.bounds.center;
             Vector3 endPos = endRoom.bounds.center;
@@ -238,17 +257,17 @@ public class Generator3D : MonoBehaviour
                 for (int z = 0; z < size.z; z++)
                 {
                     Vector3Int pos = new(x, y, z);
-
+                    Vector3 position = new(pos.x * cellSize.x, pos.y * cellSize.y, pos.z * cellSize.z);
                     switch (grid[pos])
                     {
                         case CellType.Room:
-                            Debug.DrawLine(pos, pos + Vector3.up, Color.green, 100, false);
+                            Debug.DrawLine(position, position + Vector3.up, Color.green, 100, false);
                             break;
                         case CellType.Hallway:
-                            Debug.DrawLine(pos, pos + Vector3.up, Color.blue, 100, false);
+                            Debug.DrawLine(position, position + Vector3.up, Color.blue, 100, false);
                             break;
                         case CellType.Stairs:
-                            Debug.DrawLine(pos, pos + Vector3.up, Color.yellow, 100, false);
+                            Debug.DrawLine(position, position + Vector3.up, Color.yellow, 100, false);
                             break;
                     }
                 }
@@ -264,8 +283,8 @@ public class Generator3D : MonoBehaviour
 
         foreach (Prim.Edge edge in selectedEdges)
         {
-            RoomInfo startRoom = (edge.U as Vertex<RoomInfo>).Item;
-            RoomInfo endRoom = (edge.V as Vertex<RoomInfo>).Item;
+            Room startRoom = (edge.U as Vertex<Room>).Item;
+            Room endRoom = (edge.V as Vertex<Room>).Item;
 
             Vector3 startPosf = startRoom.bounds.center;
             Vector3 endPosf = endRoom.bounds.center;
@@ -354,18 +373,15 @@ public class Generator3D : MonoBehaviour
                         {
                             int xDir = Mathf.Clamp(delta.x, -1, 1);
                             int zDir = Mathf.Clamp(delta.z, -1, 1);
-                            Vector3Int verticalOffset = new Vector3Int(0, delta.y, 0);
-                            Vector3Int horizontalOffset = new Vector3Int(xDir, 0, zDir);
+                            Vector3Int verticalOffset = new(0, delta.y, 0);
+                            Vector3Int horizontalOffset = new(xDir, 0, zDir);
 
                             grid[prev + horizontalOffset] = CellType.Stairs;
                             grid[prev + horizontalOffset * 2] = CellType.Stairs;
                             grid[prev + verticalOffset + horizontalOffset] = CellType.Stairs;
                             grid[prev + verticalOffset + horizontalOffset * 2] = CellType.Stairs;
 
-                            PlaceStairs(prev + horizontalOffset);
-                            PlaceStairs(prev + horizontalOffset * 2);
-                            PlaceStairs(prev + verticalOffset + horizontalOffset);
-                            PlaceStairs(prev + verticalOffset + horizontalOffset * 2);
+                            PlaceStairs(prev + new Vector3(0.5f, 0.5f, 0.5f) + horizontalOffset + verticalOffset, delta); //TODO : Voir la rotation a faire ?
                         }
 
                         Debug.DrawLine(prev + new Vector3(0.5f, 0.5f, 0.5f), current + new Vector3(0.5f, 0.5f, 0.5f), Color.blue, 100, false);
@@ -376,19 +392,11 @@ public class Generator3D : MonoBehaviour
                 {
                     if (grid[pos] == CellType.Hallway)
                     {
-                        PlaceHallway(pos);
+                        PlaceHallway(pos + new Vector3(0.5f, 0.5f, 0.5f));
                     }
                 }
             }
         }
-    }
-
-    void PlaceCube(Vector3Int location, Vector3Int size, Material material)
-    {
-        GameObject go = Instantiate(tempPrefab, HallwayStairsHolder);
-        go.transform.SetPositionAndRotation(location + new Vector3(0.5f, 0.5f, 0.5f), Quaternion.identity);
-        go.GetComponent<Transform>().localScale = size;
-        go.GetComponent<MeshRenderer>().material = material;
     }
 
     /// <summary>
@@ -398,18 +406,60 @@ public class Generator3D : MonoBehaviour
     /// <param name="roomToPlace">La salle a placer</param>
     void PlaceRoom(Vector3 location, GameObject roomToPlace)
     {
-        //Placer la vraie salle
         GameObject go = Instantiate(roomToPlace, RoomHolder);
-        go.transform.SetPositionAndRotation(location, Quaternion.identity);
+        Vector3 position = new(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
+        go.transform.SetPositionAndRotation(position, Quaternion.identity);
     }
 
-    void PlaceHallway(Vector3Int location)
+    void PlaceHallway(Vector3 location)
     {
-        PlaceCube(location, new Vector3Int(1, 1, 1), tempHallwayMaterial);
+        GameObject go = Instantiate(hallways[0], HallwayHolder);
+        Vector3 position = new(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
+        go.transform.SetPositionAndRotation(position, Quaternion.identity);
+
     }
 
-    void PlaceStairs(Vector3Int location)
+    void PlaceStairs(Vector3 location, Vector3Int delta)
     {
-        PlaceCube(location, new Vector3Int(1, 1, 1), tempStairMaterial);
+        // Determine the main direction of the stairs
+        int xDir = Mathf.Clamp(delta.x, -1, 1);
+        int yDir = Mathf.Clamp(delta.y, -1, 1);
+        int zDir = Mathf.Clamp(delta.z, -1, 1);
+
+        // Initialize the rotation angle
+        float rotation = 0f;
+
+        // Determine rotation based on direction
+        if (yDir != 0)  // If there is a change in the y-axis (indicating stairs)
+        {
+            if (xDir != 0)
+            {
+                if (xDir > 0)
+                {
+                    rotation = 0f;  // Stairs going up in positive x direction
+                }
+                else
+                {
+                    rotation = 180f; // Stairs going up in negative x direction
+                }
+            }
+            else if (zDir != 0)
+            {
+                if (zDir > 0)
+                {
+                    rotation = 270f;   // Stairs going up in positive z direction
+                }
+                else
+                {
+                    rotation = 90f; // Stairs going up in negative z direction
+                }
+            }
+        }
+
+        // Instantiate and place the stairs with the calculated rotation
+        GameObject go = Instantiate(stairs[0], StairHolder);
+        Vector3 position = new Vector3(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
+        go.transform.SetPositionAndRotation(position, Quaternion.Euler(0, rotation, 0));
     }
+
 }
