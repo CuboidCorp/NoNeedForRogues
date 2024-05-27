@@ -2,6 +2,7 @@
 using UnityEngine;
 using Random = System.Random;
 using Graphs;
+using System;
 //Ecrit par November
 public class Generator3D : MonoBehaviour
 {
@@ -100,6 +101,7 @@ public class Generator3D : MonoBehaviour
         Triangulate();
         CreateHallways();
         PathfindHallways();
+        DebugGrid();
     }
 
     void PlaceRooms()
@@ -267,6 +269,7 @@ public class Generator3D : MonoBehaviour
                             Debug.DrawLine(position, position + Vector3.up, Color.blue, 100, false);
                             break;
                         case CellType.Stairs:
+                            Debug.Log("Stairs at " + pos);
                             Debug.DrawLine(position, position + Vector3.up, Color.yellow, 100, false);
                             break;
                     }
@@ -374,6 +377,7 @@ public class Generator3D : MonoBehaviour
                             int xDir = Mathf.Clamp(delta.x, -1, 1);
                             int zDir = Mathf.Clamp(delta.z, -1, 1);
                             Vector3Int verticalOffset = new(0, delta.y, 0);
+                            Debug.Log("Y " + verticalOffset);
                             Vector3Int horizontalOffset = new(xDir, 0, zDir);
 
                             grid[prev + horizontalOffset] = CellType.Stairs;
@@ -381,7 +385,17 @@ public class Generator3D : MonoBehaviour
                             grid[prev + verticalOffset + horizontalOffset] = CellType.Stairs;
                             grid[prev + verticalOffset + horizontalOffset * 2] = CellType.Stairs;
 
-                            PlaceStairs(prev + new Vector3(0.5f, 0.5f, 0.5f) + horizontalOffset + verticalOffset, delta); //TODO : Voir la rotation a faire ?
+                            Vector3 midHorizontalOffset = new(horizontalOffset.x * 1.5f, horizontalOffset.y * 1.5f, horizontalOffset.z * 1.5f);
+                            if (verticalOffset.y == 1)
+                            {
+                                PlaceStairs(prev + new Vector3(0.5f, 0, .5f) + verticalOffset + midHorizontalOffset, delta);
+                            }
+                            else
+                            {
+                                PlaceStairs(prev + new Vector3(0.5f, 0, .5f) + midHorizontalOffset, delta);
+                            }
+
+                            Debug.Log("Stair at" + (prev + verticalOffset + midHorizontalOffset + new Vector3(0.5f, 0, .5f)));
                         }
 
                         Debug.DrawLine(prev + new Vector3(0.5f, 0.5f, 0.5f), current + new Vector3(0.5f, 0.5f, 0.5f), Color.blue, 100, false);

@@ -436,8 +436,8 @@ MonoBehaviour:
   roomCount: 10
   ty: 0
   RoomHolder: {fileID: 468632862}
-  HallwayHolder: {fileID: 0}
-  StairHolder: {fileID: 0}
+  HallwayHolder: {fileID: 246180790}
+  StairHolder: {fileID: 1858053136}
 --- !u!4 &1901875910
 Transform:
   m_ObjectHideFlags: 0
