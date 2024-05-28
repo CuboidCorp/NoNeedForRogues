@@ -433,6 +433,33 @@ public class Generator3D : MonoBehaviour
 
     }
 
+    int GetBitmask(Vector3Int pos)
+    {
+        int bitmask = 0;
+        bitmask |= GetCellBitType(pos + Vector3Int.forward) << 0;
+        bitmask |= GetCellBitType(pos + Vector3Int.back) << 2;
+        bitmask |= GetCellBitType(pos + Vector3Int.left) << 4;
+        bitmask |= GetCellBitType(pos + Vector3Int.right) << 6;
+        return bitmask;
+    }
+
+    /// <summary>
+    /// Renvoie les bits qui correspondent à un type de cellule à une position donnée
+    /// </summary>
+    /// <param name="pos">La position dont on veut le bit de type</param>
+    /// <returns>Le bit du type de la cellule</returns>
+    int GetCellBitType(Vector3Int pos)
+    {
+        return grid[pos] switch
+        {
+            CellType.None => 0b00,
+            CellType.Room => 0b01,
+            CellType.Hallway => 0b10,
+            CellType.Stairs => 0b10,
+            _ => 0b00,
+        };
+    }
+
     void PlaceStairs(Vector3 location, Vector3Int delta)
     {
         // Determine the main direction of the stairs
@@ -441,7 +468,7 @@ public class Generator3D : MonoBehaviour
         int zDir = Mathf.Clamp(delta.z, -1, 1);
 
         // Initialize the rotation angle
-        float rotation = 0f;
+        float rotation = 0f + stairs[0].transform.rotation.eulerAngles.y;
 
         // Determine rotation based on direction
         if (yDir != 0)  // If there is a change in the y-axis (indicating stairs)
