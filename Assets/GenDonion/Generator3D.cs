@@ -60,7 +60,7 @@ public class Generator3D : MonoBehaviour
     private GameObject[] puzzleRooms;
     private GameObject[] hallways;//TODO : Temporairement on utilise que la hallway 0
     private GameObject[] stairs;//TODO : Temporairement on utilise que la stair 0 (
-
+    private Dictionary<int, GameObject> lookupHallwaysTable;
     #endregion
 
     Random random;
@@ -75,6 +75,7 @@ public class Generator3D : MonoBehaviour
         random = new Random(seed);
         grid = new Grid3D<CellType>(size, Vector3Int.zero);
         rooms = new List<Room>();
+        lookupHallwaysTable = new Dictionary<int, GameObject>();
 
         switch (ty)
         {
@@ -92,6 +93,10 @@ public class Generator3D : MonoBehaviour
                 treasureRooms = Resources.LoadAll<GameObject>("Donjon/Type1/Treasure");
                 puzzleRooms = Resources.LoadAll<GameObject>("Donjon/Type1/Puzzle");
                 hallways = Resources.LoadAll<GameObject>("Donjon/Type1/Hallways");
+                foreach (GameObject go in hallways)
+                {
+                    lookupHallwaysTable.Add(Convert.ToInt32(go.name, 2), go);
+                }
                 stairs = Resources.LoadAll<GameObject>("Donjon/Type1/Stairs");
                 break;
         }
@@ -394,8 +399,6 @@ public class Generator3D : MonoBehaviour
                             {
                                 PlaceStairs(prev + new Vector3(0.5f, 0, .5f) + midHorizontalOffset, delta);
                             }
-
-                            Debug.Log("Stair at" + (prev + verticalOffset + midHorizontalOffset + new Vector3(0.5f, 0, .5f)));
                         }
 
                         Debug.DrawLine(prev + new Vector3(0.5f, 0.5f, 0.5f), current + new Vector3(0.5f, 0.5f, 0.5f), Color.blue, 100, false);
@@ -406,7 +409,7 @@ public class Generator3D : MonoBehaviour
                 {
                     if (grid[pos] == CellType.Hallway)
                     {
-                        PlaceHallway(pos + new Vector3(0.5f, 0.5f, 0.5f));
+                        PlaceHallway(pos + new Vector3(0.5f, 0.5f, 0.5f), lookupHallwaysTable[GetBitmask(pos)]);
                     }
                 }
             }
@@ -425,9 +428,9 @@ public class Generator3D : MonoBehaviour
         go.transform.SetPositionAndRotation(position, Quaternion.identity);
     }
 
-    void PlaceHallway(Vector3 location)
+    void PlaceHallway(Vector3 location, GameObject hallway)
     {
-        GameObject go = Instantiate(hallways[0], HallwayHolder);
+        GameObject go = Instantiate(hallway, HallwayHolder);
         Vector3 position = new(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
         go.transform.SetPositionAndRotation(position, Quaternion.identity);
 
