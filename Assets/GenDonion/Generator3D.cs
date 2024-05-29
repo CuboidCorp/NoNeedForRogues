@@ -104,7 +104,9 @@ public class Generator3D : MonoBehaviour
 
         PlaceRooms();
         Triangulate();
+        DebugDelaunay();
         CreateHallways();
+        DebugHallways();
         PathfindHallways();
         DebugGrid();
     }
@@ -124,9 +126,16 @@ public class Generator3D : MonoBehaviour
                 2 => puzzleRooms[random.Next(0, puzzleRooms.Length)], // Puzzle
                 _ => normalRooms[random.Next(0, normalRooms.Length)] // Normal
             };
-
+            Vector3Int roomSize;
             // Taille de la salle
-            Vector3Int roomSize = Vector3Int.RoundToInt(futureRoom.transform.localScale);
+            if (futureRoom.TryGetComponent(out RoomInfo roomData))
+            {
+                roomSize = roomData.roomSize;
+            }
+            else
+            {
+                roomSize = Vector3Int.FloorToInt(futureRoom.transform.localScale);
+            }
 
             if (roomSize.x > size.x || roomSize.y > size.y || roomSize.z > size.z) //TODO : Gérer les salles trop grandes
             {
@@ -156,6 +165,7 @@ public class Generator3D : MonoBehaviour
                     cptTaille++;
                     grid[pos] = CellType.Room;
                 }
+                Debug.Log("Taille de la salle : " + cptTaille);
 
                 placedRooms++;
             }
@@ -239,8 +249,8 @@ public class Generator3D : MonoBehaviour
             Room startRoom = (edge.U as Vertex<Room>).Item;
             Room endRoom = (edge.V as Vertex<Room>).Item;
 
-            Vector3 startPos = startRoom.bounds.center;
-            Vector3 endPos = endRoom.bounds.center;
+            Vector3 startPos = new(startRoom.bounds.center.x * cellSize.x, startRoom.bounds.center.y * cellSize.y, startRoom.bounds.center.z * cellSize.z);
+            Vector3 endPos = new(endRoom.bounds.center.x * cellSize.x, endRoom.bounds.center.y * cellSize.y, endRoom.bounds.center.z * cellSize.z);
 
             Debug.DrawLine(startPos, endPos, Color.blue, 100, false);
         }
@@ -251,7 +261,9 @@ public class Generator3D : MonoBehaviour
         foreach (Delaunay3D.Edge edge in delaunay.Edges)
         {
             //Debug.Log("DELAUNAY : pos1 " + edge.U.Position + " pos2 : " + edge.V.Position);
-            Debug.DrawLine(edge.U.Position, edge.V.Position, Color.red, 100, false);
+            Vector3 pos1 = new(edge.U.Position.x * cellSize.x, edge.U.Position.y * cellSize.y, edge.U.Position.z * cellSize.z);
+            Vector3 pos2 = new(edge.V.Position.x * cellSize.x, edge.V.Position.y * cellSize.y, edge.V.Position.z * cellSize.z);
+            Debug.DrawLine(pos1, pos2, Color.red, 100, false);
         }
     }
 
@@ -274,7 +286,6 @@ public class Generator3D : MonoBehaviour
                             Debug.DrawLine(position, position + Vector3.up, Color.blue, 100, false);
                             break;
                         case CellType.Stairs:
-                            Debug.Log("Stairs at " + pos);
                             Debug.DrawLine(position, position + Vector3.up, Color.yellow, 100, false);
                             break;
                     }
@@ -382,7 +393,6 @@ public class Generator3D : MonoBehaviour
                             int xDir = Mathf.Clamp(delta.x, -1, 1);
                             int zDir = Mathf.Clamp(delta.z, -1, 1);
                             Vector3Int verticalOffset = new(0, delta.y, 0);
-                            Debug.Log("Y " + verticalOffset);
                             Vector3Int horizontalOffset = new(xDir, 0, zDir);
 
                             grid[prev + horizontalOffset] = CellType.Stairs;
@@ -400,8 +410,6 @@ public class Generator3D : MonoBehaviour
                                 PlaceStairs(prev + new Vector3(0.5f, 0, .5f) + midHorizontalOffset, delta);
                             }
                         }
-
-                        Debug.DrawLine(prev + new Vector3(0.5f, 0.5f, 0.5f), current + new Vector3(0.5f, 0.5f, 0.5f), Color.blue, 100, false);
                     }
                 }
 
@@ -480,29 +488,29 @@ public class Generator3D : MonoBehaviour
             {
                 if (xDir > 0)
                 {
-                    rotation = 0f;  // Stairs going up in positive x direction
+                    rotation += 0f;  // Stairs going up in positive x direction
                 }
                 else
                 {
-                    rotation = 180f; // Stairs going up in negative x direction
+                    rotation += 180f; // Stairs going up in negative x direction
                 }
             }
             else if (zDir != 0)
             {
                 if (zDir > 0)
                 {
-                    rotation = 270f;   // Stairs going up in positive z direction
+                    rotation += 270f;   // Stairs going up in positive z direction
                 }
                 else
                 {
-                    rotation = 90f; // Stairs going up in negative z direction
+                    rotation += 90f; // Stairs going up in negative z direction
                 }
             }
         }
 
         // Instantiate and place the stairs with the calculated rotation
         GameObject go = Instantiate(stairs[0], StairHolder);
-        Vector3 position = new Vector3(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
+        Vector3 position = new(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
         go.transform.SetPositionAndRotation(position, Quaternion.Euler(0, rotation, 0));
     }
 
