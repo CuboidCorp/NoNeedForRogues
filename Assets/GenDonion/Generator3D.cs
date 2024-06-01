@@ -6,10 +6,10 @@ using System;
 //Ecrit par November
 public class Generator3D : MonoBehaviour
 {
-    class Room
+    class RoomInfoFictive
     {
         public BoundsInt bounds;
-
+        public GameObject room;
 
         /// <summary>
         /// Vérifie si la salle est en collision avec une pseudo-salle
@@ -65,7 +65,7 @@ public class Generator3D : MonoBehaviour
 
     Random random;
     Grid3D<CellType> grid;
-    List<Room> rooms;
+    List<RoomInfoFictive> rooms;
     Delaunay3D delaunay;
     HashSet<Prim.Edge> selectedEdges;
     Vector3 cellSize = new(1, 1, 1);
@@ -74,7 +74,7 @@ public class Generator3D : MonoBehaviour
     {
         random = new Random(seed);
         grid = new Grid3D<CellType>(size, Vector3Int.zero);
-        rooms = new List<Room>();
+        rooms = new List<RoomInfoFictive>();
         lookupHallwaysTable = new Dictionary<int, GameObject>();
 
         switch (ty)
@@ -156,16 +156,17 @@ public class Generator3D : MonoBehaviour
 
             if (IsPositionValid(roomBounds, roomBuffer))
             {
-                Room infoFutRoom = new() { bounds = roomBounds };
+                RoomInfoFictive infoFutRoom = new()
+                {
+                    bounds = roomBounds,
+                    room = futureRoom
+                };
                 rooms.Add(infoFutRoom);
                 PlaceRoom(roomBounds.center, futureRoom);
-                int cptTaille = 0;
                 foreach (Vector3Int pos in roomBounds.allPositionsWithin)
                 {
-                    cptTaille++;
                     grid[pos] = CellType.Room;
                 }
-                Debug.Log("Taille de la salle : " + cptTaille);
 
                 placedRooms++;
             }
@@ -190,7 +191,7 @@ public class Generator3D : MonoBehaviour
         }
 
         // Vérification des collisions avec les salles existantes
-        foreach (Room room in rooms)
+        foreach (RoomInfoFictive room in rooms)
         {
             if (room.IsIntersectingWith(roomBuffer))
             {
@@ -206,9 +207,9 @@ public class Generator3D : MonoBehaviour
     {
         List<Vertex> vertices = new();
 
-        foreach (Room room in rooms)
+        foreach (RoomInfoFictive room in rooms)
         {
-            vertices.Add(new Vertex<Room>(room.bounds.center, room));
+            vertices.Add(new Vertex<RoomInfoFictive>(room.bounds.center, room));
             //Debug.Log("DELAUNAY : pos1 " + room.bounds.position + " center : " + room.bounds.center);
         }
 
@@ -246,8 +247,8 @@ public class Generator3D : MonoBehaviour
     {
         foreach (Prim.Edge edge in selectedEdges)
         {
-            Room startRoom = (edge.U as Vertex<Room>).Item;
-            Room endRoom = (edge.V as Vertex<Room>).Item;
+            RoomInfoFictive startRoom = (edge.U as Vertex<RoomInfoFictive>).Item;
+            RoomInfoFictive endRoom = (edge.V as Vertex<RoomInfoFictive>).Item;
 
             Vector3 startPos = new(startRoom.bounds.center.x * cellSize.x, startRoom.bounds.center.y * cellSize.y, startRoom.bounds.center.z * cellSize.z);
             Vector3 endPos = new(endRoom.bounds.center.x * cellSize.x, endRoom.bounds.center.y * cellSize.y, endRoom.bounds.center.z * cellSize.z);
@@ -302,8 +303,8 @@ public class Generator3D : MonoBehaviour
 
         foreach (Prim.Edge edge in selectedEdges)
         {
-            Room startRoom = (edge.U as Vertex<Room>).Item;
-            Room endRoom = (edge.V as Vertex<Room>).Item;
+            RoomInfoFictive startRoom = (edge.U as Vertex<RoomInfoFictive>).Item;
+            RoomInfoFictive endRoom = (edge.V as Vertex<RoomInfoFictive>).Item;
 
             Vector3 startPosf = startRoom.bounds.center;
             Vector3 endPosf = endRoom.bounds.center;
@@ -417,11 +418,26 @@ public class Generator3D : MonoBehaviour
                 {
                     if (grid[pos] == CellType.Hallway)
                     {
-                        PlaceHallway(pos + new Vector3(0.5f, 0.5f, 0.5f), lookupHallwaysTable[GetBitmask(pos)]);
+                        GameObject go = PlaceHallway(pos + new Vector3(0.5f, 0.5f, 0.5f), lookupHallwaysTable[GetBitmask(pos)]);
+                        //Si y a une salle a coté on verif sa roomInfo et on lui dit de suppr son mur qui est en face
+                        if (grid[pos + Vector3Int.forward] == CellType.Room || grid[pos + Vector3Int.back] == CellType.Room || grid[pos + Vector3Int.left] == CellType.Room || grid[pos + Vector3Int.right] == CellType.Room)
+                        {
+                            //On a une salle a coté on la trouve dans la liste des salles et on lui dit de supprimer son mur
+                            foreach (RoomInfoFictive rif in rooms)
+                            {
+                                //Si l'une des position est dans les bounds de la salle on lui dit de supprimer son mur
+                                if (rif.bounds.Contains(pos + Vector3Int.forward) || rif.bounds.Contains(pos + Vector3Int.back) || rif.bounds.Contains(pos + Vector3Int.left) || rif.bounds.Contains(pos + Vector3Int.right))
+                                {
+                                    rif.room.GetComponent<RoomInfo>().RemoveWall(go);
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
+
+
     }
 
     /// <summary>
@@ -436,12 +452,12 @@ public class Generator3D : MonoBehaviour
         go.transform.SetPositionAndRotation(position, Quaternion.identity);
     }
 
-    void PlaceHallway(Vector3 location, GameObject hallway)
+    GameObject PlaceHallway(Vector3 location, GameObject hallway)
     {
         GameObject go = Instantiate(hallway, HallwayHolder);
         Vector3 position = new(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
         go.transform.SetPositionAndRotation(position, Quaternion.identity);
-
+        return go;
     }
 
     int GetBitmask(Vector3Int pos)
