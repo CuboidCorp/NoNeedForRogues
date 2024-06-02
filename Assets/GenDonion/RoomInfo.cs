@@ -12,22 +12,29 @@ public class RoomInfo : MonoBehaviour
     /// <param name="hallway">Le couloir en collision </param>
     public void RemoveWall(GameObject hallway)
     {
+        List<GameObject> wallsToRemove = new List<GameObject>();
         foreach (GameObject wall in walls)
         {
             foreach (Transform child in hallway.transform)
             {
                 if (child.name.Contains("Wall"))
                 {
-                    Debug.Log("Mur");
-                    if (wall.GetComponent<Collider>().bounds.Intersects(child.GetComponent<Collider>().bounds))
+                    Debug.Log("Distance between " + wall.name + " and " + child.name + " is " + Vector3.Distance(wall.transform.position, child.position));
+                    if (Vector3.Distance(wall.transform.position, child.position) < 1)
                     {
-                        Debug.Log("Wall removed");
-                        walls.Remove(wall);
-                        Destroy(wall);
+                        Debug.Log("Is " + wall.name + " collinding with " + child.name);
+
+                        wallsToRemove.Add(wall);
+
                         break;
                     }
                 }
             }
+        }
+        foreach (GameObject wall in wallsToRemove)
+        {
+            walls.Remove(wall);
+            Destroy(wall);
         }
     }
 }

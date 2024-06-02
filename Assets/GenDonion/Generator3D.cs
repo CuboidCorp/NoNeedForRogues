@@ -156,13 +156,13 @@ public class Generator3D : MonoBehaviour
 
             if (IsPositionValid(roomBounds, roomBuffer))
             {
+                GameObject placedRoom = PlaceRoom(roomBounds.center, futureRoom);
                 RoomInfoFictive infoFutRoom = new()
                 {
                     bounds = roomBounds,
-                    room = futureRoom
+                    room = placedRoom
                 };
                 rooms.Add(infoFutRoom);
-                PlaceRoom(roomBounds.center, futureRoom);
                 foreach (Vector3Int pos in roomBounds.allPositionsWithin)
                 {
                     grid[pos] = CellType.Room;
@@ -445,11 +445,12 @@ public class Generator3D : MonoBehaviour
     /// </summary>
     /// <param name="location">L'endroit ou placé la salle</param>
     /// <param name="roomToPlace">La salle a placer</param>
-    void PlaceRoom(Vector3 location, GameObject roomToPlace)
+    GameObject PlaceRoom(Vector3 location, GameObject roomToPlace)
     {
         GameObject go = Instantiate(roomToPlace, RoomHolder);
         Vector3 position = new(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
         go.transform.SetPositionAndRotation(position, Quaternion.identity);
+        return go;
     }
 
     GameObject PlaceHallway(Vector3 location, GameObject hallway)

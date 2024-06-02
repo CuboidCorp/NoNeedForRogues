@@ -412,6 +412,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1901875910}
   - component: {fileID: 1901875909}
+  - component: {fileID: 1901875911}
   m_Layer: 0
   m_Name: DunGen
   m_TagString: Untagged
@@ -433,7 +434,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   seed: 0
   size: {x: 30, y: 5, z: 30}
-  roomCount: 10
+  roomCount: 5
   ty: 1
   RoomHolder: {fileID: 468632862}
   HallwayHolder: {fileID: 246180790}
@@ -453,6 +454,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1901875911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901875908}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5173f7435ee8e6445a30478d6d5c58cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hallwayPrefab: {fileID: 7905182082126721346, guid: 3cbb3c41eceefd94890dfbde19d660f5, type: 3}
+  roomPrefab: {fileID: 5747476904537413660, guid: 0861125efdd117b428d692e579c5969c, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
