@@ -19,13 +19,9 @@ public class RoomInfo : MonoBehaviour
             {
                 if (child.name.Contains("Wall"))
                 {
-                    Debug.Log("Distance between " + wall.name + " and " + child.name + " is " + Vector3.Distance(wall.transform.position, child.position));
                     if (Vector3.Distance(wall.transform.position, child.position) < 1)
                     {
-                        Debug.Log("Is " + wall.name + " collinding with " + child.name);
-
                         wallsToRemove.Add(wall);
-
                         break;
                     }
                 }

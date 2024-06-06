@@ -402,14 +402,23 @@ public class Generator3D : MonoBehaviour
                             grid[prev + verticalOffset + horizontalOffset * 2] = CellType.Stairs;
 
                             Vector3 midHorizontalOffset = new(horizontalOffset.x * 1.5f, horizontalOffset.y * 1.5f, horizontalOffset.z * 1.5f);
-                            if (verticalOffset.y == 1)
+                            switch (ty)
                             {
-                                PlaceStairs(prev + new Vector3(0.5f, 0, .5f) + verticalOffset + midHorizontalOffset, delta);
+                                case DungeonType.Type0:
+                                    if (verticalOffset.y == 1)
+                                    {
+                                        PlaceStairs(prev + new Vector3(0.5f, 0, .5f) + verticalOffset + midHorizontalOffset, delta);
+                                    }
+                                    else
+                                    {
+                                        PlaceStairs(prev + new Vector3(0.5f, 0, .5f) + midHorizontalOffset, delta);
+                                    }
+                                    break;
+                                case DungeonType.Type1:
+                                    PlaceStairs(prev + new Vector3(0.5f, .55f, .5f) + horizontalOffset, delta);
+                                    break;
                             }
-                            else
-                            {
-                                PlaceStairs(prev + new Vector3(0.5f, 0, .5f) + midHorizontalOffset, delta);
-                            }
+
                         }
                     }
                 }
