@@ -73,7 +73,7 @@ public class Generator3D : MonoBehaviour
     void Start()
     {
         random = new Random(seed);
-        grid = new Grid3D<CellType>(size, Vector3Int.zero);
+        grid = new Grid3D<CellType>(new Vector3Int(size.x + 2, size.y + 2, size.z + 2), Vector3Int.zero);
         rooms = new List<RoomInfoFictive>();
         lookupHallwaysTable = new Dictionary<int, GameObject>();
 
@@ -101,14 +101,12 @@ public class Generator3D : MonoBehaviour
                 break;
         }
 
-
         PlaceRooms();
         Triangulate();
         DebugDelaunay();
         CreateHallways();
         DebugHallways();
         PathfindHallways();
-        DebugGrid();
     }
 
     void PlaceRooms()
@@ -156,7 +154,7 @@ public class Generator3D : MonoBehaviour
 
             if (IsPositionValid(roomBounds, roomBuffer))
             {
-                GameObject placedRoom = PlaceRoom(roomBounds.center, futureRoom);
+                GameObject placedRoom = PlaceRoom(location, futureRoom);
                 RoomInfoFictive infoFutRoom = new()
                 {
                     bounds = roomBounds,
@@ -201,7 +199,6 @@ public class Generator3D : MonoBehaviour
 
         return true;
     }
-
 
     void Triangulate()
     {
@@ -294,6 +291,47 @@ public class Generator3D : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Pour chaque position possible dans la taille de la grille on dessine un cube
+    /// </summary>
+    void OnDrawGizmos()
+    {
+        if (Application.isPlaying)
+        {
+            for (int x = 0; x < size.x; x++)
+            {
+                for (int y = 0; y < size.y; y++)
+                {
+                    for (int z = 0; z < size.z; z++)
+                    {
+                        Vector3Int pos = new(x, y, z);
+                        Vector3 position = new(pos.x * cellSize.x, pos.y * cellSize.y, pos.z * cellSize.z);
+                        if (grid != null)
+                        {
+                            switch (grid[pos])
+                            {
+                                case CellType.Room:
+                                    Gizmos.color = Color.green; // Set the color to white
+                                    Gizmos.DrawCube(position, Vector3.one * 0.5f); // Draw a cube at the position
+                                    break;
+                                case CellType.Hallway:
+                                    Gizmos.color = Color.blue; // Set the color to white
+                                    Gizmos.DrawCube(position, Vector3.one * 0.5f); // Draw a cube at the position
+                                    break;
+                                case CellType.Stairs:
+                                    Gizmos.color = Color.yellow; // Set the color to white
+                                    Gizmos.DrawCube(position, Vector3.one * 0.5f); // Draw a cube at the position
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
     #endregion
 
 
@@ -407,15 +445,23 @@ public class Generator3D : MonoBehaviour
                                 case DungeonType.Type0:
                                     if (verticalOffset.y == 1)
                                     {
-                                        PlaceStairs(prev + new Vector3(0.5f, 0, .5f) + verticalOffset + midHorizontalOffset, delta);
+                                        PlaceStairs(prev + verticalOffset + midHorizontalOffset, delta);
                                     }
                                     else
                                     {
-                                        PlaceStairs(prev + new Vector3(0.5f, 0, .5f) + midHorizontalOffset, delta);
+                                        PlaceStairs(prev + midHorizontalOffset, delta);
                                     }
                                     break;
                                 case DungeonType.Type1:
-                                    PlaceStairs(prev + new Vector3(0.5f, .55f, .5f) + horizontalOffset, delta);
+                                    if (delta.y == 1)
+                                    {
+                                        PlaceStairs(prev + horizontalOffset, delta);
+                                    }
+                                    else
+                                    {
+                                        PlaceStairs(prev + verticalOffset + horizontalOffset * 2, delta);
+                                    }
+
                                     break;
                             }
 
@@ -427,7 +473,7 @@ public class Generator3D : MonoBehaviour
                 {
                     if (grid[pos] == CellType.Hallway)
                     {
-                        GameObject go = PlaceHallway(pos + new Vector3(0.5f, 0.5f, 0.5f), lookupHallwaysTable[GetBitmask(pos)]);
+                        GameObject go = PlaceHallway(pos, lookupHallwaysTable[GetBitmask(pos)]);
                         //Si y a une salle a coté on verif sa roomInfo et on lui dit de suppr son mur qui est en face
                         if (grid[pos + Vector3Int.forward] == CellType.Room || grid[pos + Vector3Int.back] == CellType.Room || grid[pos + Vector3Int.left] == CellType.Room || grid[pos + Vector3Int.right] == CellType.Room)
                         {
@@ -457,7 +503,9 @@ public class Generator3D : MonoBehaviour
     GameObject PlaceRoom(Vector3 location, GameObject roomToPlace)
     {
         GameObject go = Instantiate(roomToPlace, RoomHolder);
+        go.name = roomToPlace.name + " " + location.x + ":" + location.y + ":" + location.z;
         Vector3 position = new(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
+        //Vector3 position = new(location.x, location.y, location.z);
         go.transform.SetPositionAndRotation(position, Quaternion.identity);
         return go;
     }
@@ -465,6 +513,7 @@ public class Generator3D : MonoBehaviour
     GameObject PlaceHallway(Vector3 location, GameObject hallway)
     {
         GameObject go = Instantiate(hallway, HallwayHolder);
+        go.name = hallway.name + " " + location.x + ":" + location.y + ":" + location.z;
         Vector3 position = new(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
         go.transform.SetPositionAndRotation(position, Quaternion.identity);
         return go;
@@ -508,7 +557,7 @@ public class Generator3D : MonoBehaviour
         float rotation = 0f + stairs[0].transform.rotation.eulerAngles.y;
 
         // Determine rotation based on direction
-        if (yDir != 0)  // If there is a change in the y-axis (indicating stairs)
+        if (yDir == 1)  // If there is a change in the y-axis (indicating stairs)
         {
             if (xDir != 0)
             {
@@ -533,10 +582,38 @@ public class Generator3D : MonoBehaviour
                 }
             }
         }
+        else
+        {
+            // If there is no change in the y-axis (indicating a flat hallway)
+            if (xDir != 0)
+            {
+                if (xDir > 0)
+                {
+                    rotation += 180f;  // Hallway in positive x direction
+                }
+                else
+                {
+                    rotation += 0f; // Hallway in negative x direction
+                }
+            }
+            else if (zDir != 0)
+            {
+                if (zDir > 0)
+                {
+                    rotation += 90f;   // Hallway in positive z direction
+                }
+                else
+                {
+                    rotation += 270f; // Hallway in negative z direction
+                }
+            }
 
+        }
         // Instantiate and place the stairs with the calculated rotation
         GameObject go = Instantiate(stairs[0], StairHolder);
+        go.name = stairs[0].name + " " + location.x + ":" + location.y + ":" + location.z + "(" + delta.ToString() + ")";
         Vector3 position = new(location.x * cellSize.x, location.y * cellSize.y, location.z * cellSize.z);
+        //Vector3 position = new(location.x, location.y, location.z);
         go.transform.SetPositionAndRotation(position, Quaternion.Euler(0, rotation, 0));
     }
 

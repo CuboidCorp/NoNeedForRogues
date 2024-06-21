@@ -432,7 +432,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 135cd19fd7ee58a4fb55d77f010a47c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seed: 0
+  seed: 1182
   size: {x: 30, y: 5, z: 30}
   roomCount: 10
   ty: 1
