@@ -3,6 +3,7 @@ using UnityEngine;
 using Random = System.Random;
 using Graphs;
 using System;
+using static DungeonPathfinder3D;
 //Ecrit par November
 public class Generator3D : MonoBehaviour
 {
@@ -58,8 +59,8 @@ public class Generator3D : MonoBehaviour
     private GameObject[] normalRooms;
     private GameObject[] treasureRooms;
     private GameObject[] puzzleRooms;
-    private GameObject[] hallways;//TODO : Temporairement on utilise que la hallway 0
-    private GameObject[] stairs;//TODO : Temporairement on utilise que la stair 0 (
+    private GameObject[] hallways;
+    private GameObject[] stairs;
     private Dictionary<int, GameObject> lookupHallwaysTable;
     #endregion
 
@@ -87,7 +88,6 @@ public class Generator3D : MonoBehaviour
                 stairs = Resources.LoadAll<GameObject>("Donjon/Type0/Stairs");
                 break;
             case DungeonType.Type1:
-                //throw new System.NotImplementedException("Pas fait encore mon gars"); //TODO Faire le type 1
                 cellSize = new Vector3(4.8f, 4.8f, 4.8f);
                 normalRooms = Resources.LoadAll<GameObject>("Donjon/Type1/Normal");
                 treasureRooms = Resources.LoadAll<GameObject>("Donjon/Type1/Treasure");
@@ -106,6 +106,40 @@ public class Generator3D : MonoBehaviour
         DebugDelaunay();
         CreateHallways();
         DebugHallways();
+        //Vector3Int location1 = new(13, 0, 18);
+        //Vector3Int location2 = new(20, 2, 13);
+        //Vector3 roomSize = normalRooms[0].GetComponent<RoomInfo>().roomSize;
+        //BoundsInt roomBounds = new(location1, Vector3Int.FloorToInt(roomSize));
+        //GameObject placedRoom1 = PlaceRoom(location1, normalRooms[0]);
+        //RoomInfoFictive rif1 = new()
+        //{
+        //    bounds = roomBounds,
+        //    room = placedRoom1
+        //};
+        //foreach (Vector3Int pos in roomBounds.allPositionsWithin)
+        //{
+        //    grid[pos] = CellType.Room;
+        //    GameObject go = new GameObject("Room " + pos.x + ":" + pos.y + ":" + pos.z);
+        //    go.transform.position = (Vector3)pos * 4.8f;
+        //}
+        //GameObject placedRoom2 = PlaceRoom(location2, normalRooms[0]);
+        //roomBounds = new(location2, Vector3Int.FloorToInt(roomSize));
+        //RoomInfoFictive rif2 = new()
+        //{
+        //    bounds = roomBounds,
+        //    room = placedRoom2
+        //};
+        //foreach (Vector3Int pos in roomBounds.allPositionsWithin)
+        //{
+        //    grid[pos] = CellType.Room;
+        //    GameObject go = new GameObject("Room " + pos.x + ":" + pos.y + ":" + pos.z);
+        //    go.transform.position = (Vector3)pos * 4.8f;
+        //}
+        //selectedEdges = new HashSet<Prim.Edge>
+        //{
+        //    new Prim.Edge(new Vertex<RoomInfoFictive>(location2, rif2),new Vertex<RoomInfoFictive>(location1, rif1))
+        //};
+        //On pathfind entre les deux salles
         PathfindHallways();
     }
 
@@ -237,8 +271,6 @@ public class Generator3D : MonoBehaviour
         }
     }
 
-
-
     #region Debug
     void DebugHallways()
     {
@@ -349,9 +381,13 @@ public class Generator3D : MonoBehaviour
             Vector3Int startPos = new((int)startPosf.x, (int)startPosf.y, (int)startPosf.z);
             Vector3Int endPos = new((int)endPosf.x, (int)endPosf.y, (int)endPosf.z);
 
-            List<Vector3Int> path = aStar.FindPath(startPos, endPos, (DungeonPathfinder3D.Node a, DungeonPathfinder3D.Node b) =>
+            //On prend la porte la 
+            startPos += GetClosestDoor(startRoom.room.GetComponent<RoomInfo>(), endPos);
+            endPos += GetClosestDoor(endRoom.room.GetComponent<RoomInfo>(), startPos);
+
+            List<Vector3Int> path = aStar.FindPath(startPos, endPos, (Node a, Node b) =>
             {
-                var pathCost = new DungeonPathfinder3D.PathCost();
+                PathCost pathCost = new();
 
                 Vector3Int delta = b.Position - a.Position;
 
@@ -412,6 +448,7 @@ public class Generator3D : MonoBehaviour
 
             if (path != null)
             {
+                Debug.Log("Path found from " + startPos + " to " + endPos + " with " + path.Count + " steps.");
                 for (int i = 0; i < path.Count; i++)
                 {
                     Vector3Int current = path[i];
@@ -475,7 +512,7 @@ public class Generator3D : MonoBehaviour
                     {
                         GameObject go = PlaceHallway(pos, lookupHallwaysTable[GetBitmask(pos)]);
                         //Si y a une salle a coté on verif sa roomInfo et on lui dit de suppr son mur qui est en face
-                        if (grid[pos + Vector3Int.forward] == CellType.Room || grid[pos + Vector3Int.back] == CellType.Room || grid[pos + Vector3Int.left] == CellType.Room || grid[pos + Vector3Int.right] == CellType.Room)
+                        if ((grid.InBounds(pos + Vector3Int.forward) && grid[pos + Vector3Int.forward] == CellType.Room) || (grid.InBounds(pos + Vector3Int.back) && grid[pos + Vector3Int.back] == CellType.Room) || (grid.InBounds(pos + Vector3Int.left) && grid[pos + Vector3Int.left] == CellType.Room) || (grid.InBounds(pos + Vector3Int.right) && grid[pos + Vector3Int.right] == CellType.Room))
                         {
                             //On a une salle a coté on la trouve dans la liste des salles et on lui dit de supprimer son mur
                             foreach (RoomInfoFictive rif in rooms)
@@ -490,9 +527,35 @@ public class Generator3D : MonoBehaviour
                     }
                 }
             }
+            else
+            {
+                //TODO : Gérer les salles inaccessibles
+                Debug.LogWarning("Path not found from " + startPos + " to " + endPos + ".");
+            }
         }
 
 
+    }
+
+    Vector3Int GetClosestDoor(RoomInfo room, Vector3Int pos)
+    {
+        Vector3Int closestDoor = Vector3Int.zero;
+        float closestDistance = float.MaxValue;
+
+        foreach (Vector3Int door in room.hallwayPos)
+        {
+            float distance = Vector3Int.Distance(pos, door);
+
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestDoor = door;
+            }
+        }
+
+        room.hallwayPos.Remove(closestDoor);
+
+        return closestDoor;
     }
 
     /// <summary>
@@ -536,14 +599,18 @@ public class Generator3D : MonoBehaviour
     /// <returns>Le bit du type de la cellule</returns>
     int GetCellBitType(Vector3Int pos)
     {
-        return grid[pos] switch
+        if (grid.InBounds(pos))
         {
-            CellType.None => 0b00,
-            CellType.Room => 0b01,
-            CellType.Hallway => 0b10,
-            CellType.Stairs => 0b10,
-            _ => 0b00,
-        };
+            return grid[pos] switch
+            {
+                CellType.None => 0b00,
+                CellType.Room => 0b01,
+                CellType.Hallway => 0b10,
+                CellType.Stairs => 0b10,
+                _ => 0b00,
+            };
+        }
+        return 0b00;
     }
 
     void PlaceStairs(Vector3 location, Vector3Int delta)

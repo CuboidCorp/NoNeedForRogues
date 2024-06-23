@@ -5,6 +5,7 @@ public class RoomInfo : MonoBehaviour
 {
     public Vector3Int roomSize;
     public List<GameObject> walls;
+    public List<Vector3Int> hallwayPos;
 
     /// <summary>
     /// Enleve un mur qui est collide avec un couloir
