@@ -411,8 +411,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1901875910}
-  - component: {fileID: 1901875909}
-  - component: {fileID: 1901875911}
+  - component: {fileID: 1901875912}
+  - component: {fileID: 1901875915}
+  - component: {fileID: 1901875914}
+  - component: {fileID: 1901875913}
   m_Layer: 0
   m_Name: DunGen
   m_TagString: Untagged
@@ -420,25 +422,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1901875909
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1901875908}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 135cd19fd7ee58a4fb55d77f010a47c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  seed: 1350
-  size: {x: 40, y: 5, z: 40}
-  roomCount: 10
-  ty: 1
-  RoomHolder: {fileID: 468632862}
-  HallwayHolder: {fileID: 246180790}
-  StairHolder: {fileID: 1858053136}
 --- !u!4 &1901875910
 Transform:
   m_ObjectHideFlags: 0
@@ -454,7 +437,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1901875911
+--- !u!114 &1901875912
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -463,12 +446,59 @@ MonoBehaviour:
   m_GameObject: {fileID: 1901875908}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5173f7435ee8e6445a30478d6d5c58cf, type: 3}
+  m_Script: {fileID: 11500000, guid: 260d2423755d42b4ab53e333e58fb082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hallwayPrefab: {fileID: 7905182082126721346, guid: 3cbb3c41eceefd94890dfbde19d660f5, type: 3}
-  roomPrefab: {fileID: 5747476904537413660, guid: 0861125efdd117b428d692e579c5969c, type: 3}
-  size: {x: 0, y: 0, z: 0}
+  nbEtages: 1
+  cellSize: 4.8
+  seed: 658989
+  cellDistanceBetweenEtages: 0
+  typeEtage: 0
+  minTailleEtage: {x: 20, y: 20}
+  maxTailleEtage: {x: 30, y: 30}
+  pathToRooms: Donjon/Type1/Rooms
+  pathToHallways: Donjon/Type1/HallwaysSimple
+  pathToStairs: Donjon/Type1/Stairs
+--- !u!114 &1901875913
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901875908}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3924f5cbd22d3524594894da5bfc6e01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nbRooms: 0
+  nbAttempts: 0
+--- !u!114 &1901875914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901875908}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed8252741ab230f43a56f8872d2ff9c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nbRooms: 0
+  nbAttempts: 0
+--- !u!114 &1901875915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901875908}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 106fde6387ef9bb4fb97661f3d787353, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
