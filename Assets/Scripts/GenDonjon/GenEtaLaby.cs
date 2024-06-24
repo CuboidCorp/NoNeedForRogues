@@ -69,7 +69,7 @@ public class GenEtaLaby : GenerationEtage
         deadEnds = new List<Vector2Int>();
         bool aEuDesVoisins = true;
         Stack<Vector2Int> stack = new();
-        Vector2Int currentCell = new Vector2Int(UnityEngine.Random.Range(0, tailleEtage.x), UnityEngine.Random.Range(0, tailleEtage.y));
+        Vector2Int currentCell = new(UnityEngine.Random.Range(0, tailleEtage.x), UnityEngine.Random.Range(0, tailleEtage.y));
         etage[currentCell.x, currentCell.y] |= WallState.VISITED;
         stack.Push(currentCell);
 
@@ -162,6 +162,6 @@ public class GenEtaLaby : GenerationEtage
     private int GetIndexCouloir(Vector2Int position)
     {
         int allFlagsMask = (int)(WallState.DOWN | WallState.UP | WallState.LEFT | WallState.RIGHT | WallState.VISITED);
-        return (~(int)etage[position.x, position.y] & allFlagsMask);
+        return ~(int)etage[position.x, position.y] & allFlagsMask;
     }
 }
