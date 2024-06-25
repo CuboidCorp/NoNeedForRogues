@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Gère le piège de la boule de roche
 /// </summary>
-public class BoulderTrap : MonoBehaviour
+public class BoulderTrap : Trap
 {
     [SerializeField] private int direction = -1; // -1 = random, 0 = x+, 1 = x-, 2 = z+, 3 = z-
 
@@ -19,7 +19,7 @@ public class BoulderTrap : MonoBehaviour
     /// <summary>
     /// Permet de lancer le piège
     /// </summary>
-    public void SpawnTrap()
+    public override void ActivateTrap()
     {
         if (!activated)
         {
@@ -31,10 +31,7 @@ public class BoulderTrap : MonoBehaviour
 
     }
 
-    /// <summary>
-    /// Permet de réinitialiser le piège
-    /// </summary>
-    public void ResetTrap()
+    public override void DeactivateTrap()
     {
         activated = false;
     }
