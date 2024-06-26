@@ -6,7 +6,7 @@ public class SpikeTrap : Trap
 
     private void Awake()
     {
-        anim = GetComponent<Animator>();
+        anim = transform.parent.GetComponent<Animator>();
     }
 
     public override void ActivateTrap()
@@ -23,10 +23,8 @@ public class SpikeTrap : Trap
     {
         if (other.CompareTag("Player"))
         {
-            //On regarde la vélocité du joueur en y et on fait des dégats en fonction
-            float yVelocity = other.attachedRigidbody.velocity.y;
-            other.GetComponent<MonPlayerController>().Damage(yVelocity * 2);
-            Debug.Log("Dégats : " + yVelocity * 2);
+            other.GetComponent<MonPlayerController>().Damage(5);
+            Debug.Log("Dégats : " + 5);
         }
     }
 }
