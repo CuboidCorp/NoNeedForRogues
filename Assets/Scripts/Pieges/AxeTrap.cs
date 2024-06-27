@@ -9,14 +9,23 @@ public class AxeTrap : Trap
     /// </summary>
     public float animationSpeed = 1;
 
+    [SerializeField] private float damage = 5;
+
     private bool activated = false;
 
     private Animator animator;
+
+    private DamageZone[] dmgZones;
 
     private void Awake()
     {
         animator = GetComponentInChildren<Animator>();
         animator.speed = animationSpeed;
+        dmgZones = GetComponentsInChildren<DamageZone>();
+        foreach (DamageZone dmgZone in dmgZones)
+        {
+            dmgZone.damage = damage;
+        }
     }
 
     public override void ActivateTrap()
@@ -25,6 +34,10 @@ public class AxeTrap : Trap
         {
             activated = true;
             animator.SetBool("Activated", true);
+            foreach (DamageZone dmgZone in dmgZones)
+            {
+                dmgZone.isActivated = true;
+            }
         }
 
     }
@@ -33,6 +46,10 @@ public class AxeTrap : Trap
     {
         activated = false;
         animator.SetBool("Activated", false);
+        foreach (DamageZone dmgZone in dmgZones)
+        {
+            dmgZone.isActivated = false;
+        }
     }
 
 }
