@@ -7,7 +7,9 @@ using UnityEngine.Serialization;
 /// Les objets de type Levier ont 2 etats et executent des actions differentes en fonction de leur etat
 /// En interagissant avec le levier, on change son etat
 /// </summary>
-public class Lever : Interactable {
+[RequireComponent(typeof(Animator))]
+public class Lever : Interactable
+{
 
     /// <summary>
     /// La position du levier
@@ -18,16 +20,6 @@ public class Lever : Interactable {
     /// L'animator du levier
     /// </summary>
     private Animator animator;
-
-    /// <summary>
-    /// Le nom de l'animation de mettre le levier a on
-    /// </summary>
-    [SerializeField] private string onAnimationName = "Press";
-
-    /// <summary>
-    /// Le nom de l'animation de mettre le levier a off
-    /// </summary>
-    [SerializeField] private string offAnimationName = "Reset";
 
     /// <summary>
     /// L'animation de on (pour obtenir la durée)
@@ -63,16 +55,18 @@ public class Lever : Interactable {
     /// </summary>
     protected override void HandleInteraction()
     {
-        if(isSwitchedOn)
+        if (isSwitchedOn)
         {
-            animator.Play(onAnimationName);
+            animator.SetBool("Activated", true);
+            interactText = "Eteindre";
             onAction.Invoke();
             StartCoroutine(WaitForEndAnimationOn());
         }
         else
         {
-            animator.Play(offAnimationName);
+            animator.SetBool("Activated", false);
             offAction.Invoke();
+            interactText = "Allumer";
             StartCoroutine(WaitForEndAnimationOff());
         }
         isSwitchedOn = !isSwitchedOn;

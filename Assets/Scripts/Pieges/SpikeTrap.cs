@@ -9,7 +9,7 @@ public class SpikeTrap : Trap
 
     private void Awake()
     {
-        anim = transform.parent.GetComponent<Animator>();
+        anim = GetComponent<Animator>();
         anim.speed = speed;
     }
 
