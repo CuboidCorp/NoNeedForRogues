@@ -15,8 +15,12 @@ public class PlayerUIManager : MonoBehaviour
     [Header("PlayerUI Elements")]
     [SerializeField] private GameObject crossHair;
     [SerializeField] private GameObject interactText;
-    [SerializeField] private GameObject healthBar;
-    [SerializeField] private GameObject manaBar;
+    public GameObject francois;
+    public Slider healthSlider;
+    public Slider manaSlider;
+    public TMP_Text healthText;
+    public TMP_Text manaText;
+    public TMP_Text goldText;
 
     [Header("Pause Menu Elements")]
     [SerializeField] private Button resumeButton;
@@ -30,15 +34,11 @@ public class PlayerUIManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
-    }
-
-    private void Start()
-    {
         playerUI.SetActive(false);
         pauseMenu.SetActive(false);
         gameOverMenu.SetActive(false);
         optionsMenu.SetActive(false);
+        Instance = this;
     }
 
     #region PlayerUI

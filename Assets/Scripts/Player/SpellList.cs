@@ -5,7 +5,7 @@ using UnityEngine;
 /// </summary>
 public class SpellList : MonoBehaviour
 {
-    public static string[] spells = { "Explosion", "Ragdoll", "Lumos", "Lumosse", "Mort", "FusRoDah", "Fireball", "Boule de feu", "Interact", "Interaction", "Open sesame", "Ouvre toi sesame", "Attraper" ,"Lancer", "Lacher" };
+    public static string[] spells = { "Crepitus", "Lux", "Mortuus", "Ragdoll", "Ignis pila", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "François François François", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus" };
 
 
 
@@ -72,6 +72,16 @@ public class SpellList : MonoBehaviour
                 openable.Open();
             }
         }
+    }
+
+    public static void Fireball()
+    {
+        //TODO : Fireball
+    }
+
+    public static void FusRoDah()
+    {
+        //TODO : FusRoDah
     }
 
     //TODO : Spells a faire : 

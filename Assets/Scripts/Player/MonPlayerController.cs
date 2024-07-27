@@ -114,6 +114,12 @@ public class MonPlayerController : Entity
 
         playerActions.Pause.performed += ctx => PlayerUIManager.Instance.ShowPauseMenu(playerActions);
 
+        healthSlider = PlayerUIManager.Instance.healthSlider;
+        healthText = PlayerUIManager.Instance.healthText;
+        manaSlider = PlayerUIManager.Instance.manaSlider;
+        manaText = PlayerUIManager.Instance.manaText;
+        IntiliazeUi();
+
         animator = transform.GetComponentInChildren<Animator>();
         playerCamera = cameraPivot.GetComponent<Camera>();
         voiceConnexion = transform.GetComponentInChildren<VivoxVoiceConnexion>();
@@ -369,7 +375,7 @@ public class MonPlayerController : Entity
     /// </summary>
     /// <param name="damage">Le nombre de degats infligés</param>
     /// <returns>True si le joueur est mort, false sinon</returns>
-    public void Damage(float damage)
+    public override void Damage(float damage)
     {
         if (!IsOwner)
         {
@@ -383,13 +389,7 @@ public class MonPlayerController : Entity
         }
         StopEmotes();
         animator.SetTrigger("GotHurt");
-        StopEmotes();
-        vie -= damage;
-        if (vie <= 0)
-        {
-            Die();
-            return;
-        }
+        base.Damage(damage);
         return;
     }
 
@@ -407,7 +407,7 @@ public class MonPlayerController : Entity
     /// <summary>
     /// Gère la mort du joueur, soit on remplace le joueur par sa ragdoll
     /// </summary>
-    private void Die()
+    protected override void Die()
     {
         SendDeathServerRpc(OwnerClientId);
         animator.SetTrigger("Died");
@@ -503,12 +503,23 @@ public class MonPlayerController : Entity
     {
         transform.position = lastCheckPoint;
         gameObject.tag = "Player";
+        FullHeal();
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
         SyncRagdollStateServerRpc(OwnerClientId, false);
         DisableRagdoll();
         gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;
         cameraPivot.SetActive(true);
+    }
+
+    public IEnumerator SortFrancois()
+    {
+        //On affiche françois sur l'écran et on joue le son
+        PlayerUIManager.Instance.francois.SetActive(true);
+        AudioManager.instance.StartScreamerSound(transform.position);
+        yield return new WaitForSeconds(1f);
+        //On cache françois
+        PlayerUIManager.Instance.francois.SetActive(false);
     }
 
     /// <summary>

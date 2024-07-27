@@ -37,45 +37,58 @@ public class SpellRecognition : MonoBehaviour
 
         switch (args.text)
         {
-            case "Explosion":
+            case "Crepitus":
                 SpellList.Explosion(transform, explosionRange, explosionForce);
                 break;
-            case "Lumos":
-            case "Lumosse":
+            case "Lux":
                 //On prend le vecteur qui est la direction de la caméra du joueur *2f et on prend la nouvelle position de ce vecteur
                 Vector3 posLight = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 2f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
                 MultiplayerGameManager.Instance.SummonLightballServerRpc(posLight, lightIntensity, lightTime);
                 break;
-            case "Mort":
+            case "Mortuus":
                 gameObject.GetComponent<MonPlayerController>().Damage(1000);
                 break;
             case "Ragdoll":
                 StartCoroutine(gameObject.GetComponent<MonPlayerController>().SetRagdollTemp(ragdollTime));
                 break;
-            case "Boule de feu":
-            case "Fireball":
+            case "Ignis Pila":
                 //SpellList.Fireball();
                 break;
-            case "Open sesame":
-            case "Ouvre toi sesame":
-            case "Sesame ouvre toi":
+            case "Sesamae occludit":
                 SpellList.OpenSesame(gameObject.GetComponent<MonPlayerController>().playerCamera.transform, interactRange);
                 break;
-            case "Interact":
-            case "Interaction":
+            case "Penitus":
                 gameObject.GetComponent<MonPlayerController>().InteractSpell(interactRange);
                 break;
             case "FusRoDah":
                 //SpellList.FusRoDah();
                 break;
-            case "Attraper":
+            case "Capere":
                 gameObject.GetComponent<PickUpController>().TryGrabObject();
                 break;
-            case "Lancer":
+            case "Emitto":
                 gameObject.GetComponent<PickUpController>().ThrowObject();
                 break;
-            case "Lacher":
+            case "Dimittas":
                 gameObject.GetComponent<PickUpController>().DropObject();
+                break;
+            case "François François François":
+                StartCoroutine(gameObject.GetComponent<MonPlayerController>().SortFrancois());
+                break;
+            case "Resurrectio":
+                //Envoie un projectile , si il touche un fantome , le fantome est ressuscité
+                break;
+            case "Acceleratio":
+                //Fait bouger le joueur plus vite et change sa voix pour qu'elle soit plus aigue
+                break;
+            case "Curae":
+                //Lance un projectile qui soigne le joueur si multi ou heal direct si solo
+                break;
+            case "Saltus":
+                //Fait sauter le joueur très haut
+                break;
+            case "Polyphorphismus":
+                //Transforme le joueur en vache pendant 1min
                 break;
         }
     }
