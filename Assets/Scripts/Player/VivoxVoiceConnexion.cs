@@ -4,6 +4,7 @@ using Unity.Netcode;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Vivox;
+using Unity.Services.Vivox.AudioTaps;
 using UnityEngine;
 public class VivoxVoiceConnexion : NetworkBehaviour
 {
@@ -83,6 +84,10 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         if (MultiplayerGameManager.Instance.soloMode)
         {
             await servVivox.JoinEchoChannelAsync(echoChannelName, ChatCapability.AudioOnly);
+            GameObject channelTap = new GameObject("ChannelTap");
+            channelTap.tag = "ChannelTap"; //Pour les retrouver plus tard
+            channelTap.AddComponent<AudioSource>();
+            channelTap.AddComponent<VivoxChannelAudioTap>().ChannelName = echoChannelName;
         }
         else
         {
@@ -100,6 +105,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         if (vivoxParticipant.PlayerId != AuthenticationService.Instance.PlayerId)
         {
+            Debug.Log("Player added" + vivoxParticipant.PlayerId);
             participants.Add(vivoxParticipant);
             //vivoxParticipant.SpeechDetected
             GameObject tap = vivoxParticipant.CreateVivoxParticipantTap("Tap " + vivoxParticipant.PlayerId);

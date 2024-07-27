@@ -119,7 +119,7 @@ AudioMixerGroupController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: HighPitchVoice
+  m_Name: SpeedyVoice
   m_AudioMixer: {fileID: 24100000}
   m_GroupID: 96b9383458008054f937ea225f65583e
   m_Children: []

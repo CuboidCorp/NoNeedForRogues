@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -5,15 +6,15 @@ using UnityEngine;
 /// </summary>
 public class SpellList : MonoBehaviour
 {
-    public static string[] spells = { "Crepitus", "Lux", "Mortuus", "Ragdoll", "Ignis pila", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "François François François", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus" };
-
-
+    public static string[] spells = { "Crepitus", "Lux", "Mortuus", "Ragdoll", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "François François François", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus" };
 
     /// <summary>
     /// Crée une explosion à l'endroit souhaité
     /// </summary>
     public static void Explosion(Transform target, float radius, float degats)
     {
+        GameObject explosionGo = Instantiate(Resources.Load<GameObject>("Sorts/Explosion"), target.position, Quaternion.identity); //Explosion
+        explosionGo.transform.localScale = new Vector3(radius, radius, radius);
 
 #pragma warning disable UNT0028 // Use non-allocating physics APIs -> C'est un warning pr l'optimisation, mais on s'en fout
         Collider[] hitColliders = Physics.OverlapSphere(target.position, radius);
@@ -50,6 +51,8 @@ public class SpellList : MonoBehaviour
                 objetTouche.GetComponent<Rigidbody>().AddExplosionForce(forceExplosion, target.position, radius);
             }
         }
+        Destroy(explosionGo, 1);
+
     }
 
     /// <summary>
@@ -72,11 +75,6 @@ public class SpellList : MonoBehaviour
                 openable.Open();
             }
         }
-    }
-
-    public static void Fireball()
-    {
-        //TODO : Fireball
     }
 
     public static void FusRoDah()

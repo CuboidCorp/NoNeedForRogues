@@ -10,6 +10,15 @@ public class SpellRecognition : MonoBehaviour
     private const float explosionRange = 5;
     private const float explosionForce = 10; //Les degats aussi
 
+    private const float fireBallSpeed = 1;
+    private const float fireBallExplosionRange = 5;
+    private const float fireBallExplosionForce = 10;
+    private const float fireBallTime = 3;
+
+    private const float speedBoostDuration = 10;
+
+    private const float jumpBonus = 10;
+
     private const float lightIntensity = 1;
     private const float lightTime = 5;
 
@@ -51,8 +60,9 @@ public class SpellRecognition : MonoBehaviour
             case "Ragdoll":
                 StartCoroutine(gameObject.GetComponent<MonPlayerController>().SetRagdollTemp(ragdollTime));
                 break;
-            case "Ignis Pila":
-                //SpellList.Fireball();
+            case "Infernum":
+                Vector3 posFireBall = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
+                MultiplayerGameManager.Instance.SummonFireBallServerRpc(posFireBall, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, fireBallSpeed, fireBallExplosionRange, fireBallExplosionForce, fireBallTime);
                 break;
             case "Sesamae occludit":
                 SpellList.OpenSesame(gameObject.GetComponent<MonPlayerController>().playerCamera.transform, interactRange);
@@ -62,6 +72,7 @@ public class SpellRecognition : MonoBehaviour
                 break;
             case "FusRoDah":
                 //SpellList.FusRoDah();
+                Debug.Log("NYI : TODO FusRoDah");
                 break;
             case "Capere":
                 gameObject.GetComponent<PickUpController>().TryGrabObject();
@@ -77,18 +88,37 @@ public class SpellRecognition : MonoBehaviour
                 break;
             case "Resurrectio":
                 //Envoie un projectile , si il touche un fantome , le fantome est ressuscité
+                Debug.Log("NYI : TODO Resurrect projectile");
                 break;
             case "Acceleratio":
                 //Fait bouger le joueur plus vite et change sa voix pour qu'elle soit plus aigue
+                if (MultiplayerGameManager.Instance.soloMode)
+                {
+                    gameObject.GetComponent<MonPlayerController>().ReceiveSpeedBoost(speedBoostDuration);
+                }
+                else
+                {
+                    Debug.Log("NYI : TODO Accel projectile");
+                }
                 break;
             case "Curae":
+                if (MultiplayerGameManager.Instance.soloMode)
+                {
+                    gameObject.GetComponent<MonPlayerController>().Heal(10);
+                }
+                else
+                {
+                    Debug.Log("NYI : TODO Heal projectile");
+                }
                 //Lance un projectile qui soigne le joueur si multi ou heal direct si solo
                 break;
             case "Saltus":
                 //Fait sauter le joueur très haut
+                gameObject.GetComponent<MonPlayerController>().GreaterJump(jumpBonus);
                 break;
             case "Polyphorphismus":
                 //Transforme le joueur en vache pendant 1min
+                Debug.Log("NYI : TODO Polyphorphismus");
                 break;
         }
     }

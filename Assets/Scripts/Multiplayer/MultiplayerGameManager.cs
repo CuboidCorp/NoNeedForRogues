@@ -55,6 +55,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     private GameObject grabZonePrefab;
     #endregion
 
+    #region Sorts
+    private GameObject lightBall;
+    private GameObject fireBall;
+    #endregion
     private void Awake()
     {
         Instance = this;
@@ -62,6 +66,8 @@ public class MultiplayerGameManager : NetworkBehaviour
         copyCamPrefab = Resources.Load<GameObject>("Perso/CopyCam");
         grabZonePrefab = Resources.Load<GameObject>("Perso/GrabZone");
         authServicePlayerIds = new Dictionary<string, VivoxParticipant>();
+        lightBall = Resources.Load<GameObject>("Sorts/LightBall");
+        fireBall = Resources.Load<GameObject>("Sorts/FireBall");
     }
 
     private void Start()
@@ -343,6 +349,9 @@ public class MultiplayerGameManager : NetworkBehaviour
                     //On veut remplacer l'audio source de son particpant tap par celle avec main mixer group
                     playerTap.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
                     break;
+                case PlayerState.Speedy:
+                    playerTap.outputAudioMixerGroup = mainMixer.FindMatchingGroups("SpeedyVoice")[0];
+                    break;
             }
         }
     }
@@ -399,6 +408,35 @@ public class MultiplayerGameManager : NetworkBehaviour
     }
 
     /// <summary>
+    /// Transforme le joueur en speedy(pr la voix)
+    /// </summary>
+    /// <param name="playerId">Le player concerné</param>
+    public void SetSpeedyPlayerTap(ulong playerId)
+    {
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if (playerIndex != -1)
+        {
+            string playerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
+            AudioMixerGroup temp = mainMixer.FindMatchingGroups("SpeedyVoice")[0];
+            authServicePlayerIds[playerAuthId].ParticipantTapAudioSource.outputAudioMixerGroup = temp;
+        }
+    }
+
+    /// <summary>
+    /// Reset le player tap d'un joueur pour remettre la voix normale
+    /// </summary>
+    /// <param name="playerId">Le player concerné</param>
+    public void ResetPlayerTap(ulong playerId)
+    {
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if (playerIndex != -1)
+        {
+            string playerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
+            authServicePlayerIds[playerAuthId].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
+        }
+    }
+
+    /// <summary>
     /// Permet de parametrer l'audio source d'un participant tap pr avoir le son 3d dans la bonne distance
     /// </summary>
     /// <param name="audioSource">L'audio source du participant tap</param>
@@ -408,6 +446,24 @@ public class MultiplayerGameManager : NetworkBehaviour
         audioSource.minDistance = VivoxVoiceConnexion.minAudibleDistance;
         audioSource.rolloffMode = AudioRolloffMode.Linear;
         audioSource.spatialBlend = 1;
+    }
+
+    public void SetNormalChannelTap()
+    {
+        GameObject channelTap = GameObject.FindWithTag("ChannelTap");
+        channelTap.GetComponent<AudioSource>().outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
+    }
+
+    public void SetDeadChannelTap()
+    {
+        GameObject channelTap = GameObject.FindWithTag("ChannelTap");
+        channelTap.GetComponent<AudioSource>().outputAudioMixerGroup = mainMixer.FindMatchingGroups("DeadVoice")[0];
+    }
+
+    public void SetSpeedyChannelTap()
+    {
+        GameObject channelTap = GameObject.FindWithTag("ChannelTap");
+        channelTap.GetComponent<AudioSource>().outputAudioMixerGroup = mainMixer.FindMatchingGroups("SpeedyVoice")[0];
     }
 
     #endregion
@@ -602,17 +658,40 @@ public class MultiplayerGameManager : NetworkBehaviour
     #region Spells
 
     /// <summary>
-    /// Permet de spawn un objet quelconque pr tous les joueurs
+    /// Summon une lightball pr tous les joueurs a une position donnée
     /// </summary>
-    /// <param name="obj">L'objet a spawn</param>
+    /// <param name="pos">La position de la boule</param>
+    /// <param name="intensity">L'inténsité lumineuse de la boule</param>
+    /// <param name="time">Le temps pendant lequel la boule existera</param>
     [ServerRpc(RequireOwnership = false)]
     internal void SummonLightballServerRpc(Vector3 pos, float intensity, float time)
     {
         Debug.Log("Summon light ball");
-        GameObject lightBall = Instantiate(Resources.Load<GameObject>("Sorts/LightBall"), pos, Quaternion.identity);
-        lightBall.GetComponent<Light>().intensity = intensity;
-        lightBall.AddComponent<Temporary>().StartCoroutine(nameof(Temporary.DestroyIn), time);
-        lightBall.GetComponent<NetworkObject>().Spawn();
+        GameObject lightBallGo = Instantiate(lightBall, pos, Quaternion.identity);
+        lightBallGo.GetComponent<Light>().intensity = intensity;
+        lightBallGo.AddComponent<Temporary>().StartCoroutine(nameof(Temporary.DestroyIn), time);
+        lightBallGo.GetComponent<NetworkObject>().Spawn();
+    }
+
+    /// <summary>
+    /// Summon une fireball et l'envoie dans une direction 
+    /// </summary>
+    /// <param name="pos">Position de spawn de la boule de feu</param>
+    /// <param name="dir">Direction de la boule de feu</param>
+    /// <param name="speed">Vitesse de la boule de feu</param>
+    /// <param name="expRange">Range of explosion</param>
+    /// <param name="expForce">Force of the explosion</param>
+    /// <param name="time"></param>
+    [ServerRpc(RequireOwnership = false)]
+    internal void SummonFireBallServerRpc(Vector3 pos, Vector3 dir, float speed, float expRange, float expForce, float time)
+    {
+        Debug.Log("Summon fire ball");
+        GameObject fireBallGo = Instantiate(fireBall, pos, Quaternion.identity);
+        fireBallGo.GetComponent<Rigidbody>().velocity = dir * speed;
+        fireBallGo.GetComponent<FireBall>().SetupFireBall(expRange, expForce);
+        fireBallGo.GetComponent<FireBall>().StartCoroutine(nameof(FireBall.ExplodeIn), time);
+        fireBallGo.GetComponent<NetworkObject>().Spawn();
+
     }
 
     #endregion
@@ -662,6 +741,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     private enum PlayerState
     {
         Alive,
-        Dead
+        Dead,
+        Speedy
     }
 }

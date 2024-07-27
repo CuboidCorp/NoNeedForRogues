@@ -158,6 +158,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
+    Android: com.CuboidCorp.NoNeedForRogues
     Standalone: com.Cuboid-Corp.NoNeedForRogues
   buildNumber:
     Standalone: 0

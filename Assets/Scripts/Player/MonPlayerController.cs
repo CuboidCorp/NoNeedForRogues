@@ -1,6 +1,7 @@
 using System.Collections;
 using Unity.Netcode;
 using Unity.Services.Authentication;
+using Unity.Services.Vivox.AudioTaps;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
@@ -56,6 +57,11 @@ public class MonPlayerController : Entity
     private float moveSpeed;
     [SerializeField] private float walkSpeed = 3f;
     [SerializeField] private float runSpeed = 5f;
+
+    [SerializeField] private float boostMaxBonusSpeed = 2f;
+    private float boostBonusSpeed = 0f;
+
+
 
     //private float maxSpeed = 10f;    //private float maxSpeed = 10f;
 
@@ -291,7 +297,7 @@ public class MonPlayerController : Entity
     {
         isRunning = true;
         animator.SetBool("isRunning", true);
-        moveSpeed = runSpeed;
+        moveSpeed = runSpeed + boostBonusSpeed;
     }
 
     /// <summary>
@@ -301,7 +307,7 @@ public class MonPlayerController : Entity
     {
         isRunning = false;
         animator.SetBool("isRunning", false);
-        moveSpeed = walkSpeed;
+        moveSpeed = walkSpeed + boostBonusSpeed;
     }
 
     /// <summary>
@@ -314,6 +320,12 @@ public class MonPlayerController : Entity
             animator.SetTrigger("Jump");
             rb.AddForce(Vector3.up * Mathf.Sqrt(2 * jumpPower), ForceMode.Impulse);
         }
+    }
+
+    public void GreaterJump(float bonus)
+    {
+        animator.SetTrigger("Jump");
+        rb.AddForce(Vector3.up * Mathf.Sqrt(2 * jumpPower * bonus), ForceMode.Impulse);
     }
 
     #endregion
@@ -366,6 +378,46 @@ public class MonPlayerController : Entity
     private void CheckSpeaking()
     {
 
+    }
+
+    /// <summary>
+    /// Reçoit un speed boost et lance une coroutine pour le finir
+    /// </summary>
+    /// <param name="buffDuration">Durée du buff</param>
+    public void ReceiveSpeedBoost(float buffDuration)
+    {
+        boostBonusSpeed += boostMaxBonusSpeed;
+        if (MultiplayerGameManager.Instance.soloMode)
+        {
+            MultiplayerGameManager.Instance.SetSpeedyChannelTap();
+        }
+        else
+        {
+            MultiplayerGameManager.Instance.SetSpeedyPlayerTap(OwnerClientId);
+        }
+        StartCoroutine(EndSpeedBoost(buffDuration));
+    }
+
+    /// <summary>
+    /// Supprime un speed boost au bout d'un certain temps
+    /// </summary>
+    /// <param name="time">Le temps au bout du quel le speed boost est fini</param>
+    /// <returns></returns>
+    private IEnumerator EndSpeedBoost(float time)
+    {
+        yield return new WaitForSeconds(time);
+        boostBonusSpeed -= boostMaxBonusSpeed;
+        if (boostBonusSpeed == 0)
+        {
+            if (MultiplayerGameManager.Instance.soloMode)
+            {
+                MultiplayerGameManager.Instance.SetNormalChannelTap();
+            }
+            else
+            {
+                MultiplayerGameManager.Instance.ResetPlayerTap(OwnerClientId);
+            }
+        }
     }
 
     #region Degats et Mort
@@ -449,6 +501,10 @@ public class MonPlayerController : Entity
     {
         GameObject ghostObj = (GameObject)networkRef;
         ghostObj.name = "GhostPlayer" + ghostObj.GetComponent<NetworkObject>().OwnerClientId;
+        if (MultiplayerGameManager.Instance.soloMode)
+        {
+            MultiplayerGameManager.Instance.SetDeadChannelTap();
+        }
         if (ghostObj.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
         {
             OnGhostSpawn();
@@ -503,6 +559,10 @@ public class MonPlayerController : Entity
     {
         transform.position = lastCheckPoint;
         gameObject.tag = "Player";
+        if (MultiplayerGameManager.Instance.soloMode)
+        {
+            MultiplayerGameManager.Instance.SetNormalChannelTap();
+        }
         FullHeal();
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
         SyncRagdollStateServerRpc(OwnerClientId, false);
