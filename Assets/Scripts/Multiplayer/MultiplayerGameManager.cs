@@ -58,6 +58,9 @@ public class MultiplayerGameManager : NetworkBehaviour
     #region Sorts
     private GameObject lightBall;
     private GameObject fireBall;
+    private GameObject resurectio;
+    private GameObject healProj;
+    private GameObject speedProj;
     #endregion
     private void Awake()
     {
@@ -68,6 +71,9 @@ public class MultiplayerGameManager : NetworkBehaviour
         authServicePlayerIds = new Dictionary<string, VivoxParticipant>();
         lightBall = Resources.Load<GameObject>("Sorts/LightBall");
         fireBall = Resources.Load<GameObject>("Sorts/FireBall");
+        resurectio = Resources.Load<GameObject>("Sorts/ResurectioProjectile");
+        healProj = Resources.Load<GameObject>("Sorts/HealProjectile");
+        speedProj = Resources.Load<GameObject>("Sorts/SpeedProjectile");
     }
 
     private void Start()
@@ -693,6 +699,64 @@ public class MultiplayerGameManager : NetworkBehaviour
         fireBallGo.GetComponent<NetworkObject>().Spawn();
 
     }
+
+    /// <summary>
+    /// Summon un projectile de resurection 
+    /// </summary>
+    /// <param name="pos">Endroit ou spawn les </param>
+    /// <param name="dir">Direction du projectile</param>
+    /// <param name="speed">Vitesse du projectile</param>
+    /// <param name="time">Temps de vie du projectile</param>
+    [ServerRpc(RequireOwnership = false)]
+    internal void SummonResurectioServerRpc(Vector3 pos, Vector3 dir, float speed, float time)
+    {
+        GameObject projResurrectio = Instantiate(resurectio, pos, Quaternion.LookRotation(dir));
+        projResurrectio.transform.eulerAngles += new Vector3(0, 0, 90);
+        projResurrectio.transform.rotation = Quaternion.LookRotation(Vector3.forward, dir);
+        projResurrectio.GetComponent<Rigidbody>().velocity = dir * speed;
+        projResurrectio.GetComponent<ResurrectionSpell>().StartCoroutine(nameof(ResurrectionSpell.DestroyIn), time);
+        projResurrectio.GetComponent<NetworkObject>().Spawn();
+    }
+
+    /// <summary>
+    /// Summon un projectile de heal
+    /// </summary>
+    /// <param name="pos">Position de spawn</param>
+    /// <param name="dir">Direction du proj</param>
+    /// <param name="speed">Vitesse du proj</param>
+    /// <param name="time">Durée du proj</param>
+    /// <param name="healAmount">Amount a heal</param>
+    [ServerRpc(RequireOwnership = false)]
+    internal void SummonHealProjServerRpc(Vector3 pos, Vector3 dir, float speed, float time, float healAmount)
+    {
+        GameObject projHeal = Instantiate(healProj, pos, Quaternion.LookRotation(dir));
+        projHeal.GetComponent<Rigidbody>().velocity = dir * speed;
+        projHeal.transform.eulerAngles += new Vector3(0, 0, 90);
+        projHeal.GetComponent<HealProjectile>().SetHealAmount(healAmount);
+        projHeal.GetComponent<HealProjectile>().StartCoroutine(nameof(HealProjectile.DestroyAfterTime), time);
+        projHeal.GetComponent<NetworkObject>().Spawn();
+    }
+    /// <summary>
+    /// Summo un projectile d'acceleration
+    /// </summary>
+    /// <param name="pos">Position de spawn du proj</param>
+    /// <param name="dir">Direction du proj</param>
+    /// <param name="speed">Vitesse du proj</param>
+    /// <param name="time">Temps avant expiration</param>
+    /// <param name="buffDuration">Durée du buff</param>
+
+    [ServerRpc(RequireOwnership = false)]
+    internal void SummonAccelProjServerRpc(Vector3 pos, Vector3 dir, float speed, float time, float buffDuration)
+    {
+        GameObject accelProj = Instantiate(speedProj, pos, Quaternion.LookRotation(dir));
+        accelProj.transform.LookAt(transform.position + dir);
+        accelProj.GetComponent<Rigidbody>().velocity = dir * speed;
+        accelProj.GetComponent<AccelProjectile>().SetBuffDuration(buffDuration);
+        accelProj.GetComponent<AccelProjectile>().StartCoroutine(nameof(AccelProjectile.DestroyAfterTime), time);
+        accelProj.GetComponent<NetworkObject>().Spawn();
+    }
+
+
 
     #endregion
 

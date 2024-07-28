@@ -80,12 +80,13 @@ public class MonPlayerController : Entity
 
     #region Prefabs
     private GameObject ghostPlayerPrefab;
+    private GameObject cowPlayerPrefab;
     #endregion
 
     private VivoxVoiceConnexion voiceConnexion;
 
     /// <summary>
-    /// Awake is called when the script instance is being loaded
+    /// Awake is called when the script instance is being loadedok 
     /// </summary>
     private void Awake()
     {
@@ -133,6 +134,7 @@ public class MonPlayerController : Entity
 
         //On recupere le prefab de la ragdoll
         ghostPlayerPrefab = Resources.Load<GameObject>("Perso/GhostPlayer");
+        cowPlayerPrefab = Resources.Load<GameObject>("Perso/CowPlayer");
 
         //On randomize le joueur
         if (seed == 0)

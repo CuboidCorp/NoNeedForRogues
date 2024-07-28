@@ -16,10 +16,19 @@ public class SpellRecognition : MonoBehaviour
     private const float fireBallTime = 3;
 
     private const float speedBoostDuration = 10;
+    private const float speedBoostSpeed = 5;
+    private const float speedBoostTime = 3;
 
     private const float jumpBonus = 10;
 
     private const float dashForce = 10;
+
+    private const float healSpeed = 1;
+    private const float healDuration = 5;
+    private const float healAmount = 10;
+
+    private const float resSpeed = 1;
+    private const float resDuration = 5;
 
     private const float lightIntensity = 1;
     private const float lightTime = 5;
@@ -90,7 +99,8 @@ public class SpellRecognition : MonoBehaviour
                 break;
             case "Resurrectio":
                 //Envoie un projectile , si il touche un fantome , le fantome est ressuscité
-                Debug.Log("NYI : TODO Resurrect projectile");
+                Vector3 posResurrect = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
+                MultiplayerGameManager.Instance.SummonResurectioServerRpc(posResurrect, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, resSpeed, resDuration);
                 break;
             case "Acceleratio":
                 //Fait bouger le joueur plus vite et change sa voix pour qu'elle soit plus aigue
@@ -100,17 +110,19 @@ public class SpellRecognition : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("NYI : TODO Accel projectile");
+                    Vector3 posLevel = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
+                    MultiplayerGameManager.Instance.SummonAccelProjServerRpc(posLevel, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, speedBoostSpeed, speedBoostDuration, speedBoostDuration);
                 }
                 break;
             case "Curae":
                 if (MultiplayerGameManager.Instance.soloMode)
                 {
-                    gameObject.GetComponent<MonPlayerController>().Heal(10);
+                    gameObject.GetComponent<MonPlayerController>().Heal(healAmount);
                 }
                 else
                 {
-                    Debug.Log("NYI : TODO Heal projectile");
+                    Vector3 posLevel = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
+                    MultiplayerGameManager.Instance.SummonHealProjServerRpc(posLevel, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, healSpeed, healDuration, healAmount);
                 }
                 //Lance un projectile qui soigne le joueur si multi ou heal direct si solo
                 break;
