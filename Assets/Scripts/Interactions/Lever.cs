@@ -55,7 +55,7 @@ public class Lever : Interactable
     /// </summary>
     protected override void HandleInteraction()
     {
-        if (isSwitchedOn)
+        if (!isSwitchedOn)
         {
             animator.SetBool("Activated", true);
             interactText = "Eteindre";

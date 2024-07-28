@@ -19,6 +19,8 @@ public class SpellRecognition : MonoBehaviour
 
     private const float jumpBonus = 10;
 
+    private const float dashForce = 10;
+
     private const float lightIntensity = 1;
     private const float lightTime = 5;
 
@@ -119,6 +121,11 @@ public class SpellRecognition : MonoBehaviour
             case "Polyphorphismus":
                 //Transforme le joueur en vache pendant 1min
                 Debug.Log("NYI : TODO Polyphorphismus");
+                break;
+            case "Offendas":
+                //Dash en avant 
+                Vector3 lookDir = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward;
+                gameObject.GetComponent<MonPlayerController>().Dash(lookDir, dashForce);
                 break;
         }
     }

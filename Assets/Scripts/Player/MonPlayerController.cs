@@ -328,6 +328,11 @@ public class MonPlayerController : Entity
         rb.AddForce(Vector3.up * Mathf.Sqrt(2 * jumpPower * bonus), ForceMode.Impulse);
     }
 
+    public void Dash(Vector3 direction, float force)
+    {
+        rb.AddForce(direction * force, ForceMode.Impulse);
+    }
+
     #endregion
 
     /// <summary>
@@ -407,6 +412,14 @@ public class MonPlayerController : Entity
     {
         yield return new WaitForSeconds(time);
         boostBonusSpeed -= boostMaxBonusSpeed;
+        if (isRunning)
+        {
+            moveSpeed = runSpeed + boostBonusSpeed;
+        }
+        else
+        {
+            moveSpeed = walkSpeed + boostBonusSpeed;
+        }
         if (boostBonusSpeed == 0)
         {
             if (MultiplayerGameManager.Instance.soloMode)

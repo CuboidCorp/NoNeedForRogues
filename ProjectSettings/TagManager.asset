@@ -16,6 +16,7 @@ TagManager:
   - Entity
   - PickUp
   - ErrorHandler
+  - ChannelTap
   layers:
   - Default
   - TransparentFX
