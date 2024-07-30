@@ -1,7 +1,7 @@
 using System.Collections;
 using Unity.Netcode;
 using Unity.Services.Authentication;
-using Unity.Services.Vivox.AudioTaps;
+using Unity.Services.Vivox;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
@@ -26,7 +26,7 @@ public class MonPlayerController : Entity
 
     private Vector3 lastCheckPoint = new(0, 1, 0);//Le dernier checkpoint où le joueur a été
 
-    [SerializeField] private GameObject playerUI;
+    public GameObject playerUI;
 
     #region Camera Variables
 
@@ -244,6 +244,7 @@ public class MonPlayerController : Entity
         MovePlayer();
         CheckGround();
         CheckInteract();
+        CheckSpeaking();
     }
 
     #region Movement
@@ -396,15 +397,15 @@ public class MonPlayerController : Entity
     /// </summary>
     private void CheckSpeaking()
     {
-        foreach (VivoxParticipant participant in participants)
+        foreach ((VivoxParticipant, GameObject) participantEtGo in MultiplayerGameManager.Instance.authServicePlayerIds.Values)
         {
-            if (participant.SpeechDetected)
+            if (participantEtGo.Item1.SpeechDetected)
             {
-                //On affiche l'icone
+                participantEtGo.Item2.SetActive(true);
             }
             else
             {
-                //On la cache
+                participantEtGo.Item2.SetActive(false);
             }
         }
     }

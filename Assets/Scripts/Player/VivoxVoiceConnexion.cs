@@ -113,7 +113,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
             Transform playerTransform = MultiplayerGameManager.Instance.GetPlayerTransformFromAuthId(vivoxParticipant.PlayerId);
             tap.transform.SetParent(playerTransform); //Pas de null check = Programmation de gros porc ici flemme
             tap.transform.localPosition = new Vector3(0, 1.6f, 0);
-            MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant);
+            MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant, gameObject.GetComponent<MonPlayerController>().playerUI.transform.GetChild(1).gameObject);
         }
 
     }

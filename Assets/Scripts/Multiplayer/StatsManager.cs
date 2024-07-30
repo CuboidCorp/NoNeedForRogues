@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using Unity.Netcode;
+
 /// <summary>
 /// Gère et stocke les stats de jeu de tous les joueurs
 /// </summary>
@@ -15,11 +18,11 @@ public class StatsManager : NetworkBehaviour
         Instance = this;
     }
 
-    private void OnNetworkSpawn()
+    public override void OnNetworkSpawn()
     {
-        if(IsServer)
+        if (IsServer)
         {
-            allStatsHolder = new Dictionary<ulong, PlayerStats> ();
+            allStatsHolder = new Dictionary<ulong, PlayerStats>();
         }
     }
 
@@ -47,7 +50,7 @@ public class StatsManager : NetworkBehaviour
 
     public void AddSpellCast()
     {
-        localPlayerStats.spellCasts++;
+        localPlayerStats.spellsCasted++;
     }
 
     public void AddDamageTaken(float damageTaken)
@@ -57,9 +60,9 @@ public class StatsManager : NetworkBehaviour
 
     public void AddHealAmount(float healAmount)
     {
-        localPlayerStats.healAmount += healAmount;
+        localPlayerStats.healTaken += healAmount;
     }
-    
+
     public void AddDistanceMoved(float distanceMoved)
     {
         localPlayerStats.distanceMoved += distanceMoved;
@@ -71,7 +74,7 @@ public class StatsManager : NetworkBehaviour
     }
 
     #endregion
-    
+
     /// <summary>
     /// Envoie les stats du joueur local au serveur
     /// </summary>

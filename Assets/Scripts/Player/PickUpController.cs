@@ -9,7 +9,7 @@ public class PickUpController : NetworkBehaviour
     private GameObject heldObj;
     private Rigidbody heldObjRb;
     private bool isRotating;
-    [SerializeField]private float rotationSensitivity;
+    [SerializeField] private float rotationSensitivity;
 
     [Header("Physics Settings")]
     [SerializeField] private float pickupRange = 5.0f;
@@ -105,14 +105,14 @@ public class PickUpController : NetworkBehaviour
         Rigidbody rb = ((GameObject)networkObjectReference).GetComponent<Rigidbody>();
         if (estTenu)
         {
-            DisableCollision();
+            DisableCollision(networkObjectReference);
             rb.useGravity = false;
             rb.drag = 10;
             rb.constraints = RigidbodyConstraints.FreezeRotation;
         }
         else
         {
-            EnableCollision();
+            EnableCollision(networkObjectReference);
             rb.useGravity = true;
             rb.drag = 1;
             rb.constraints = RigidbodyConstraints.None;
@@ -125,7 +125,7 @@ public class PickUpController : NetworkBehaviour
     private void EnableCollision(NetworkObjectReference networkObjectReference)
     {
         GameObject[] players = MultiplayerGameManager.Instance.GetAllPlayersGo();
-        foreach(GameObject player in players)
+        foreach (GameObject player in players)
         {
             Physics.IgnoreCollision(((GameObject)networkObjectReference).GetComponent<Collider>(), player.GetComponent<Collider>(), true);
         }
@@ -134,7 +134,7 @@ public class PickUpController : NetworkBehaviour
     /// <summary>
     /// Desactive la collision entre l'objet et tous les joueurs
     /// </summary>
-    private void DisableCollision()
+    private void DisableCollision(NetworkObjectReference networkObjectReference)
     {
         GameObject[] players = MultiplayerGameManager.Instance.GetAllPlayersGo();
         foreach (GameObject player in players)
@@ -149,7 +149,7 @@ public class PickUpController : NetworkBehaviour
         if (heldObj != null)
         {
             MoveObject();
-            if(isRotating)
+            if (isRotating)
             {
                 RotateObject();
             }

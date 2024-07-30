@@ -114,11 +114,11 @@ public class CowController : NetworkBehaviour
 
         if (isRunning)
         {
-            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, sprintFov, Time.deltaTime * fovChangeSpeed);
+            Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, sprintFov, Time.deltaTime * fovChangeSpeed);
         }
         else
         {
-            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, fov, Time.deltaTime * fovChangeSpeed);
+            Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, fov, Time.deltaTime * fovChangeSpeed);
         }
 
     }
@@ -146,7 +146,7 @@ public class CowController : NetworkBehaviour
 
         pitch = Mathf.Clamp(pitch, -minLookAngle, minLookAngle);
 
-        playerCamera.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
+        Camera.main.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
 
         transform.eulerAngles = new Vector3(0.0f, yaw, 0.0f);
     }

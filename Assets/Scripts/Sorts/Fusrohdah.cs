@@ -14,10 +14,12 @@ public class Fusrohdah : MonoBehaviour
         {
             return;
         }
-        
-        if(objetTouche.TryGetComponent<Rigidbody>(out Rigidbody rb))
+
+        if (objetTouche.TryGetComponent(out Rigidbody rb))
         {
             Debug.Log("J'ai touché : " + objetTouche.name);
+            float distance = Vector3.Distance(transform.position, objetTouche.transform.position);
+            float degatsInfliges = explosionForce * (1 - distance / explosionRange);
             float forceExplosion = degatsInfliges * 1000;
 
             if (objetTouche.CompareTag("Player"))
@@ -36,7 +38,7 @@ public class Fusrohdah : MonoBehaviour
         }
     }
 
-    public void SetupFusRohDah(float expRange,float expForce)
+    public void SetupFusRohDah(float expRange, float expForce)
     {
         explosionRange = expRange;
         explosionForce = expForce;

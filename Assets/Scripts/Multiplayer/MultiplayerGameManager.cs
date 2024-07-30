@@ -38,7 +38,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <summary>
     /// Les ids des joueurs pr l'authentification (Utilisé pr vivox)
     /// </summary>
-    private Dictionary<string, VivoxParticipant> authServicePlayerIds;
+    public Dictionary<string, (VivoxParticipant, GameObject)> authServicePlayerIds;
 
     /// <summary>
     /// Les gameobjects des joueurs
@@ -68,7 +68,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         mainMixer = Resources.Load<AudioMixer>("Audio/Main");
         copyCamPrefab = Resources.Load<GameObject>("Perso/CopyCam");
         grabZonePrefab = Resources.Load<GameObject>("Perso/GrabZone");
-        authServicePlayerIds = new Dictionary<string, VivoxParticipant>();
+        authServicePlayerIds = new Dictionary<string, (VivoxParticipant, GameObject)>();
         lightBall = Resources.Load<GameObject>("Sorts/LightBall");
         fireBall = Resources.Load<GameObject>("Sorts/FireBall");
         resurectio = Resources.Load<GameObject>("Sorts/ResurectioProjectile");
@@ -319,10 +319,10 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, playerId);
         if (playerIndex != -1)
         {
-            authServicePlayerIds.Add(authServiceId, null);
+            authServicePlayerIds.Add(authServiceId, (null, null));
         }
     }
-    
+
     /// <summary>
     /// Ajoute un player name au serveur
     /// </summary>
@@ -345,16 +345,16 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     /// <param name="authId">L'id du joueur connecté</param>
     /// <param name="vivox">Le participant associé au vivox particpant</param>
-    public void AddPlayerVivoxInfo(string authId, VivoxParticipant vivox)
+    public void AddPlayerVivoxInfo(string authId, VivoxParticipant vivox, GameObject talkIcon)
     {
-        authServicePlayerIds[authId] = vivox;
+        authServicePlayerIds[authId] = (vivox, talkIcon);
 
         //On regarde l'index dans les keys du dictionnaire pour savoir quel joueur est concerné
         int playerIndex = Array.IndexOf(authServicePlayerIds.Keys.ToArray(), authId);
 
         if (playerIndex != -1)
         {
-            AudioSource playerTap = authServicePlayerIds[authId].ParticipantTapAudioSource;
+            AudioSource playerTap = authServicePlayerIds[authId].Item1.ParticipantTapAudioSource;
             switch (playersStates[playerIndex])
             {
                 case PlayerState.Dead:
@@ -446,12 +446,12 @@ public class MultiplayerGameManager : NetworkBehaviour
         if (playerIndex != -1)
         {
             string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
-            authServicePlayerIds[deadPlayerAuthId].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-            authServicePlayerIds[deadPlayerAuthId].CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetGhostTransformFromPlayerId(playerId));
-            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource);
+            authServicePlayerIds[deadPlayerAuthId].Item1.DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
+            authServicePlayerIds[deadPlayerAuthId].Item1.CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetGhostTransformFromPlayerId(playerId));
+            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource);
 
             //On veut remplacer l'audio source de son particpant tap par celle avec le evil mixer group
-            authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("DeadVoice")[0];
+            authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("DeadVoice")[0];
         }
     }
 
@@ -465,9 +465,9 @@ public class MultiplayerGameManager : NetworkBehaviour
         if (playerIndex != -1)
         {
             string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
-            authServicePlayerIds[deadPlayerAuthId].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-            authServicePlayerIds[deadPlayerAuthId].CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetCowTransformFromPlayerId(playerId));
-            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource);
+            authServicePlayerIds[deadPlayerAuthId].Item1.DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
+            authServicePlayerIds[deadPlayerAuthId].Item1.CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetCowTransformFromPlayerId(playerId));
+            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource);
         }
     }
 
@@ -482,7 +482,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             string playerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
             AudioMixerGroup temp = mainMixer.FindMatchingGroups("SpeedyVoice")[0];
-            authServicePlayerIds[playerAuthId].ParticipantTapAudioSource.outputAudioMixerGroup = temp;
+            authServicePlayerIds[playerAuthId].Item1.ParticipantTapAudioSource.outputAudioMixerGroup = temp;
         }
     }
 
@@ -496,7 +496,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         if (playerIndex != -1)
         {
             string playerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
-            authServicePlayerIds[playerAuthId].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
+            authServicePlayerIds[playerAuthId].Item1.ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
         }
     }
 
@@ -607,10 +607,10 @@ public class MultiplayerGameManager : NetworkBehaviour
             playersStates[playerIndex] = PlayerState.Alive;
             string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
             //On veut remplacer l'audio source de son particpant tap par celle avec main mixer group
-            authServicePlayerIds[deadPlayerAuthId].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-            authServicePlayerIds[deadPlayerAuthId].CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetPlayerTransformFromAuthId(deadPlayerAuthId));
-            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource);
-            authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
+            authServicePlayerIds[deadPlayerAuthId].Item1.DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
+            authServicePlayerIds[deadPlayerAuthId].Item1.CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetPlayerTransformFromAuthId(deadPlayerAuthId));
+            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource);
+            authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
         }
     }
 
@@ -847,9 +847,9 @@ public class MultiplayerGameManager : NetworkBehaviour
             players[playerIndex].GetComponent<MonPlayerController>().HandleRespawn();
             string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
             //On veut remplacer l'audio source de son particpant tap par celle avec main mixer group
-            authServicePlayerIds[deadPlayerAuthId].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-            authServicePlayerIds[deadPlayerAuthId].CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetPlayerTransformFromAuthId(deadPlayerAuthId));
-            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource);
+            authServicePlayerIds[deadPlayerAuthId].Item1.DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
+            authServicePlayerIds[deadPlayerAuthId].Item1.CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetPlayerTransformFromAuthId(deadPlayerAuthId));
+            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource);
         }
     }
 
