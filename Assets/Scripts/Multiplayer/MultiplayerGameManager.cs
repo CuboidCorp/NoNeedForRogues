@@ -239,6 +239,15 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
         return null;
     }
+
+    /// <summary>
+    /// Renvoie l'array de tous les go des joueurs
+    /// </summary>
+    /// <returns>Un array de gameobject</returns>
+    public GameObject[] GetAllPlayersGo()
+    {
+        return players;
+    }
     #endregion
 
     /// <summary>

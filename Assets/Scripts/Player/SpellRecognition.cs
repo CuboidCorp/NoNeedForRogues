@@ -54,7 +54,7 @@ public class SpellRecognition : MonoBehaviour
 
         if (args.confidence == ConfidenceLevel.High || args.confidence == ConfidenceLevel.Medium)
             Debug.Log(args.text);
-
+        Vector3 posProj = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
         switch (args.text)
         {
             case "Crepitus":
@@ -62,8 +62,7 @@ public class SpellRecognition : MonoBehaviour
                 break;
             case "Lux":
                 //On prend le vecteur qui est la direction de la caméra du joueur *2f et on prend la nouvelle position de ce vecteur
-                Vector3 posLight = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 2f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
-                MultiplayerGameManager.Instance.SummonLightballServerRpc(posLight, lightIntensity, lightTime);
+                MultiplayerGameManager.Instance.SummonLightballServerRpc(posProj, lightIntensity, lightTime);
                 break;
             case "Mortuus":
                 gameObject.GetComponent<MonPlayerController>().Damage(1000);
@@ -72,8 +71,7 @@ public class SpellRecognition : MonoBehaviour
                 StartCoroutine(gameObject.GetComponent<MonPlayerController>().SetRagdollTemp(ragdollTime));
                 break;
             case "Infernum":
-                Vector3 posFireBall = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
-                MultiplayerGameManager.Instance.SummonFireBallServerRpc(posFireBall, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, fireBallSpeed, fireBallExplosionRange, fireBallExplosionForce, fireBallTime);
+                MultiplayerGameManager.Instance.SummonFireBallServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, fireBallSpeed, fireBallExplosionRange, fireBallExplosionForce, fireBallTime);
                 break;
             case "Sesamae occludit":
                 SpellList.OpenSesame(gameObject.GetComponent<MonPlayerController>().playerCamera.transform, interactRange);
@@ -82,8 +80,9 @@ public class SpellRecognition : MonoBehaviour
                 gameObject.GetComponent<MonPlayerController>().InteractSpell(interactRange);
                 break;
             case "FusRoDah":
-                //SpellList.FusRoDah();
-                Debug.Log("NYI : TODO FusRoDah");
+                //On summon un objet (Un collider circulaire)
+                //Il va dans une direction et applique un effet explosion a tout ce qu'il touche si y a des rigidbody dessus
+                //Si ça touche un joueur le ragdoll et lui met le truc d'explosion
                 break;
             case "Capere":
                 gameObject.GetComponent<PickUpController>().TryGrabObject();
@@ -99,8 +98,7 @@ public class SpellRecognition : MonoBehaviour
                 break;
             case "Resurrectio":
                 //Envoie un projectile , si il touche un fantome , le fantome est ressuscité
-                Vector3 posResurrect = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
-                MultiplayerGameManager.Instance.SummonResurectioServerRpc(posResurrect, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, resSpeed, resDuration);
+                MultiplayerGameManager.Instance.SummonResurectioServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, resSpeed, resDuration);
                 break;
             case "Acceleratio":
                 //Fait bouger le joueur plus vite et change sa voix pour qu'elle soit plus aigue
@@ -110,8 +108,7 @@ public class SpellRecognition : MonoBehaviour
                 }
                 else
                 {
-                    Vector3 posLevel = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
-                    MultiplayerGameManager.Instance.SummonAccelProjServerRpc(posLevel, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, speedBoostSpeed, speedBoostDuration, speedBoostDuration);
+                    MultiplayerGameManager.Instance.SummonAccelProjServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, speedBoostSpeed, speedBoostDuration, speedBoostDuration);
                 }
                 break;
             case "Curae":
@@ -121,8 +118,7 @@ public class SpellRecognition : MonoBehaviour
                 }
                 else
                 {
-                    Vector3 posLevel = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
-                    MultiplayerGameManager.Instance.SummonHealProjServerRpc(posLevel, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, healSpeed, healDuration, healAmount);
+                    MultiplayerGameManager.Instance.SummonHealProjServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, healSpeed, healDuration, healAmount);
                 }
                 //Lance un projectile qui soigne le joueur si multi ou heal direct si solo
                 break;
