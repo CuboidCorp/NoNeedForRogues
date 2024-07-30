@@ -134,7 +134,7 @@ public class MonPlayerController : Entity
 
         //On recupere le prefab de la ragdoll
         ghostPlayerPrefab = Resources.Load<GameObject>("Perso/GhostPlayer");
-        cowPlayerPrefab = Resources.Load<GameObject>("Perso/CowPlayer");
+        cowPlayerPrefab = Resources.Load<GameObject>("Perso/Cow");
 
         //On randomize le joueur
         if (seed == 0)
@@ -324,12 +324,21 @@ public class MonPlayerController : Entity
         }
     }
 
+    /// <summary>
+    /// Fait un saut plus grand multiplier par un bonus
+    /// </summary>
+    /// <param name="bonus">Multiplicateur du saut</param>
     public void GreaterJump(float bonus)
     {
         animator.SetTrigger("Jump");
         rb.AddForce(Vector3.up * Mathf.Sqrt(2 * jumpPower * bonus), ForceMode.Impulse);
     }
 
+    /// <summary>
+    /// Fait un dash dans une direction donnée
+    /// </summary>
+    /// <param name="direction">Direction dy dash</param>
+    /// <param name="force">Force du dash</param>
     public void Dash(Vector3 direction, float force)
     {
         rb.AddForce(direction * force, ForceMode.Impulse);
@@ -585,16 +594,6 @@ public class MonPlayerController : Entity
         gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;
         cameraPivot.SetActive(true);
-    }
-
-    public IEnumerator SortFrancois()
-    {
-        //On affiche françois sur l'écran et on joue le son
-        PlayerUIManager.Instance.francois.SetActive(true);
-        AudioManager.instance.StartScreamerSound(transform.position);
-        yield return new WaitForSeconds(1f);
-        //On cache françois
-        PlayerUIManager.Instance.francois.SetActive(false);
     }
 
     /// <summary>
@@ -897,6 +896,96 @@ public class MonPlayerController : Entity
                 interactable.OnInteract();
             }
         }
+    }
+
+    #endregion
+
+    #region Sorts
+
+    /// <summary>
+    /// Sort de francois qui affiche le screamer de francois et sa tete
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerator SortFrancois()
+    {
+        //On affiche françois sur l'écran et on joue le son
+        PlayerUIManager.Instance.francois.SetActive(true);
+        AudioManager.instance.StartScreamerSound(transform.position);
+        yield return new WaitForSeconds(1f);
+        //On cache françois
+        PlayerUIManager.Instance.francois.SetActive(false);
+    }
+
+    /// <summary>
+    /// Polymorph en vacche
+    /// </summary>
+    public void Polymorph()
+    {
+        SpawnCowServerRpc(OwnerClientId);
+    }
+
+    /// <summary>
+    /// Demande au serveur de spawn le ghost du joueur
+    /// </summary>
+    /// <param name="ownerId">L'id du joueur qui spawn son ghost</param>
+    [ServerRpc(RequireOwnership = false)]
+    private void SpawnCowServerRpc(ulong ownerId)
+    {
+        GameObject cow = Instantiate(cowPlayerPrefab, transform.position, transform.rotation);
+        cow.name = "Cow" + OwnerClientId;
+        cow.GetComponent<NetworkObject>().SpawnWithOwnership(ownerId);
+
+        HandleCowSpawnClientRpc(cow);
+    }
+
+    [ClientRpc]
+    private void HandleCowSpawnClientRpc(NetworkObjectReference networkRef)
+    {
+        GameObject cowObj = (GameObject)networkRef;
+        cowObj.name = "GhostPlayer" + cowObj.GetComponent<NetworkObject>().OwnerClientId;
+        if (cowObj.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
+        {
+            OnCowSpawn();
+        }
+        else
+        {
+            MultiplayerGameManager.Instance.MovePlayerTapToCow(cowObj.GetComponent<NetworkObject>().OwnerClientId);
+            cowObj.transform.GetChild(0).gameObject.SetActive(false); // La camera pivot de la vache
+            cowObj.GetComponent<CowController>().enabled = false;
+        }
+    }
+
+    /// <summary>
+    /// Quand on spawn la vache, on la lie au joueur
+    /// </summary>
+    private void OnCowSpawn()
+    {
+        gameObject.GetComponent<PickUpController>().enabled = false;
+        gameObject.GetComponent<SpellRecognition>().enabled = false;
+        SyncRagdollStateServerRpc(OwnerClientId, true);
+        EnableRagdoll();
+        GameObject cow = GameObject.Find("Cow" + OwnerClientId);
+        cow.GetComponent<CowController>().root = gameObject;
+        cow.GetComponent<CowController>().vivox = vivox;
+        StartCoroutine(cow.GetComponent<CowController>().TurnBackIn(60));
+        vivox.transform.parent = cow.transform;
+        cow.transform.GetChild(0).gameObject.SetActive(true); //Le camera pivot du ghost
+        cow.transform.GetChild(1).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.ShadowsOnly; //On desactive le corps de la vache
+        cameraPivot.SetActive(false);
+        enabled = false;
+        gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// Return from cow state
+    /// </summary>
+    public void Uncow()
+    {
+        SyncRagdollStateServerRpc(OwnerClientId, false);
+        DisableRagdoll();
+        gameObject.GetComponent<PickUpController>().enabled = true;
+        gameObject.GetComponent<SpellRecognition>().enabled = true;
+        cameraPivot.SetActive(true);
     }
 
     #endregion

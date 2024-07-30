@@ -1,9 +1,9 @@
 using System.Collections;
-using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class CowController : MonoBehaviour
+public class CowController : NetworkBehaviour
 {
 
     private PlayerControls controls;
@@ -27,6 +27,7 @@ public class CowController : MonoBehaviour
     #region Movement Variables
 
     #region Moving
+    [Header("Movement Variables")]
     [SerializeField] private Transform groundCheck;
     private Vector2 moveInput;
     private float moveSpeed;
@@ -49,8 +50,7 @@ public class CowController : MonoBehaviour
     #endregion
 
     #region Camera Movement Variables
-    [HideInInspector] public Camera playerCamera; //TODO : Voir pk c'est public
-    [HideInInspector] public GameObject copyCam; //Le parent de la grabzone
+    [Header("Camera Movement Variables")]
     [SerializeField] private GameObject cameraPivot; //Le gameObject de la camera
 
     [SerializeField] private bool invertCamera = false;
@@ -58,7 +58,7 @@ public class CowController : MonoBehaviour
     [SerializeField] private float minLookAngle = 50f;
 
     [SerializeField] private float fov = 60f;
-    [SerializeField] private float boostFov = 80f;
+    [SerializeField] private float sprintFov = 80f;
     [SerializeField] private float fovChangeSpeed = 5f;
 
     // Internal Variables
@@ -90,6 +90,37 @@ public class CowController : MonoBehaviour
     private void OnMove(InputAction.CallbackContext ctx)
     {
         moveInput = ctx.ReadValue<Vector2>();
+    }
+
+
+    /// <summary>
+    /// Gere le mouvement du joueur
+    /// </summary>
+    private void MovePlayer()
+    {
+        if (moveInput != Vector2.zero)
+        {
+            animator.SetBool("isWalking", true);
+        }
+        else
+        {
+            animator.SetBool("isWalking", false);
+            StopRun();
+        }
+
+        Vector3 moveDirection = new(moveInput.x, 0f, moveInput.y);
+
+        rb.MovePosition(rb.position + moveSpeed * Time.fixedDeltaTime * transform.TransformDirection(moveDirection));
+
+        if (isRunning)
+        {
+            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, sprintFov, Time.deltaTime * fovChangeSpeed);
+        }
+        else
+        {
+            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, fov, Time.deltaTime * fovChangeSpeed);
+        }
+
     }
 
     /// <summary>
@@ -140,5 +171,56 @@ public class CowController : MonoBehaviour
         moveSpeed = walkSpeed + boostBonusSpeed;
     }
 
+    /// <summary>
+    /// Vérifie si le joueur est au sol
+    /// </summary>
+    private void CheckGround()
+    {
 
+        if (Physics.Raycast(transform.position, transform.up * -1, .2f))
+        {
+#if UNITY_EDITOR
+            Debug.DrawRay(transform.position, transform.up * -.2f, Color.green);
+#endif
+            isGrounded = true;
+        }
+        else
+        {
+#if UNITY_EDITOR
+            Debug.DrawRay(transform.position, transform.up * -.2f, Color.red);
+#endif
+            isGrounded = false;
+        }
+        animator.SetBool("isGrounded", isGrounded);
+    }
+
+    private void FixedUpdate()
+    {
+        MovePlayer();
+        CheckGround();
+    }
+
+
+    /// <summary>
+    /// Redeviens un humain
+    /// </summary>
+    /// <param name="time"></param>
+    /// <returns></returns>
+    public IEnumerator TurnBackIn(float time)
+    {
+        yield return new WaitForSeconds(time);
+        UnCow();
+    }
+
+    /// <summary>
+    /// Return to human
+    /// </summary>
+    public void UnCow()
+    {
+        root.GetComponent<MonPlayerController>().enabled = true;
+        root.GetComponent<MonPlayerController>().Uncow();
+        vivox.transform.parent = root.transform;
+
+        MultiplayerGameManager.Instance.SyncUncowServerRpc(gameObject, OwnerClientId);
+    }
 }

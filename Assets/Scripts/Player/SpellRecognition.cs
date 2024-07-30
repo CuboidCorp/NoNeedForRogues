@@ -131,8 +131,7 @@ public class SpellRecognition : MonoBehaviour
                 gameObject.GetComponent<MonPlayerController>().GreaterJump(jumpBonus);
                 break;
             case "Polyphorphismus":
-                //Transforme le joueur en vache pendant 1min
-                Debug.Log("NYI : TODO Polyphorphismus");
+                gameObject.GetComponent<MonPlayerController>().Polymorph();
                 break;
             case "Offendas":
                 //Dash en avant 

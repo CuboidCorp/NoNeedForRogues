@@ -395,6 +395,16 @@ public class MultiplayerGameManager : NetworkBehaviour
     }
 
     /// <summary>
+    /// Renvoie le transform du joueur correspondant à l'id netcode (Ne marche que si le joueur est en mode vache)
+    /// </summary>
+    /// <param name="playerId">Le player id</param>
+    /// <returns>Le transform recherché</returns>
+    public Transform GetCowTransformFromPlayerId(ulong playerId)
+    {
+        return GameObject.Find("Cow" + playerId).transform;
+    }
+
+    /// <summary>
     /// Recupère la participant tap d'un joueur et le met sur son phantome
     /// </summary>
     /// <param name="playerId"></param>
@@ -410,6 +420,22 @@ public class MultiplayerGameManager : NetworkBehaviour
 
             //On veut remplacer l'audio source de son particpant tap par celle avec le evil mixer group
             authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("DeadVoice")[0];
+        }
+    }
+
+    /// <summary>
+    /// Recupère la participant tap d'un joueur et le met sur sa vache
+    /// </summary>
+    /// <param name="playerId">Id du joueur</param>
+    public void MovePlayerTapToCow(ulong playerId)
+    {
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if (playerIndex != -1)
+        {
+            string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
+            authServicePlayerIds[deadPlayerAuthId].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
+            authServicePlayerIds[deadPlayerAuthId].CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetCowTransformFromPlayerId(playerId));
+            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource);
         }
     }
 
@@ -545,7 +571,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, id);
         if (playerIndex != -1)
         {
-            players[playerIndex].GetComponent<MonPlayerController>().HandleRespawn();
+            players[playerIndex].GetComponent<MonPlayerController>().HandleRespawn(); //Ca remet juste le tag a player
             playersStates[playerIndex] = PlayerState.Alive;
             string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
             //On veut remplacer l'audio source de son particpant tap par celle avec main mixer group
@@ -711,8 +737,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     internal void SummonResurectioServerRpc(Vector3 pos, Vector3 dir, float speed, float time)
     {
         GameObject projResurrectio = Instantiate(resurectio, pos, Quaternion.LookRotation(dir));
-        projResurrectio.transform.eulerAngles += new Vector3(0, 0, 90);
-        projResurrectio.transform.rotation = Quaternion.LookRotation(Vector3.forward, dir);
+        projResurrectio.transform.eulerAngles = new Vector3(0, 90, 90) + Quaternion.LookRotation(Vector3.forward, dir).eulerAngles;
         projResurrectio.GetComponent<Rigidbody>().velocity = dir * speed;
         projResurrectio.GetComponent<ResurrectionSpell>().StartCoroutine(nameof(ResurrectionSpell.DestroyIn), time);
         projResurrectio.GetComponent<NetworkObject>().Spawn();
@@ -756,7 +781,45 @@ public class MultiplayerGameManager : NetworkBehaviour
         accelProj.GetComponent<NetworkObject>().Spawn();
     }
 
+    /// <summary>
+    /// Sync le respawn d'un joueur
+    /// </summary>
+    /// <param name="playerId">L'id du joueur ressucité</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void SyncUncowServerRpc(NetworkObjectReference obj, ulong playerId) //Appelé par le serveur
+    {
+        Destroy((GameObject)obj);
+        SyncUncowClientRpc(playerId, SendRpcToPlayersExcept(playerId));
+    }
 
+    /// <summary>
+    /// Envoie à tous les autres joueurs l'id du joueur qui se detransforme
+    /// </summary>
+    /// <param name="resPlayerId">L'id du player ressucité</param>
+    /// <param name="clientRpcParams">Les client rpcParams pr concerner tous les joueurs sauf le joueur mort</param>
+    [ClientRpc]
+    private void SyncUncowClientRpc(ulong resPlayerId, ClientRpcParams clientRpcParams)
+    {
+        HandleUncow(resPlayerId);
+    }
+
+    /// <summary>
+    /// Cette fonction permet de gérer la résurrection d'un joueur qui n'est pas le joueur qui revient de parmi les morts
+    /// </summary>
+    /// <param name="id">L'id du joueur ressucité</param>
+    private void HandleUncow(ulong id)
+    {
+        int playerIndex = Array.IndexOf(playersIds, id);
+        if (playerIndex != -1)
+        {
+            players[playerIndex].GetComponent<MonPlayerController>().HandleRespawn();
+            string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
+            //On veut remplacer l'audio source de son particpant tap par celle avec main mixer group
+            authServicePlayerIds[deadPlayerAuthId].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
+            authServicePlayerIds[deadPlayerAuthId].CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetPlayerTransformFromAuthId(deadPlayerAuthId));
+            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].ParticipantTapAudioSource);
+        }
+    }
 
     #endregion
 
