@@ -58,8 +58,6 @@ public class FireBall : MonoBehaviour
 
             if (objetTouche.CompareTag("Player"))
             {
-
-
                 objetTouche.GetComponent<MonPlayerController>().Damage(degatsInfliges);
 
                 Rigidbody[] ragdollElems = objetTouche.GetComponent<MonPlayerController>().GetRagdollRigidbodies();
@@ -70,19 +68,18 @@ public class FireBall : MonoBehaviour
                 }
 
             }
-            else if (objetTouche.CompareTag("Ragdoll"))
+            else if (objetTouche.TryGetComponent<Rigidbody>(out Rigidbody rb))
             {
-                //Les objets ragdoll on rajoute de la force d'explosion
-                objetTouche.GetComponent<Rigidbody>().AddExplosionForce(forceExplosion, transform.position, explosionRange);
+                rb.AddExplosionForce(forceExplosion, transform.position, explosionRange);
             }
         }
         gameObject.GetComponent<Collider>().enabled = false;
-        StartCoroutine(DeleteAfter1Sec(explosionGo));
+        StartCoroutine(DeleteAfterExp(explosionGo));
     }
 
-    private IEnumerator DeleteAfter1Sec(GameObject exp)
+    private IEnumerator DeleteAfterExp(GameObject exp)
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.5f);
         Destroy(exp);
         Destroy(gameObject);
     }

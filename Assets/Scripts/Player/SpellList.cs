@@ -33,8 +33,6 @@ public class SpellList : MonoBehaviour
 
             if (objetTouche.CompareTag("Player"))
             {
-
-
                 objetTouche.GetComponent<MonPlayerController>().Damage(degatsInfliges);
 
                 Rigidbody[] ragdollElems = objetTouche.GetComponent<MonPlayerController>().GetRagdollRigidbodies();
@@ -45,10 +43,9 @@ public class SpellList : MonoBehaviour
                 }
 
             }
-            else if (objetTouche.CompareTag("Ragdoll"))
+            else if (objetTouche.TryGetComponent<Rigidbody>(out Rigidbody rb))
             {
-                //Les objets ragdoll on rajoute de la force d'explosion
-                objetTouche.GetComponent<Rigidbody>().AddExplosionForce(forceExplosion, target.position, radius);
+                rb.AddExplosionForce(forceExplosion, target.position, radius);
             }
         }
         Destroy(explosionGo, 1);
@@ -66,7 +63,6 @@ public class SpellList : MonoBehaviour
 #if UNITY_EDITOR
         Debug.DrawRay(source.position, source.forward * distanceInteract, Color.yellow, 1f);
 #endif
-        Debug.Log("Open sesame");
 
         if (Physics.Raycast(source.position, source.forward, out RaycastHit hit, distanceInteract))
         {
@@ -76,17 +72,5 @@ public class SpellList : MonoBehaviour
             }
         }
     }
-
-    public static void FusRoDah()
-    {
-        //TODO : FusRoDah
-    }
-
-    //TODO : Spells a faire : 
-    /**
-     * FusRoDah -> Ragdoll le joueur target (si y en a) et force explosion sur lui
-     * Fireball -> Spawn une fireball qui fait une petite explosion
-     * 
-     */
 
 }

@@ -29,7 +29,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     [SerializeField] private float audioFadeIntensity = 1.0f;
 
-    private readonly List<VivoxParticipant> participants = new();
+    public readonly List<VivoxParticipant> participants = new();
 
     #endregion
 
