@@ -129,29 +129,6 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
-    /// <summary>
-    /// Quand un joueur autre se connecte
-    /// </summary>
-    /// <param name="id">Player id</param>
-    public void OnClientConnected(ulong id)
-    {
-        if (!IsHost) //Le reste du comportement est donc uniquement géré par le serveur
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
-            return;
-        }
-        playersIds[nbConnectedPlayers] = id;
-
-        if (soloMode)
-        {
-            players[0] = GameObject.FindWithTag("Player");
-            playerNames[0] = "SOLO";
-            SpawnGrabZone(id);
-        }
-
-    }
-
     private void Update()
     {
         if (NetworkManager.Singleton.ShutdownInProgress) //TODO est prok aussi quand on se deconnecte tt court
@@ -251,6 +228,29 @@ public class MultiplayerGameManager : NetworkBehaviour
     #endregion
 
     /// <summary>
+    /// Quand un joueur autre se connecte
+    /// </summary>
+    /// <param name="id">Player id</param>
+    public void OnClientConnected(ulong id)
+    {
+        if (!IsHost) //Le reste du comportement est donc uniquement géré par le serveur
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+            return;
+        }
+        playersIds[nbConnectedPlayers] = id;
+
+        if (soloMode)
+        {
+            players[0] = GameObject.FindWithTag("Player");
+            playerNames[0] = "SOLO";
+            SpawnGrabZone(id);
+        }
+
+    }
+
+    /// <summary>
     /// When a player is disconnected
     /// </summary>
     /// <param name="id">Player id </param>
@@ -322,6 +322,7 @@ public class MultiplayerGameManager : NetworkBehaviour
             authServicePlayerIds.Add(authServiceId, null);
         }
     }
+    
     /// <summary>
     /// Ajoute un player name au serveur
     /// </summary>
@@ -388,6 +389,28 @@ public class MultiplayerGameManager : NetworkBehaviour
             else
             {
                 return GetGhostTransformFromPlayerId(playersIds[playerIndex]);
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Renvoie le go du joueur correspondant à l'id authentification (Ne marche que si le joueur est vivant)
+    /// </summary>
+    /// <param name="authId">L'id du joueur dont on veux le go</param>
+    /// <returns>Le gameObject du joueur ou null en cas d'erreur</returns>
+    public GameObject GetPlayerGameObjectFromAuthId(string authId)
+    {
+        int playerIndex = Array.IndexOf(authServicePlayerIds.Keys.ToArray(), authId);
+        if (playerIndex != -1)
+        {
+            if (playersStates[playerIndex] == PlayerState.Alive)
+            {
+                return players[playerIndex];
+            }
+            else
+            {
+                return GetGhostTransformFromPlayerId(playersIds[playerIndex]).gameObject;
             }
         }
         return null;

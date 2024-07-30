@@ -382,9 +382,22 @@ public class MonPlayerController : Entity
         }
     }
 
+    /// <summary>
+    /// Faut vérifier si tous les joueurs sont a speaking
+    /// </summary>
     private void CheckSpeaking()
     {
-
+        foreach (VivoxParticipant participant in participants)
+        {
+            if (participant.SpeechDetected)
+            {
+                //On affiche l'icone
+            }
+            else
+            {
+                //On la cache
+            }
+        }
     }
 
     /// <summary>
