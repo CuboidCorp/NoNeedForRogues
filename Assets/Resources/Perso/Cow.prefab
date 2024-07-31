@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 1014632817326433053}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1.078, z: 1.047}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -119,7 +119,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 80
   m_CollisionDetection: 0
 --- !u!114 &4519419862527186872
 MonoBehaviour:
@@ -216,8 +216,8 @@ MonoBehaviour:
   runSpeed: 5
   boostMaxBonusSpeed: 2
   jumpPower: 1
-  playerCamera: {fileID: 0}
   cameraPivot: {fileID: 1014632817326433053}
+  playerCamera: {fileID: 730871681458129432}
   invertCamera: 0
   mouseSensitivity: 100
   minLookAngle: 50
@@ -402,7 +402,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2924046058409471886}
   - component: {fileID: 5452244425997928717}
-  - component: {fileID: 1929889243607046146}
+  - component: {fileID: 1579727892333890781}
   m_Layer: 0
   m_Name: Cow
   m_TagString: Untagged
@@ -480,8 +480,8 @@ SkinnedMeshRenderer:
     m_Center: {x: 0.0003416161, y: 0.008038374, z: 0.0018279143}
     m_Extent: {x: 0.0035636993, y: 0.008356525, z: 0.013262464}
   m_DirtyAABB: 0
---- !u!64 &1929889243607046146
-MeshCollider:
+--- !u!65 &1579727892333890781
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -498,7 +498,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 0.0050526354, y: 0.013287344, z: 0.022240447}
+  m_Center: {x: 0.000016008615, y: 0.006325524, z: 0.0025232986}

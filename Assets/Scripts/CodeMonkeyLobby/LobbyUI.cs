@@ -75,7 +75,6 @@ public class LobbyUI : MonoBehaviour
     {
         Destroy(GameObject.Find("LobbyRelayManager"));
         Destroy(transform.parent.gameObject);
-        PlayerUIManager.Instance.AfficherPlayerUi();
     }
 
     private void UpdateLobby(Lobby lobby)

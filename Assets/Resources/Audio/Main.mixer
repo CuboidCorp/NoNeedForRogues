@@ -14,6 +14,25 @@ AudioMixerEffectController:
   m_SendTarget: {fileID: 0}
   m_EnableWetMix: 0
   m_Bypass: 0
+--- !u!243 &-7530329065756259829
+AudioMixerGroupController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SFX
+  m_AudioMixer: {fileID: 24100000}
+  m_GroupID: c336f65d8383ba141b01c51db94c62f7
+  m_Children: []
+  m_Volume: 2ce8bc94ef4aa0a4d98aa4eff360d043
+  m_Pitch: 95cad0a35e06e1941abc1652f221ec5a
+  m_Send: 00000000000000000000000000000000
+  m_Effects:
+  - {fileID: -3434865785297475703}
+  m_UserColorIndex: 0
+  m_Mute: 0
+  m_Solo: 0
+  m_BypassEffects: 0
 --- !u!244 &-7178184223481035397
 AudioMixerEffectController:
   m_ObjectHideFlags: 3
@@ -88,6 +107,20 @@ AudioMixerEffectController:
     m_GUID: a96fc545a08e0e4488a19dd84b554dbd
   - m_ParameterName: Max channels
     m_GUID: d6c7fcf32c54903419b0925afb69a6cd
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
+--- !u!244 &-3434865785297475703
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: db2eb1d3c44917944825db052cde07ef
+  m_EffectName: Attenuation
+  m_MixLevel: a240763a0cfbccd459b4fd597da2398d
+  m_Parameters: []
   m_SendTarget: {fileID: 0}
   m_EnableWetMix: 0
   m_Bypass: 0
@@ -167,7 +200,13 @@ AudioMixerController:
   m_SuspendThreshold: -80
   m_EnableSuspend: 1
   m_UpdateMode: 0
-  m_ExposedParameters: []
+  m_ExposedParameters:
+  - guid: 593286f617abdb644a3f552e4e63508a
+    name: musicVolume
+  - guid: 2ce8bc94ef4aa0a4d98aa4eff360d043
+    name: sfxVolume
+  - guid: 4b1b40a020c3ef2458e55c64846245e0
+    name: voiceVolume
   m_AudioMixerGroupViews:
   - guids:
     - 00662348a88b38d46852b67812f08369
@@ -176,6 +215,7 @@ AudioMixerController:
     - 06ef04ee1317d0a4ba7bc8f0b406e34d
     - 00cca3cf1c90b4e4abc358624c9204d3
     - 96b9383458008054f937ea225f65583e
+    - c336f65d8383ba141b01c51db94c62f7
     name: View
   m_CurrentViewIndex: 0
   m_TargetSnapshot: {fileID: 24500006}
@@ -191,6 +231,7 @@ AudioMixerGroupController:
   m_Children:
   - {fileID: -5540556182610439953}
   - {fileID: -6741868156915844448}
+  - {fileID: -7530329065756259829}
   m_Volume: 2c09c7a5659c1f74aba49814f53757ef
   m_Pitch: 9d26616cb8b7fc04bb26c240be97817b
   m_Send: 00000000000000000000000000000000

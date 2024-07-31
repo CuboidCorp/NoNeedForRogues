@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
@@ -29,20 +30,11 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     [SerializeField] private float audioFadeIntensity = 1.0f;
 
+    [SerializeField] private float checkSpeakingInterval = 0.5f;
+
     public readonly List<VivoxParticipant> participants = new();
 
     #endregion
-
-    //private void Update()
-    //{
-    //    foreach (VivoxParticipant participant in participants)
-    //    {
-    //        if (participant.SpeechDetected)
-    //        {
-    //            Debug.Log("Speech detected from " + participant.PlayerId); //TODO stocker le Go du joueur et activer l'icon de speech
-    //        }
-    //    }
-    //}
 
     /// <summary>
     /// Initialisation de Vivox
@@ -92,6 +84,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         else
         {
             await JoinPositionalChannelAsync();
+            StartCoroutine(CheckPlayerSkeaking());
         }
         MultiplayerGameManager.Instance.ActiveAudioTaps();
 
@@ -135,5 +128,37 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         await servVivox.LeaveAllChannelsAsync();
         await servVivox.LogoutAsync();
+        StopAllCoroutines();
+    }
+
+    /// <summary>
+    /// Faut vérifier si tous les joueurs sont a speaking
+    /// </summary>
+    private void CheckSpeaking()
+    {
+        foreach ((VivoxParticipant, GameObject) participantEtGo in MultiplayerGameManager.Instance.authServicePlayerIds.Values)
+        {
+            if (participantEtGo.Item1 != null)
+            {
+                if (participantEtGo.Item1.SpeechDetected)
+                {
+                    participantEtGo.Item2.SetActive(true);
+                }
+                else
+                {
+                    participantEtGo.Item2.SetActive(false);
+                }
+            }
+
+        }
+    }
+
+    private IEnumerator CheckPlayerSkeaking()
+    {
+        while (true)
+        {
+            CheckSpeaking();
+            yield return new WaitForSeconds(checkSpeakingInterval);
+        }
     }
 }

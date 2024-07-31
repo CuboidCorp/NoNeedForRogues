@@ -1,31 +1,44 @@
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class PlayerUIManager : MonoBehaviour
 {
     [Header("UI Elements")]
-    [SerializeField] private GameObject playerUI;
+    [SerializeField] private GameObject inGameUI;
     [SerializeField] private GameObject pauseMenu;
     [SerializeField] private GameObject gameOverMenu;
     [SerializeField] private GameObject optionsMenu;
 
-    [Header("PlayerUI Elements")]
+    private UIDocument pauseDoc;
+    private UIDocument gameOverDoc;
+    private UIDocument optionsDoc;
+
+    [Header("inGameUI Elements")]
     [SerializeField] private GameObject crossHair;
     [SerializeField] private GameObject interactText;
     public GameObject francois;
-    public Slider healthSlider;
-    public Slider manaSlider;
+    public UnityEngine.UI.Slider healthSlider;
+    public UnityEngine.UI.Slider manaSlider;
     public TMP_Text healthText;
     public TMP_Text manaText;
     public TMP_Text goldText;
 
-    [Header("Pause Menu Elements")]
-    [SerializeField] private Button resumeButton;
-    [SerializeField] private Button optionsButton;
-    [SerializeField] private Button quitButton;
+    private Button resumeButton;
+    private Button optionsButton;
+    private Button quitButton;
+
+    [Header("Options Menu")]
+    private Slider musicVolumeSlider;
+    private Slider sfxVolumeSlider;
+    private Slider voiceVolumeSlider;
+
+    [SerializeField] private AudioMixer mainAudioMixer;
 
     public static PlayerUIManager Instance;
 
@@ -34,22 +47,84 @@ public class PlayerUIManager : MonoBehaviour
 
     private void Awake()
     {
-        playerUI.SetActive(false);
+        pauseDoc = pauseMenu.GetComponent<UIDocument>();
+
+        resumeButton = pauseDoc.rootVisualElement.Q<Button>("continueBtn");
+        optionsButton = pauseDoc.rootVisualElement.Q<Button>("optionsMenu");
+        quitButton = pauseDoc.rootVisualElement.Q<Button>("quitBtn");
+
+        gameOverDoc = gameOverMenu.GetComponent<UIDocument>();
+        optionsDoc = optionsMenu.GetComponent<UIDocument>();
+
+        musicVolumeSlider = optionsDoc.rootVisualElement.Q<Slider>("musicSlider");
+        sfxVolumeSlider = optionsDoc.rootVisualElement.Q<Slider>("sfxSlider");
+        voiceVolumeSlider = optionsDoc.rootVisualElement.Q<Slider>("voiceSlider");
+
+        inGameUI.SetActive(false);
         pauseMenu.SetActive(false);
         gameOverMenu.SetActive(false);
         optionsMenu.SetActive(false);
         Instance = this;
     }
 
-    #region PlayerUI
+    private void OnEnable()
+    {
+
+        resumeButton.clickable.clicked += () => Debug.Log("WTF");
+
+        resumeButton.clicked += () => Debug.Log("Wesh");
+
+        resumeButton.RegisterCallback<ClickEvent>(HidePauseMenu);
+        optionsButton.RegisterCallback<ClickEvent>(evt => ShowOptionsMenu());
+        quitButton.RegisterCallback<ClickEvent>(evt => Disconnect());
+
+        musicVolumeSlider.RegisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("musicVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+
+        sfxVolumeSlider.RegisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("sfxVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+
+        voiceVolumeSlider.RegisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+    }
+
+    private void OnDisable()
+    {
+        resumeButton.UnregisterCallback<ClickEvent>(HidePauseMenu);
+        optionsButton.UnregisterCallback<ClickEvent>(evt => ShowOptionsMenu());
+        quitButton.UnregisterCallback<ClickEvent>(evt => Disconnect());
+
+        musicVolumeSlider.UnregisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("musicVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+
+        sfxVolumeSlider.UnregisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("sfxVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+
+        voiceVolumeSlider.UnregisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+    }
+
+    #region inGameUI
 
     /// <summary>
     /// Affiche l'UI du joueur
     /// </summary>
-    public void AfficherPlayerUi()
+    public void AfficherInGameUI()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        playerUI.SetActive(true);
+        UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+        inGameUI.SetActive(true);
     }
 
     /// <summary>
@@ -78,21 +153,23 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void ShowPauseMenu(PlayerControls.PlayerActions playerActions)
     {
+        Debug.Log("ShowPauseMenu");
         playControls = playerActions;
         playControls.Disable();
-        Cursor.lockState = CursorLockMode.None;
-        playerUI.SetActive(false);
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        inGameUI.SetActive(false);
         pauseMenu.SetActive(true);
     }
 
     /// <summary>
     /// Cache le menu pause
     /// </summary>
-    public void HidePauseMenu()
+    public void HidePauseMenu(ClickEvent evt)
     {
+        Debug.Log("HidePauseMenu");
         playControls.Enable();
-        Cursor.lockState = CursorLockMode.Locked;
-        playerUI.SetActive(true);
+        UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+        inGameUI.SetActive(true);
         pauseMenu.SetActive(false);
     }
 
@@ -103,7 +180,6 @@ public class PlayerUIManager : MonoBehaviour
     {
         optionsMenu.SetActive(true);
         pauseMenu.SetActive(false);
-        Debug.Log("Pas implémenté encore :(");//TODO Faire les options
     }
 
     /// <summary>
@@ -125,9 +201,20 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void ShowGameOverMenu()
     {
-        playerUI.SetActive(false);
         pauseMenu.SetActive(false);
+        optionsMenu.SetActive(false);
         gameOverMenu.SetActive(true);
+        StartCoroutine(HideGameOver());
+    }
+
+    /// <summary>
+    /// Reaffiche l'UI du joueur après un certain temps
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator HideGameOver()
+    {
+        yield return new WaitForSeconds(2);
+        gameOverMenu.SetActive(false);
     }
 
     #endregion
@@ -138,7 +225,6 @@ public class PlayerUIManager : MonoBehaviour
     {
         optionsMenu.SetActive(false);
         pauseMenu.SetActive(true);
-        Debug.Log("Pas implémenté encore :("); //TODO Faire les options
     }
     #endregion
 
