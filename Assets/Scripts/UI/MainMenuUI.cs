@@ -7,13 +7,15 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using ParrelSync;
 using TMPro;
+using UnityEngine.UIElements;
 
 public class MainMenuUI : MonoBehaviour
 {
     [SerializeField] private GameObject mainMenu;
+    private VisualElement mainMenuRootVisualElement;
     [SerializeField] private GameObject popupMenu;
     [SerializeField] private GameObject errorPopup;
-    [SerializeField] private TMPro.TMP_InputField inputField;
+    [SerializeField] private TMP_InputField inputField;
 
     private string Profile = "Original";
 #if UNITY_EDITOR
@@ -22,6 +24,23 @@ public class MainMenuUI : MonoBehaviour
 #else
     private string filename = "playerInfo.json";
 #endif
+
+    private void Awake()
+    {
+        mainMenuRootVisualElement = mainMenu.GetComponent<UIDocument>().rootVisualElement;
+    }
+
+    private void OnEnable()
+    {
+        mainMenuRootVisualElement.Q<Button>("playBtn").clicked += StartGame;
+        mainMenuRootVisualElement.Q<Button>("quitBtn").clicked += QuitGame;
+    }
+
+    private void OnDisable()
+    {
+        mainMenuRootVisualElement.Q<Button>("playBtn").clicked -= StartGame;
+        mainMenuRootVisualElement.Q<Button>("quitBtn").clicked -= QuitGame;
+    }
 
     private void Start()
     {
@@ -33,9 +52,9 @@ public class MainMenuUI : MonoBehaviour
         }
 #endif
         GameObject errorHandler = GameObject.FindGameObjectWithTag("ErrorHandler");
-        if(errorHandler != null)
+        if (errorHandler != null)
         {
-            ShowError(errorHandler.GetComponent<ErrorHandler>().message);   
+            ShowError(errorHandler.GetComponent<ErrorHandler>().message);
             Destroy(errorHandler);
         }
     }
@@ -81,7 +100,7 @@ public class MainMenuUI : MonoBehaviour
         {
             AfficherPopup();
         }
-        
+
     }
 
     /// <summary>
@@ -109,7 +128,7 @@ public class MainMenuUI : MonoBehaviour
         //On verifie que le nom est valide (Pas vide, pas d'espace, pas de caractere speciaux)
         inputField.text = inputField.text.Trim();
 
-        if(IsPlayerInfoValid(inputField.text))
+        if (IsPlayerInfoValid(inputField.text))
         {
             PlayerInfo playerInfo = new()
             {
@@ -125,7 +144,7 @@ public class MainMenuUI : MonoBehaviour
         }
         else
         {
-            if(inputField.text.Length>5)
+            if (inputField.text.Length > 5)
             {
                 inputField.text = "";
                 inputField.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text = "Nom trop court <5 caracteres";
@@ -139,7 +158,7 @@ public class MainMenuUI : MonoBehaviour
             {
                 inputField.text = "";
                 inputField.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text = "Nom invalide";
-            } 
+            }
         }
 
     }

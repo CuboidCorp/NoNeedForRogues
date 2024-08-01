@@ -1,9 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
-<engine:UXML
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:engine="UnityEngine.UIElements"
-    xmlns:editor="UnityEditor.UIElements"
-    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
->
-    
-</engine:UXML>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; background-color: rgb(0, 0, 0); justify-content: flex-start; align-items: center;">
+        <ui:Label tabindex="-1" text="No Need For Rogues" parse-escape-sequences="true" display-tooltip-when-elided="true" name="titre" style="color: rgb(255, 255, 255); -unity-font: url(&apos;project://database/Assets/BonsPackages/Divers/Fonts/fantaisieartistique.medium.ttf?fileID=12800000&amp;guid=14b5e0e020e7a0c41bef382d4ec810a2&amp;type=3#fantaisieartistique.medium&apos;); -unity-font-definition: initial; font-size: 150px; justify-content: flex-start; -unity-text-align: middle-center;" />
+        <ui:VisualElement name="boutons" style="flex-grow: 1; width: auto; flex-direction: row; justify-content: center; align-self: center; align-items: center;">
+            <ui:Button text="PLAY" parse-escape-sequences="true" display-tooltip-when-elided="true" name="playBtn" style="-unity-font: url(&apos;project://database/Assets/BonsPackages/Divers/Fonts/fantaisieartistique.medium.ttf?fileID=12800000&amp;guid=14b5e0e020e7a0c41bef382d4ec810a2&amp;type=3#fantaisieartistique.medium&apos;); -unity-font-definition: initial; font-size: 125px; margin-right: 100px; padding-top: 50px; padding-right: 50px; padding-bottom: 50px; padding-left: 50px;" />
+            <ui:Button text="QUIT" parse-escape-sequences="true" display-tooltip-when-elided="true" name="quitBtn" style="font-size: 125px; -unity-font: url(&apos;project://database/Assets/BonsPackages/Divers/Fonts/fantaisieartistique.medium.ttf?fileID=12800000&amp;guid=14b5e0e020e7a0c41bef382d4ec810a2&amp;type=3#fantaisieartistique.medium&apos;); -unity-font-definition: initial; margin-right: 4px; margin-left: 100px; padding-top: 50px; padding-right: 50px; padding-bottom: 50px; padding-left: 50px;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="bottomLabels" style="flex-grow: 1; flex-direction: row; align-items: auto; justify-content: space-between; align-self: auto; width: 100%; flex-wrap: nowrap; height: 0; max-height: 150px;">
+            <ui:Label tabindex="-1" text="v0.1" parse-escape-sequences="true" display-tooltip-when-elided="true" name="labelVersion" style="align-items: flex-start; align-self: auto; justify-content: center; -unity-font: url(&apos;project://database/Assets/BonsPackages/Divers/Fonts/fantaisieartistique.medium.ttf?fileID=12800000&amp;guid=14b5e0e020e7a0c41bef382d4ec810a2&amp;type=3#fantaisieartistique.medium&apos;); -unity-font-definition: initial; font-size: 100px; color: rgb(255, 255, 255);" />
+            <ui:Label tabindex="-1" text="On recrute des designes d&apos;UI" parse-escape-sequences="true" display-tooltip-when-elided="true" name="labelJoke" style="-unity-font: url(&apos;project://database/Assets/BonsPackages/Divers/Fonts/fantaisieartistique.medium.ttf?fileID=12800000&amp;guid=14b5e0e020e7a0c41bef382d4ec810a2&amp;type=3#fantaisieartistique.medium&apos;); -unity-font-definition: initial; font-size: 100px; color: rgb(255, 255, 255); -unity-text-align: middle-center; text-overflow: clip; align-self: auto;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
