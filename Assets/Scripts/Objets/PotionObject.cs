@@ -9,6 +9,8 @@ public class PotionObject : Interactable, Ramassable
 
     private PotionType type;
 
+    [SerializeField] private int nbSecPoison;
+
     public void SetType(int typeId)
     {
         switch (typeId)
@@ -30,7 +32,20 @@ public class PotionObject : Interactable, Ramassable
     protected override void HandleInteraction()
     {
         //Quand on interagit avec la potion on la boit
-        
+        //TODO : Recup le joueur qui intéragit avec la boisson
+        StatsManager.Instance.AddPotionDrank();
+        switch (type)
+        {
+            case PotionType.HEAL:
+                MonPlayerController.instanceLocale.Heal(power);
+                break;
+            case PotionType.MANA_REGEN:
+                MonPlayerController.instanceLocale.GainMana(power);
+                break;
+            case PotionType.POISON:
+                MonPlayerController.insaneLocale.StartPoison(power,nbSecPoison)
+                break;
+        }
     }
 
     #endregion

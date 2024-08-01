@@ -85,6 +85,8 @@ public class MonPlayerController : Entity
 
     private VivoxVoiceConnexion voiceConnexion;
 
+    [SerializeField] private float poisonDamageInterval = 1f;
+
     /// <summary>
     /// Awake is called when the script instance is being loadedok 
     /// </summary>
@@ -1018,6 +1020,22 @@ public class MonPlayerController : Entity
     }
 
     #endregion
+
+    public void StartPoison(float poisonDamage, int poisonTime)
+    {
+        StartCoroutine(DoPoisonDamage(poisonDamage, poisonTime));
+    }
+
+    private IEnumerator DoPoisonDamage(float poisonDamage, int poisonTime)
+    {
+        int cptTime = 0;
+        while (cptTime < poisonDamage)
+        {
+            yield return new WaitForSeconds(poisonDamageInterval);
+            cptTime+=poisonDamageInterval;
+            Damage(poisonDamage);
+        }
+    }
 
     #endregion
 
