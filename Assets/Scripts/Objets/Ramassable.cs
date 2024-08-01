@@ -3,9 +3,9 @@ using Unity.Netcode;
 /// <summary>
 /// Interface des p qui répresente un objet avec un poids (Qui peut être tenu par le joueur)
 /// </summary>
-public interface Ramassable
+public interface IRamassable
 {
-    public float weight = 1;
+
 
     /// <summary>
     /// Change l'etat de l'objet si il est tenu ou non

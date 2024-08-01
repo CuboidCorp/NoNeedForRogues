@@ -56,7 +56,7 @@ public class Bouton : Interactable
     /// <summary>
     /// Gère l'interaction avec l'objet
     /// </summary>
-    protected override void HandleInteraction()
+    public override void HandleInteraction()
     {
         StopAllCoroutines();
         animator.Play(pressAnimationName);

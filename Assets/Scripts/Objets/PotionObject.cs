@@ -1,7 +1,10 @@
+using Unity.Netcode;
+using UnityEngine;
+
 /// <summary>
 /// Classe qui répresente les potions avec lesquels on peut intéragir pour recuperer certains effets (recup HP, recup mana, poison
 /// </summary>
-public class PotionObject : Interactable, Ramassable
+public class PotionObject : Interactable, IRamassable
 {
     [SerializeField] private float power = 1;
 
@@ -21,7 +24,7 @@ public class PotionObject : Interactable, Ramassable
                 type = PotionType.MANA_REGEN; break;
             case 2:
                 type = PotionType.POISON; break;
-            default: type = PotionType.HEAL;
+            default: type = PotionType.HEAL; break;
         }
     }
 
@@ -29,7 +32,7 @@ public class PotionObject : Interactable, Ramassable
     /// <summary>
     /// Gère l'interaction avec l'objet
     /// </summary>
-    protected override void HandleInteraction()
+    public override void HandleInteraction()
     {
         //Quand on interagit avec la potion on la boit
         //TODO : Recup le joueur qui intéragit avec la boisson
@@ -43,7 +46,7 @@ public class PotionObject : Interactable, Ramassable
                 MonPlayerController.instanceLocale.GainMana(power);
                 break;
             case PotionType.POISON:
-                MonPlayerController.insaneLocale.StartPoison(power,nbSecPoison)
+                MonPlayerController.instanceLocale.StartPoison(power, nbSecPoison);
                 break;
         }
     }
@@ -67,7 +70,7 @@ public class PotionObject : Interactable, Ramassable
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private virtual void ChangeStateServerRpc(bool newState)
+    private void ChangeStateServerRpc(bool newState)
     {
         isHeld.Value = newState;
     }

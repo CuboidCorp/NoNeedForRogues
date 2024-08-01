@@ -832,8 +832,8 @@ public class MultiplayerGameManager : NetworkBehaviour
         GameObject fusrohdah = Instantiate(fusrohdahProj, pos, Quaternion.LookRotation(dir));
         fusrohdah.transform.LookAt(transform.position + dir); //Pour la rotation on ne se soucie que du y en vrai
         fusrohdah.GetComponent<Rigidbody>().velocity = dir * speed;
-        fusrohdah.GetComponent<Fusrohdah>().SetupFusRohDah(expRange,expForce);
-        fusrohdah.GetComponent<Fusrohdah>().StartCoroutine(nameof(Fusrohdah.DestroyAfterTime), time);
+        fusrohdah.GetComponent<Fusrohdah>().SetupFusRohDah(expRange, expForce);
+        fusrohdah.GetComponent<Fusrohdah>().StartCoroutine(nameof(Fusrohdah.DestroyIn), time);
         fusrohdah.GetComponent<NetworkObject>().Spawn();
     }
 

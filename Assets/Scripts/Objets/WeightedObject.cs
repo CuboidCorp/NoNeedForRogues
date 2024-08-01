@@ -3,7 +3,7 @@ using Unity.Netcode;
 /// <summary>
 /// Classe qui répresente un objet avec un poids (Qui peut être tenu par le joueur)
 /// </summary>
-public abstract class WeightedObject : NetworkBehaviour, Ramassable
+public abstract class WeightedObject : NetworkBehaviour, IRamassable
 {
     public float weight = 1;
 
@@ -15,7 +15,7 @@ public abstract class WeightedObject : NetworkBehaviour, Ramassable
     /// <param name="newState">Le nouvel etat de l'objet</param>
     public void ChangeState(bool newState)
     {
-        if(!IsServer)
+        if (!IsServer)
         {
             ChangeStateServerRpc(newState);
             return;
@@ -23,8 +23,8 @@ public abstract class WeightedObject : NetworkBehaviour, Ramassable
         isHeld.Value = newState;
     }
 
-    [ServerRpc(RequireOwnership = false)]   
-    private virtual void ChangeStateServerRpc(bool newState)
+    [ServerRpc(RequireOwnership = false)]
+    private void ChangeStateServerRpc(bool newState)
     {
         isHeld.Value = newState;
     }

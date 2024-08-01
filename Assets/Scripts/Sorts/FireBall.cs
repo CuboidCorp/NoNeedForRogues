@@ -31,15 +31,7 @@ public class FireBall : MonoBehaviour
 
     private void Explode()
     {
-        SpellList.Explosion(transform,explosionRange,explosionForce);
-        gameObject.GetComponent<Collider>().enabled = false;
-        StartCoroutine(DeleteAfterExp(explosionGo));
-    }
-
-    private IEnumerator DeleteAfterExp(GameObject exp)
-    {
-        yield return new WaitForSeconds(0.5f);
-        Destroy(exp);
+        SpellList.Explosion(transform, explosionRange, explosionForce);
         Destroy(gameObject);
     }
 }
