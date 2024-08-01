@@ -123,14 +123,12 @@ public class SpellRecognition : MonoBehaviour
                 //Lance un projectile qui soigne le joueur si multi ou heal direct si solo
                 break;
             case "Saltus":
-                //Fait sauter le joueur très haut
                 gameObject.GetComponent<MonPlayerController>().GreaterJump(jumpBonus);
                 break;
             case "Polyphorphismus":
                 gameObject.GetComponent<MonPlayerController>().Polymorph();
                 break;
             case "Offendas":
-                //Dash en avant 
                 Vector3 lookDir = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward;
                 gameObject.GetComponent<MonPlayerController>().Dash(lookDir, dashForce);
                 break;

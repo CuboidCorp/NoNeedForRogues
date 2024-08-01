@@ -3,5 +3,10 @@
 /// </summary>
 public class TreasureObject : WeightedObject
 {
-    public float value = 1;
+    [SerializeField]private int value = 1;
+
+    public int TransformToGold()
+    {
+        return value;
+    }
 }

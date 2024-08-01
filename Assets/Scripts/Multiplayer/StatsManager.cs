@@ -13,6 +13,8 @@ public class StatsManager : NetworkBehaviour
 
     public Dictionary<ulong, PlayerStats> allStatsHolder;
 
+    public int totalGold = 0;
+
     private void Awake()
     {
         Instance = this;

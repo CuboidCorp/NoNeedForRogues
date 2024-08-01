@@ -61,7 +61,9 @@ public class MultiplayerGameManager : NetworkBehaviour
     private GameObject resurectio;
     private GameObject healProj;
     private GameObject speedProj;
+    private GameObject fusrohdahProj;
     #endregion
+
     private void Awake()
     {
         Instance = this;
@@ -85,6 +87,20 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (NetworkManager.Singleton.ShutdownInProgress) //TODO est prok aussi quand on se deconnecte tt court
+        {
+            Cursor.lockState = CursorLockMode.None;
+            NetworkManager.Singleton.Shutdown();
+            //GameObject error = new("ErrorHandler");
+            //error.AddComponent<ErrorHandler>();
+            //error.GetComponent<ErrorHandler>().message = "T'as crash ou l'hote s'est tiré";
+            SceneManager.LoadSceneAsync("MenuPrincipal");
+        }
+    }
+
+
     /// <summary>
     /// Set le nombre de joueurs dans le lobby qui vont jouer
     /// </summary>
@@ -107,39 +123,6 @@ public class MultiplayerGameManager : NetworkBehaviour
         players = new GameObject[1];
         playerNames = new string[1];
         gameCanStart = true;
-    }
-
-    /// <summary>
-    /// Active tous les audioTaps de la scène
-    /// </summary>
-    public void ActiveAudioTaps()
-    {
-        GameObject[] audioTaps = GameObject.FindGameObjectsWithTag("AudioTap");
-
-        foreach (GameObject tap in audioTaps)
-        {
-            if (soloMode)
-            {
-                tap.GetComponent<VivoxAudioTap>().ChannelName = VivoxVoiceConnexion.echoChannelName;
-            }
-            else
-            {
-                tap.GetComponent<VivoxAudioTap>().ChannelName = VivoxVoiceConnexion.channelName;
-            }
-        }
-    }
-
-    private void Update()
-    {
-        if (NetworkManager.Singleton.ShutdownInProgress) //TODO est prok aussi quand on se deconnecte tt court
-        {
-            Cursor.lockState = CursorLockMode.None;
-            NetworkManager.Singleton.Shutdown();
-            //GameObject error = new("ErrorHandler");
-            //error.AddComponent<ErrorHandler>();
-            //error.GetComponent<ErrorHandler>().message = "T'as crash ou l'hote s'est tiré";
-            SceneManager.LoadSceneAsync("MenuPrincipal");
-        }
     }
 
     /// <summary>
@@ -530,6 +513,26 @@ public class MultiplayerGameManager : NetworkBehaviour
         channelTap.GetComponent<AudioSource>().outputAudioMixerGroup = mainMixer.FindMatchingGroups("SpeedyVoice")[0];
     }
 
+    /// <summary>
+    /// Active tous les audioTaps de la scène
+    /// </summary>
+    public void ActiveAudioTaps()
+    {
+        GameObject[] audioTaps = GameObject.FindGameObjectsWithTag("AudioTap");
+
+        foreach (GameObject tap in audioTaps)
+        {
+            if (soloMode)
+            {
+                tap.GetComponent<VivoxAudioTap>().ChannelName = VivoxVoiceConnexion.echoChannelName;
+            }
+            else
+            {
+                tap.GetComponent<VivoxAudioTap>().ChannelName = VivoxVoiceConnexion.channelName;
+            }
+        }
+    }
+
     #endregion
 
     #region Death
@@ -745,7 +748,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="speed">Vitesse de la boule de feu</param>
     /// <param name="expRange">Range of explosion</param>
     /// <param name="expForce">Force of the explosion</param>
-    /// <param name="time"></param>
+    /// <param name="time">Temps avant de despawn le proj</param>
     [ServerRpc(RequireOwnership = false)]
     internal void SummonFireBallServerRpc(Vector3 pos, Vector3 dir, float speed, float expRange, float expForce, float time)
     {
@@ -811,6 +814,27 @@ public class MultiplayerGameManager : NetworkBehaviour
         accelProj.GetComponent<AccelProjectile>().SetBuffDuration(buffDuration);
         accelProj.GetComponent<AccelProjectile>().StartCoroutine(nameof(AccelProjectile.DestroyAfterTime), time);
         accelProj.GetComponent<NetworkObject>().Spawn();
+    }
+
+    /// <summary>
+    /// Summon un projectile de fusrohdah
+    /// </summary>
+    /// <param name="pos">Position de spawn du proj</param>
+    /// <param name="dir">Direction du proj</param>
+    /// <param name="speed">Vitesse du proj</param>
+    /// <param name="time">Temps avant expiration</param>
+    /// <param name="expRange">Range of explosion</param>
+    /// <param name="expForce">Force of the explosion</param>
+
+    [ServerRpc(RequireOwnership = false)]
+    internal void SummonFusrohdahServerRpc(Vector3 pos, Vector3 dir, float speed, float time, float expRange, float expForce)
+    {
+        GameObject fusrohdah = Instantiate(fusrohdahProj, pos, Quaternion.LookRotation(dir));
+        fusrohdah.transform.LookAt(transform.position + dir); //Pour la rotation on ne se soucie que du y en vrai
+        fusrohdah.GetComponent<Rigidbody>().velocity = dir * speed;
+        fusrohdah.GetComponent<Fusrohdah>().SetupFusRohDah(expRange,expForce);
+        fusrohdah.GetComponent<Fusrohdah>().StartCoroutine(nameof(Fusrohdah.DestroyAfterTime), time);
+        fusrohdah.GetComponent<NetworkObject>().Spawn();
     }
 
     /// <summary>
