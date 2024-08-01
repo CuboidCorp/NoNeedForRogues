@@ -319,6 +319,7 @@ public class MonPlayerController : Entity
     {
         if (isGrounded)
         {
+            StatsManager.Instance.AddJump();
             animator.SetTrigger("Jump");
             rb.AddForce(Vector3.up * Mathf.Sqrt(2 * jumpPower), ForceMode.Impulse);
         }
@@ -330,6 +331,7 @@ public class MonPlayerController : Entity
     /// <param name="bonus">Multiplicateur du saut</param>
     public void GreaterJump(float bonus)
     {
+        StatsManager.Instance.AddJump();
         animator.SetTrigger("Jump");
         rb.AddForce(Vector3.up * Mathf.Sqrt(2 * jumpPower * bonus), ForceMode.Impulse);
     }
@@ -391,61 +393,12 @@ public class MonPlayerController : Entity
         }
     }
 
-    /// <summary>
-    /// Reçoit un speed boost et lance une coroutine pour le finir
-    /// </summary>
-    /// <param name="buffDuration">Durée du buff</param>
-    public void ReceiveSpeedBoost(float buffDuration)
-    {
-        boostBonusSpeed += boostMaxBonusSpeed;
-        if (MultiplayerGameManager.Instance.soloMode)
-        {
-            MultiplayerGameManager.Instance.SetSpeedyChannelTap();
-        }
-        else
-        {
-            MultiplayerGameManager.Instance.SetSpeedyPlayerTap(OwnerClientId);
-        }
-        StartCoroutine(EndSpeedBoost(buffDuration));
-    }
-
-    /// <summary>
-    /// Supprime un speed boost au bout d'un certain temps
-    /// </summary>
-    /// <param name="time">Le temps au bout du quel le speed boost est fini</param>
-    /// <returns></returns>
-    private IEnumerator EndSpeedBoost(float time)
-    {
-        yield return new WaitForSeconds(time);
-        boostBonusSpeed -= boostMaxBonusSpeed;
-        if (isRunning)
-        {
-            moveSpeed = runSpeed + boostBonusSpeed;
-        }
-        else
-        {
-            moveSpeed = walkSpeed + boostBonusSpeed;
-        }
-        if (boostBonusSpeed == 0)
-        {
-            if (MultiplayerGameManager.Instance.soloMode)
-            {
-                MultiplayerGameManager.Instance.SetNormalChannelTap();
-            }
-            else
-            {
-                MultiplayerGameManager.Instance.ResetPlayerTap(OwnerClientId);
-            }
-        }
-    }
-
     #region Degats et Mort
 
     /// <summary>
     /// Inflige des dégats au joueur
     /// </summary>
     /// <param name="damage">Le nombre de degats infligés</param>
-    /// <returns>True si le joueur est mort, false sinon</returns>
     public override void Damage(float damage)
     {
         if (!IsOwner)
@@ -458,10 +411,10 @@ public class MonPlayerController : Entity
             HandleDamageClientRpc(damage, clientParams);
             return;
         }
+        StatsManager.Instance.AddDamageTaken(damage);
         StopEmotes();
         animator.SetTrigger("GotHurt");
         base.Damage(damage);
-        return;
     }
 
     /// <summary>
@@ -474,6 +427,38 @@ public class MonPlayerController : Entity
     {
         Damage(damage);
     }
+
+    /// <summary>
+    /// Heal le joueur 
+    /// </summary>
+    /// <param name="heal">Le nombre de points de vie rendus</param>
+    public override void Heal(float heal)
+    {
+        if (!IsOwner)
+        {
+            //On gère les dégats sur chaque client pour éviter les problèmes de synchro
+            ClientRpcParams clientParams = new()
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { OwnerClientId } }
+            };
+            HandleHealClientRpc(heal, clientParams);
+            return;
+        }
+        StatsManager.Instance.AddHealAmount(heal);
+        base.Heal(heal);
+    }
+
+    /// <summary>
+    /// Gère le healing sur le client propriétaire
+    /// </summary>
+    /// <param name="clientRpcParams">Parametre de la rpc pr permettre de target un joueur en particulier</param>
+    /// <param name="healAmount">Les degats à soigner</param>
+    [ClientRpc]
+    private void HandleHealClientRpc(float healAmount, ClientRpcParams clientRpcParams)
+    {
+        Heal(healAmount);
+    }
+
 
     /// <summary>
     /// Gère la mort du joueur, soit on remplace le joueur par sa ragdoll
@@ -912,6 +897,56 @@ public class MonPlayerController : Entity
     }
 
     /// <summary>
+    /// Reçoit un speed boost et lance une coroutine pour le finir
+    /// </summary>
+    /// <param name="buffDuration">Durée du buff</param>
+    public void ReceiveSpeedBoost(float buffDuration)
+    {
+        boostBonusSpeed += boostMaxBonusSpeed;
+        if (MultiplayerGameManager.Instance.soloMode)
+        {
+            MultiplayerGameManager.Instance.SetSpeedyChannelTap();
+        }
+        else
+        {
+            MultiplayerGameManager.Instance.SetSpeedyPlayerTap(OwnerClientId);
+        }
+        StartCoroutine(EndSpeedBoost(buffDuration));
+    }
+
+    /// <summary>
+    /// Supprime un speed boost au bout d'un certain temps
+    /// </summary>
+    /// <param name="time">Le temps au bout du quel le speed boost est fini</param>
+    /// <returns></returns>
+    private IEnumerator EndSpeedBoost(float time)
+    {
+        yield return new WaitForSeconds(time);
+        boostBonusSpeed -= boostMaxBonusSpeed;
+        if (isRunning)
+        {
+            moveSpeed = runSpeed + boostBonusSpeed;
+        }
+        else
+        {
+            moveSpeed = walkSpeed + boostBonusSpeed;
+        }
+        if (boostBonusSpeed == 0)
+        {
+            if (MultiplayerGameManager.Instance.soloMode)
+            {
+                MultiplayerGameManager.Instance.SetNormalChannelTap();
+            }
+            else
+            {
+                MultiplayerGameManager.Instance.ResetPlayerTap(OwnerClientId);
+            }
+        }
+    }
+
+    #region Polymorph
+
+    /// <summary>
     /// Polymorph en vacche
     /// </summary>
     public void Polymorph()
@@ -981,6 +1016,8 @@ public class MonPlayerController : Entity
         gameObject.GetComponent<SpellRecognition>().enabled = true;
         cameraPivot.SetActive(true);
     }
+
+    #endregion
 
     #endregion
 

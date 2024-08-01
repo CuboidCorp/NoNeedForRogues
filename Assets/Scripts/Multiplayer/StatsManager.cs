@@ -13,7 +13,7 @@ public class StatsManager : NetworkBehaviour
 
     public Dictionary<ulong, PlayerStats> allStatsHolder;
 
-    public int totalGold = 0;
+    public NetworkVariable<int> totalGold = new NetworkVariable<int>();
 
     private void Awake()
     {
@@ -25,7 +25,9 @@ public class StatsManager : NetworkBehaviour
         if (IsServer)
         {
             allStatsHolder = new Dictionary<ulong, PlayerStats>();
+            totalGold.Value = 0;
         }
+        totalGold.OnValueChanged += OnGoldValueChanged;
     }
 
     /// <summary>
@@ -36,6 +38,12 @@ public class StatsManager : NetworkBehaviour
     {
         localPlayerStats = new PlayerStats();
         localPlayerId = playerId;
+    }
+    
+    private void OnGoldValueChanged(int previous, int current)
+    {
+        //TODO : Afficher une petite icone avec du texte vert/rouge en fonction de la différence sur le compteur de gold total
+        PlayerUIManager.Instance.SetGoldText(current);
     }
 
     #region Adding stats
@@ -63,11 +71,6 @@ public class StatsManager : NetworkBehaviour
     public void AddHealAmount(float healAmount)
     {
         localPlayerStats.healTaken += healAmount;
-    }
-
-    public void AddDistanceMoved(float distanceMoved)
-    {
-        localPlayerStats.distanceMoved += distanceMoved;
     }
 
     public void AddPotionDrank()

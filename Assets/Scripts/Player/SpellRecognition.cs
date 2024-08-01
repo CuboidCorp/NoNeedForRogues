@@ -55,6 +55,9 @@ public class SpellRecognition : MonoBehaviour
         if (args.confidence == ConfidenceLevel.High || args.confidence == ConfidenceLevel.Medium)
             Debug.Log(args.text);
         Vector3 posProj = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
+
+        StatsManager.Instance.AddSpellCast();
+
         switch (args.text)
         {
             case "Crepitus":

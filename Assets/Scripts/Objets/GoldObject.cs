@@ -11,6 +11,7 @@ public class GoldObject : Interactable
     protected override void HandleInteraction()
     {
         //Rajoute le gold au truc du serveur
-
+        StatsManager.Instance.AddGold(value);
+        StatsManager.Instance.totalGold.Value += value;
     }
 }

@@ -134,6 +134,7 @@ public class CowController : NetworkBehaviour
     {
         if (isGrounded)
         {
+            StatsManager.Instance.AddJump();
             animator.SetTrigger("Jump");
             rb.AddForce(Vector3.up * Mathf.Sqrt(2 * jumpPower), ForceMode.Impulse);
         }

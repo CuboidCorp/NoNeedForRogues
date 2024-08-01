@@ -27,7 +27,7 @@ public class PlayerUIManager : MonoBehaviour
     public UnityEngine.UI.Slider manaSlider;
     public TMP_Text healthText;
     public TMP_Text manaText;
-    public TMP_Text goldText;
+    [SerializeField] private TMP_Text goldText;
 
     private Button resumeButton;
     private Button optionsButton;
@@ -116,7 +116,7 @@ public class PlayerUIManager : MonoBehaviour
         });
     }
 
-    #region inGameUI
+    #region InGameUI
 
     /// <summary>
     /// Affiche l'UI du joueur
@@ -143,6 +143,15 @@ public class PlayerUIManager : MonoBehaviour
     public void HideInteractText()
     {
         interactText.SetActive(false);
+    }
+
+    /// <summary>
+    /// Set le nombre de gold 
+    /// </summary>
+    /// <param name="amount">Nouvelle valeur d'or</param>
+    public void SetGoldText(int amount)
+    {
+        goldText.text = amount+" G";
     }
     #endregion
 
