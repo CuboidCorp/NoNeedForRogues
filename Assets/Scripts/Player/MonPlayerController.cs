@@ -159,7 +159,7 @@ public class MonPlayerController : Entity
             }
             instanceLocale = this;
 
-            PlayerUIManager.Instance.AfficherPlayerUi();
+            PlayerUIManager.Instance.AfficherInGameUI();
 
             ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
             transform.position = new Vector3(0, 1, 0);
@@ -244,7 +244,6 @@ public class MonPlayerController : Entity
         MovePlayer();
         CheckGround();
         CheckInteract();
-        CheckSpeaking();
     }
 
     #region Movement
@@ -389,24 +388,6 @@ public class MonPlayerController : Entity
         else
         {
             PlayerUIManager.Instance.HideInteractText();
-        }
-    }
-
-    /// <summary>
-    /// Faut vérifier si tous les joueurs sont a speaking
-    /// </summary>
-    private void CheckSpeaking()
-    {
-        foreach ((VivoxParticipant, GameObject) participantEtGo in MultiplayerGameManager.Instance.authServicePlayerIds.Values)
-        {
-            if (participantEtGo.Item1.SpeechDetected)
-            {
-                participantEtGo.Item2.SetActive(true);
-            }
-            else
-            {
-                participantEtGo.Item2.SetActive(false);
-            }
         }
     }
 
@@ -946,7 +927,6 @@ public class MonPlayerController : Entity
     private void SpawnCowServerRpc(ulong ownerId)
     {
         GameObject cow = Instantiate(cowPlayerPrefab, transform.position, transform.rotation);
-        cow.name = "Cow" + OwnerClientId;
         cow.GetComponent<NetworkObject>().SpawnWithOwnership(ownerId);
 
         HandleCowSpawnClientRpc(cow);
@@ -956,7 +936,7 @@ public class MonPlayerController : Entity
     private void HandleCowSpawnClientRpc(NetworkObjectReference networkRef)
     {
         GameObject cowObj = (GameObject)networkRef;
-        cowObj.name = "GhostPlayer" + cowObj.GetComponent<NetworkObject>().OwnerClientId;
+        cowObj.name = "Cow" + cowObj.GetComponent<NetworkObject>().OwnerClientId;
         if (cowObj.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
         {
             OnCowSpawn();
@@ -984,7 +964,7 @@ public class MonPlayerController : Entity
         StartCoroutine(cow.GetComponent<CowController>().TurnBackIn(60));
         vivox.transform.parent = cow.transform;
         cow.transform.GetChild(0).gameObject.SetActive(true); //Le camera pivot du ghost
-        cow.transform.GetChild(1).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.ShadowsOnly; //On desactive le corps de la vache
+        cow.transform.GetChild(1).GetComponent<SkinnedMeshRenderer>().shadowCastingMode = ShadowCastingMode.ShadowsOnly; //On desactive le corps de la vache
         cameraPivot.SetActive(false);
         enabled = false;
         gameObject.SetActive(false);

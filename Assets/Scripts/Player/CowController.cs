@@ -52,6 +52,7 @@ public class CowController : NetworkBehaviour
     #region Camera Movement Variables
     [Header("Camera Movement Variables")]
     [SerializeField] private GameObject cameraPivot; //Le gameObject de la camera
+    [SerializeField] private Camera playerCamera; //Le gameObject de la camera
 
     [SerializeField] private bool invertCamera = false;
     [SerializeField] private float mouseSensitivity = 100f;
@@ -69,6 +70,7 @@ public class CowController : NetworkBehaviour
 
     private void Awake()
     {
+        Debug.Log("CowController Awake");
         controls = new PlayerControls();
         playerActions = controls.Player;
 
@@ -81,6 +83,8 @@ public class CowController : NetworkBehaviour
         playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
         playerActions.Run.started += ctx => StartRun();
         playerActions.Run.canceled += ctx => StopRun();
+
+        controls.Enable();
     }
 
     /// <summary>
@@ -114,11 +118,11 @@ public class CowController : NetworkBehaviour
 
         if (isRunning)
         {
-            Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, sprintFov, Time.deltaTime * fovChangeSpeed);
+            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, sprintFov, Time.deltaTime * fovChangeSpeed);
         }
         else
         {
-            Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, fov, Time.deltaTime * fovChangeSpeed);
+            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, fov, Time.deltaTime * fovChangeSpeed);
         }
 
     }
@@ -146,7 +150,7 @@ public class CowController : NetworkBehaviour
 
         pitch = Mathf.Clamp(pitch, -minLookAngle, minLookAngle);
 
-        Camera.main.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
+        playerCamera.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
 
         transform.eulerAngles = new Vector3(0.0f, yaw, 0.0f);
     }

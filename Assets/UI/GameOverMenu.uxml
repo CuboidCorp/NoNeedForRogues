@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; align-self: auto; justify-content: center; background-color: rgba(0, 0, 0, 0.98);">
+        <ui:Label tabindex="-1" text="TU EST MORT ;(" parse-escape-sequences="true" display-tooltip-when-elided="true" style="-unity-font: url(&apos;project://database/Assets/BonsPackages/Divers/Fonts/fantaisieartistique.medium.ttf?fileID=12800000&amp;guid=14b5e0e020e7a0c41bef382d4ec810a2&amp;type=3#fantaisieartistique.medium&apos;); -unity-font-definition: initial; color: rgb(96, 0, 0); -unity-text-align: upper-center; font-size: 100px;" />
+    </ui:VisualElement>
+</ui:UXML>
