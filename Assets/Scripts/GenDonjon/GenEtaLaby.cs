@@ -11,10 +11,10 @@ public class GenEtaLaby : GenerationEtage
     [Flags]
     public enum WallState
     {
-        DOWN = 1,
+        LEFT = 1,
         UP = 2,
-        LEFT = 4,
-        RIGHT = 8,
+        RIGHT = 4,
+        DOWN = 8,
         VISITED = 16
     }
 
@@ -24,32 +24,33 @@ public class GenEtaLaby : GenerationEtage
         public WallState SharedWall;
     }
 
-    private GameObject[] couloirs;
-    private GameObject[] stairs;
+    private GameObject[] couloirsPrefabs;
+    private GameObject stairPrefab;
 
     private List<Vector2Int> deadEnds;
+    private Vector2Int[] stairsPos;
+
+    private const yCoordinateUpStairs = 1;
+    private const yCoordinateDownStairs = -1;
 
     private WallState[,] etage;
+
+    #region Traps
+
+    #endregion
 
     public override void GenerateEtage()
     {
         InitEtage();
         GenerationTheorique();
+        GenerationEscaliers();
         RenderingLabyrinthe();
     }
 
     public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs)
     {
-        couloirs = Resources.LoadAll<GameObject>(pathToHallways);
-        stairs = Resources.LoadAll<GameObject>(pathToStairs);
-    }
-
-    public override void GenerateItems()
-    {
-        foreach (Vector2Int deadEnd in deadEnds)
-        {
-            Debug.DrawRay(new Vector3(deadEnd.x, 0, deadEnd.y) * cellSize, Vector3.up, Color.yellow, 100f);
-        }
+        couloirsPrefabs = Resources.LoadAll<GameObject>(pathToHallways);
+        stairPrefab = Resources.Load<GameObject>(pathToStairs);
     }
 
     private void InitEtage()
@@ -62,6 +63,107 @@ public class GenEtaLaby : GenerationEtage
                 etage[i, j] = WallState.LEFT | WallState.RIGHT | WallState.UP | WallState.DOWN;
             }
         }
+    }
+
+    private void GenerationEscaliers()
+    {
+        stairsPos = new[nbStairs*2];
+        //On genere les points d'entrée
+        int cptStairs = 0;
+        while(cptStairs < nbStairs) 
+        {
+            int side = Random.Range(0, 4); //0 gauche 1 Haut 2 droite 3 bas
+            Vector2Int stairPos;
+            switch (side)
+            {
+                case 0:
+                    stairPos.x = -1;
+                    stairPos.y = Random.Range(0, tailleEtage.y);
+                    cellPos = new Vector2Int(0, stairPos.y);
+                    break;
+                case 1:
+                    stairPos.x = Random.Range(0, tailleEtage.x);
+                    stairPos.y = -1;
+                    cellPos = new Vector2Int(stairPos.x, 0);
+                    break;
+                case 2:
+                    stairPos.x = tailleEtage.x;
+                    stairPos.y = Random.Range(0, tailleEtage.y);
+                    cellPos = new Vector2Int(tailleEtage.x - 1, stairPos.y);
+                    break;
+                case 3:
+                    stairPos.x = Random.Range(0, tailleEtage.x);
+                    stairPos.y = tailleEtage.y;
+                    cellPos = new Vector2Int(stairPos.x, tailleEtage.y - 1);
+                    break;
+            }
+
+            if(IsStairPlaceable(stairPos))
+            {
+                GameObject stairs = Instantiate(stairPrefab, new Vector3(stairPos.x, yCoordinateUpStairs, stairPos.y), Quaternion.identity);
+                stairs.transform.eulerAngles = new Vector3(0, side * 90, 0);
+
+                stairsPos[cptStairs] = stairPos;
+
+                etage[cellPos.x, cellPos.y] ^= Math.Pow(2, side);
+
+                cptStairs++;
+            }
+        }
+
+        //Points de sorties
+        while (cptStairs < nbStairs*2)
+        {
+            int side = Random.Range(0, 4); //0 gauche 1 Haut 2 droite 3 bas
+            Vector2Int stairPos;
+            Vector2Int cellPos;
+            switch (side)
+            {
+                case 0:
+                    stairPos.x = -1;
+                    stairPos.y = Random.Range(0, tailleEtage.y);
+                    cellPos = new Vector2Int(0, stairPos.y);
+                    break;
+                case 1:
+                    stairPos.x = Random.Range(0, tailleEtage.x);
+                    stairPos.y = -1;
+                    cellPos = new Vector2Int(stairPos.x,0);
+                    break;
+                case 2:
+                    stairPos.x = tailleEtage.x;
+                    stairPos.y = Random.Range(0, tailleEtage.y);
+                    cellPos = new Vector2Int(tailleEtage.x-1, stairPos.y);
+                    break;
+                case 3:
+                    stairPos.x = Random.Range(0, tailleEtage.x);
+                    stairPos.y = tailleEtage.y;
+                    cellPos = new Vector2Int(stairPos.x, tailleEtage.y-1);
+                    break;
+            }
+
+            if (IsStairPlaceable(stairPos))
+            {
+                GameObject stairs = Instantiate(stairPrefab, new Vector3(stairPos.x, yCoordinateDownStairs, stairPos.y), Quaternion.identity);
+                stairs.transform.eulerAngles = new Vector3(0, (side-3) * 90, 0);
+
+                etage[cellPos.x, cellPos.y] ^= Math.Pow(2, side);
+
+                stairsPos[cptStairs] = stairPos;
+                cptStairs++;
+            }
+        }
+    }
+
+    private bool IsStairPlaceable(Vector2Int pos)
+    {
+        foreach(Vector2Int vector in stairsPos)
+        {
+            if(pos = vector)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void GenerationTheorique()
@@ -106,11 +208,11 @@ public class GenEtaLaby : GenerationEtage
         {
             for (int j = 0; j < tailleEtage.y; j++)
             {
-                GameObject go = Instantiate(couloirs[GetIndexCouloir(new Vector2Int(i, j))], new Vector3(i, 0, j) * cellSize, Quaternion.identity);
+                GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], new Vector3(i, 0, j) * cellSize, Quaternion.identity);
                 GameObject goToRemove = go.transform.GetChild(0).gameObject;
                 foreach (Transform child in go.transform)
                 {
-                    if (child.name == "Ceiling_SquareLarge")
+                    if (child.name == "Ceiling_SquareLarge") //TODO : Temporaire --> Pour voir l'intérieur du labyrinthe
                     {
                         goToRemove = child.gameObject;
                     }
@@ -164,4 +266,20 @@ public class GenEtaLaby : GenerationEtage
         int allFlagsMask = (int)(WallState.DOWN | WallState.UP | WallState.LEFT | WallState.RIGHT | WallState.VISITED);
         return ~(int)etage[position.x, position.y] & allFlagsMask;
     }
+
+    #region Generation Objets
+    public override void GenerateItems()
+    {
+        foreach (Vector2Int deadEnd in deadEnds)
+        {
+            Debug.DrawRay(new Vector3(deadEnd.x, 0, deadEnd.y) * cellSize, Vector3.up, Color.yellow, 100f);
+        }
+    }
+    
+    #endregion
+
+    #region Generation Pieges
+
+    #endregion
+
 }

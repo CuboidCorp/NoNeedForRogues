@@ -5,9 +5,7 @@ using Unity.Netcode;
 /// </summary>
 public interface IRamassable
 {
-
-
-    /// <summary>
+    /// <summary> 
     /// Change l'etat de l'objet si il est tenu ou non
     /// </summary>
     /// <param name="newState">Le nouvel etat de l'objet</param>

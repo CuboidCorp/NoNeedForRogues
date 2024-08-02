@@ -14,6 +14,5 @@ public class GoldObject : Interactable
     {
         //Rajoute le gold au truc du serveur
         StatsManager.Instance.AddGold(value);
-        StatsManager.Instance.totalGold.Value += value;
     }
 }

@@ -19,12 +19,16 @@ public class PotionObject : Interactable, IRamassable
         switch (typeId)
         {
             case 0:
-                type = PotionType.HEAL; break;
+                type = PotionType.HEAL;
+                break;
             case 1:
-                type = PotionType.MANA_REGEN; break;
+                type = PotionType.MANA_REGEN; 
+                break;
             case 2:
-                type = PotionType.POISON; break;
-            default: type = PotionType.HEAL; break;
+                type = PotionType.POISON; 
+                break;
+            default: type = PotionType.HEAL; 
+                break;
         }
     }
 
