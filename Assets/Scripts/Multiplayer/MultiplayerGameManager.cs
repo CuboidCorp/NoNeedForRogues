@@ -47,8 +47,25 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private string[] playerNames;
 
+    /// <summary>
+    /// Liste de si les joueurs sont prets ou non pour la suite
+    /// </summary>
+    private bool[] playersReady;
+
+    /// <summary>
+    /// Si les joueurs vont vers le haut ou non
+    /// De base a null
+    /// </summary>
+    private bool[] playerGoingUp;
+
+    private bool isInLobby = true;
+
+    private GameObject[] escaliersCountdown = new();
+
     //Les audio mixers pr les voix
     private AudioMixer mainMixer;
+
+    private IEnumerator changeLevelCoroutine;
 
     #region Prefabs
     private GameObject copyCamPrefab;
@@ -66,11 +83,23 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private void Awake()
     {
+        if(Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+        }
         Instance = this;
+
+        DontDestroyOnLoad(this);
+        LoadPrefabs();
+        authServicePlayerIds = new Dictionary<string, (VivoxParticipant, GameObject)>();
+        
+    }
+
+    private void LoadPrefabs()
+    {
         mainMixer = Resources.Load<AudioMixer>("Audio/Main");
         copyCamPrefab = Resources.Load<GameObject>("Perso/CopyCam");
         grabZonePrefab = Resources.Load<GameObject>("Perso/GrabZone");
-        authServicePlayerIds = new Dictionary<string, (VivoxParticipant, GameObject)>();
         lightBall = Resources.Load<GameObject>("Sorts/LightBall");
         fireBall = Resources.Load<GameObject>("Sorts/FireBall");
         resurectio = Resources.Load<GameObject>("Sorts/ResurectioProjectile");
@@ -237,8 +266,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// When a player is disconnected
     /// </summary>
     /// <param name="id">Player id </param>
-    public void OnClientDisconnected(ulong id) //TODO : Handle la vrai deconnection genre message de deconnection
+    public void OnClientDisconnected(ulong id) 
     {
+        //TODO : Handle la vrai deconnection genre message de deconnection
+        
         if (NetworkManager.Singleton.LocalClientId == id) //Si on s'est fait deconnecter
         {
             Cursor.lockState = CursorLockMode.None;
@@ -250,10 +281,16 @@ public class MultiplayerGameManager : NetworkBehaviour
             SceneManager.LoadSceneAsync("MenuPrincipal");
         }
         nbConnectedPlayers--;
-        if (nbConnectedPlayers < nbTotalPlayers)
+        if (nbConnectedPlayers < nbTotalPlayers) //En theorie dans le lobby il peut se reconnecter mais je crois pas
         {
             gameCanStart = false;
         }
+        HandlePlayerDisconnection(id);
+    }
+
+    private void HandlePlayerDisconnection(ulong playerId)
+    {
+        //TODO : Despawn tt les objets et resize tous les array
     }
 
     /// <summary>
@@ -916,6 +953,131 @@ public class MultiplayerGameManager : NetworkBehaviour
         player.GetComponent<MonPlayerController>().copyCam = copyCam;
         player.GetComponent<PickUpController>().holdArea = copyCam.transform.GetChild(0);
     }
+    #endregion
+
+    #region Starting Game
+
+    /// <summary>
+    /// Envoie au serveur l'information que le joueur est prêt
+    /// </summary>
+    /// <param name="playerId">L'id du player qui est pret</param>
+    /// <param name="isReady">Si le joueur est ready ou non</param>
+    [ServerRpc]
+    public void SyncPlayerStateServerRpc(ulong playerId, bool isReady, bool isStairUp = false)
+    {
+        int index = Array.IndexOf(playersIds, playerId);
+        if(index !=-1)
+        {
+            playersReady[index] = isReady;
+            if(!isReady)
+            {
+                playerGoingUp[index] = null;
+                ResetCountDown();
+                return;
+            }
+
+            playerGoingUp[index] = isStairUp;
+            CheckGameCanStart();
+        }
+    }
+
+    private void CheckGameCanStart()
+    {
+        if(PlayersAreReady() && PlayersAreGoingSameWay())
+        {
+            //On start la coroutine sur tous les escaliers qui vont du meme coté que les joueurs
+            //A la fin de la coroutine on change la scene
+            changeLevelCoroutine = StartCoroutine(StartMovingCountdown());
+            bool direction = playerGoingUp[0];
+            if(direction)
+            {
+                escaliersCountdown = GameObject.FindGameObjectsWithTag("UpStairs");
+            }
+            else
+            {
+                escaliersCountdown = GameObject.FindGameObjectsWithTag("DownStairs");
+            }
+            foreach(GameObject esc in escaliersCountdown)
+            {
+                esc.GetComponent<Escalier>().StartCountdown();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Reset le countdown
+    /// </summary>
+    private void ResetCountDown()
+    {
+        StopCoroutine(changeLevelCoroutine);
+        foreach (GameObject esc in escaliersCountdown)
+        {
+            esc.GetComponent<Escalier>().CancelCountdown();
+        }
+    }
+
+    private IEnumerator StartMovingCountdown(int nbSec)
+    {
+        yield return new WaitForSeconds(nbSec);
+        ChangeLevel();
+    }
+
+    private void ChangeLevel()
+    {
+        bool direction = playerGoingUp[0];
+
+        if(isInLobby)
+        {
+            NetworkManager.SceneManager.LoadScene("Donjon", LoadSceneMode.Additive);
+        }
+        else
+        {
+            //On vérifie en fonction du génération donjon le current level
+            if(direction == false) //On descend
+            {
+                GenerationDonjon.instance.currentEtage++;
+            }
+            else
+            {
+                GenerationDonjon.instance.currentEtage--;
+            }
+        }
+        NetworkManager.SceneManager.LoadScene("Donjon", LoadSceneMode.Additive);
+    }
+
+    /// <summary>
+    /// Vérifie si les joueurs sont prets
+    /// </summary>
+    /// <returns>True si ils sont tous prets, false sinon</returns>
+    private bool PlayersAreReady()
+    {
+        foreach(bool state in playersStates)
+        {
+            if(state == false)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Verifie si tous les joueurs vont du meme coté
+    /// </summary>
+    /// <returns>True si ils vont du meme coté, false sinon</returns>
+    private bool PlayersAreGoingSameWay()
+    {
+        bool dirInit = playerGoingUp[0];
+        for(int i =1 ;i<playerGoingUp.length ;i++)
+        {
+            if (playerGoingUp[i]!=dirInit)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     #endregion
 
     /// <summary>

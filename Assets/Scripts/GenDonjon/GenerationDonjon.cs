@@ -13,7 +13,10 @@ public class GenerationDonjon : MonoBehaviour
     [SerializeField]
     int nbEtages;
 
-    private int currentEtage = 0;
+    public int currentEtage = 1;
+    public int maxEtage = 5;
+
+    private int maxEtageReached = 0;
 
     [SerializeField]
     private float cellSize = 1;
@@ -42,10 +45,48 @@ public class GenerationDonjon : MonoBehaviour
 
     private GenerationEtage genEtage;
 
+    public static GenerationDonjon instance;
+
+    private int[] seeds;
+
+    void Awake()
+    {
+        if(instance != null && instance != this)
+        {
+            Destroy(this.gameObject);
+        }
+
+        if(seeds == null)
+        {
+            seeds = new[maxEtage];
+        }
+
+        instance = this;
+        DontDestroyOnLoad(this);
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        Random.InitState(seed);
+        if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
+        {
+            RandomizeSeed();
+            seeds[currentEtage] = seed;
+            maxEtageReached = currentEtage;
+            Generate(true);
+        }
+        else
+        {
+            seed = seeds[currentEtage];
+            SetSeed();
+            Generate(false);
+        }
+        
+    }
+
+    private void Generate(bool isNewEtage)
+    {
+        
         switch (typeEtage)
         {
             case TypeEtage.Labyrinthe:
@@ -61,17 +102,22 @@ public class GenerationDonjon : MonoBehaviour
         genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), 1, cellSize);
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs);
         genEtage.GenerateEtage();
-        genEtage.GenerateItems();
+        if(isNewEtage)
+        {
+            genEtage.GenerateItems();
+        }
+        
+        
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    public void RandomizeSeed()
+    private void RandomizeSeed()
     {
         seed = Random.Range(0, 1000000);
+        SetSeed();
+    }
+
+    private void SetSeed()
+    {
+        Random.InitState(seed);
     }
 }

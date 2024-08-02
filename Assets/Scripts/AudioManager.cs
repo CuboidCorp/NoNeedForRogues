@@ -6,7 +6,13 @@ public class AudioManager : MonoBehaviour
 
     [SerializeField] private GameObject soundFxPrefab;
 
+    #region AudioClips
     [SerializeField] private AudioClip screamClip;
+    [SerializeField] private AudioClip interactFail;
+    [SerializeField] private AudioClip moneyGained;
+    [SerializeField] private AudioClip ressurection;
+    [SerializeField] private AudioClip explosion;
+    #endregion
     private void Awake()
     {
         instance = this;
