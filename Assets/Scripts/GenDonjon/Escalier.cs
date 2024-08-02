@@ -1,3 +1,9 @@
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using Unity.Netcode;
+using UnityEngine;
+
 /// <summary>
 /// Classe qui représente les escaliers pour allez vers le haut / bas des niveaux
 /// </summary>
@@ -6,14 +12,14 @@ public class Escalier : NetworkBehaviour
     /// <summary>
     /// Si les escaliers vont vers le haut
     /// </summary>
-    private bool isUpStairs;
+    [SerializeField] private bool isUpStairs;
 
     private List<ulong> playersInside;
 
-    private TMP_Text titreEscalier;
-    private TMP_Text countdownEscalier;
+    [SerializeField] private TMP_Text titreEscalier;
+    [SerializeField] private TMP_Text countdownEscalier;
 
-    public IEnumerator countDownCoroutine;
+    public Coroutine countDownCoroutine;
 
     private void Awake()
     {
@@ -23,19 +29,21 @@ public class Escalier : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         //Le joueur qui rentre est donc ready
-        if(MultiplayerGameManager.Instance.gameCanStart && other.gameObject.CompareTag("Player"))
+        if (MultiplayerGameManager.Instance.gameCanStart && other.gameObject.CompareTag("Player"))
         {
             ulong playerId = other.gameObject.GetComponent<NetworkObject>().OwnerClientId;
             playersInside.Add(playerId);
+            MultiplayerGameManager.Instance.SyncPlayerStateServerRpc(playerId, true, isUpStairs);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if(other.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
             ulong playerId = other.gameObject.GetComponent<NetworkObject>().OwnerClientId;
             playersInside.Remove(playerId);
+            MultiplayerGameManager.Instance.SyncPlayerStateServerRpc(playerId, false);
         }
     }
 
@@ -58,7 +66,7 @@ public class Escalier : NetworkBehaviour
     {
         titreEscalier.text = "Déplacement dans";
         int cptSec = 0;
-        while(cptSec < nbSec)
+        while (cptSec < nbSec)
         {
             countdownEscalier.text = (nbSec - cptSec) + "";
             yield return new WaitForSeconds(1);

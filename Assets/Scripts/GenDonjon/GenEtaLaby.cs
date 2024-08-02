@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 /// <summary>
 /// Donc un labyrinthe avec nbStairs entrées et nbStairs sorties
@@ -30,8 +31,8 @@ public class GenEtaLaby : GenerationEtage
     private List<Vector2Int> deadEnds;
     private Vector2Int[] stairsPos;
 
-    private const yCoordinateUpStairs = 1;
-    private const yCoordinateDownStairs = -1;
+    private const float yCoordinateUpStairs = 1;
+    private const float yCoordinateDownStairs = -1;
 
     private WallState[,] etage;
 
@@ -67,13 +68,14 @@ public class GenEtaLaby : GenerationEtage
 
     private void GenerationEscaliers()
     {
-        stairsPos = new[nbStairs*2];
+        stairsPos = new Vector2Int[nbStairs * 2];
         //On genere les points d'entrée
         int cptStairs = 0;
-        while(cptStairs < nbStairs) 
+        Vector2Int cellPos = new(0, 0);
+        Vector2Int stairPos = new(0, 0);
+        while (cptStairs < nbStairs)
         {
             int side = Random.Range(0, 4); //0 gauche 1 Haut 2 droite 3 bas
-            Vector2Int stairPos;
             switch (side)
             {
                 case 0:
@@ -98,25 +100,23 @@ public class GenEtaLaby : GenerationEtage
                     break;
             }
 
-            if(IsStairPlaceable(stairPos))
+            if (IsStairPlaceable(stairPos))
             {
                 GameObject stairs = Instantiate(stairPrefab, new Vector3(stairPos.x, yCoordinateUpStairs, stairPos.y), Quaternion.identity);
                 stairs.transform.eulerAngles = new Vector3(0, side * 90, 0);
 
                 stairsPos[cptStairs] = stairPos;
 
-                etage[cellPos.x, cellPos.y] ^= Math.Pow(2, side);
+                etage[cellPos.x, cellPos.y] ^= (WallState)(1 << side);
 
                 cptStairs++;
             }
         }
 
         //Points de sorties
-        while (cptStairs < nbStairs*2)
+        while (cptStairs < nbStairs * 2)
         {
             int side = Random.Range(0, 4); //0 gauche 1 Haut 2 droite 3 bas
-            Vector2Int stairPos;
-            Vector2Int cellPos;
             switch (side)
             {
                 case 0:
@@ -127,26 +127,26 @@ public class GenEtaLaby : GenerationEtage
                 case 1:
                     stairPos.x = Random.Range(0, tailleEtage.x);
                     stairPos.y = -1;
-                    cellPos = new Vector2Int(stairPos.x,0);
+                    cellPos = new Vector2Int(stairPos.x, 0);
                     break;
                 case 2:
                     stairPos.x = tailleEtage.x;
                     stairPos.y = Random.Range(0, tailleEtage.y);
-                    cellPos = new Vector2Int(tailleEtage.x-1, stairPos.y);
+                    cellPos = new Vector2Int(tailleEtage.x - 1, stairPos.y);
                     break;
                 case 3:
                     stairPos.x = Random.Range(0, tailleEtage.x);
                     stairPos.y = tailleEtage.y;
-                    cellPos = new Vector2Int(stairPos.x, tailleEtage.y-1);
+                    cellPos = new Vector2Int(stairPos.x, tailleEtage.y - 1);
                     break;
             }
 
             if (IsStairPlaceable(stairPos))
             {
                 GameObject stairs = Instantiate(stairPrefab, new Vector3(stairPos.x, yCoordinateDownStairs, stairPos.y), Quaternion.identity);
-                stairs.transform.eulerAngles = new Vector3(0, (side-3) * 90, 0);
+                stairs.transform.eulerAngles = new Vector3(0, (side - 3) * 90, 0);
 
-                etage[cellPos.x, cellPos.y] ^= Math.Pow(2, side);
+                etage[cellPos.x, cellPos.y] ^= (WallState)(1 << side);
 
                 stairsPos[cptStairs] = stairPos;
                 cptStairs++;
@@ -156,9 +156,9 @@ public class GenEtaLaby : GenerationEtage
 
     private bool IsStairPlaceable(Vector2Int pos)
     {
-        foreach(Vector2Int vector in stairsPos)
+        foreach (Vector2Int vector in stairsPos)
         {
-            if(pos = vector)
+            if (pos == vector)
             {
                 return false;
             }
@@ -171,7 +171,7 @@ public class GenEtaLaby : GenerationEtage
         deadEnds = new List<Vector2Int>();
         bool aEuDesVoisins = true;
         Stack<Vector2Int> stack = new();
-        Vector2Int currentCell = new(UnityEngine.Random.Range(0, tailleEtage.x), UnityEngine.Random.Range(0, tailleEtage.y));
+        Vector2Int currentCell = new(Random.Range(0, tailleEtage.x), Random.Range(0, tailleEtage.y));
         etage[currentCell.x, currentCell.y] |= WallState.VISITED;
         stack.Push(currentCell);
 
@@ -184,7 +184,7 @@ public class GenEtaLaby : GenerationEtage
                 aEuDesVoisins = true;
                 stack.Push(posActuelle);
 
-                int randIndex = UnityEngine.Random.Range(0, voisins.Length);
+                int randIndex = Random.Range(0, voisins.Length);
                 Neighbour randomNeighbour = voisins[randIndex];
                 Vector2Int posNeighbour = randomNeighbour.Pos;
 
@@ -275,7 +275,7 @@ public class GenEtaLaby : GenerationEtage
             Debug.DrawRay(new Vector3(deadEnd.x, 0, deadEnd.y) * cellSize, Vector3.up, Color.yellow, 100f);
         }
     }
-    
+
     #endregion
 
     #region Generation Pieges

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
+using UnityEditor.ShaderGraph;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
@@ -43,7 +44,7 @@ public class PlayerUIManager : MonoBehaviour
     public static PlayerUIManager Instance;
 
     private readonly string interactButton = "[E]";
-    private PlayerControls.PlayerActions playControls;
+    private PlayerControls playControls;
 
     private void Awake()
     {
@@ -74,7 +75,7 @@ public class PlayerUIManager : MonoBehaviour
 
         resumeButton.clicked += () => Debug.Log("Wesh");
 
-        resumeButton.RegisterCallback<ClickEvent>(HidePauseMenu);
+        resumeButton.RegisterCallback<ClickEvent>(evt => HidePauseMenu());
         optionsButton.RegisterCallback<ClickEvent>(evt => ShowOptionsMenu());
         quitButton.RegisterCallback<ClickEvent>(evt => Disconnect());
 
@@ -96,7 +97,7 @@ public class PlayerUIManager : MonoBehaviour
 
     private void OnDisable()
     {
-        resumeButton.UnregisterCallback<ClickEvent>(HidePauseMenu);
+        resumeButton.UnregisterCallback<ClickEvent>(evt => HidePauseMenu());
         optionsButton.UnregisterCallback<ClickEvent>(evt => ShowOptionsMenu());
         quitButton.UnregisterCallback<ClickEvent>(evt => Disconnect());
 
@@ -151,20 +152,30 @@ public class PlayerUIManager : MonoBehaviour
     /// <param name="amount">Nouvelle valeur d'or</param>
     public void SetGoldText(int amount)
     {
-        goldText.text = amount+" G";
+        goldText.text = amount + " G";
     }
     #endregion
+
+    public void SetupPlayerControls(PlayerControls playerControls)
+    {
+        playControls = playerControls;
+
+        playControls.UI.Continue.performed += _ => HidePauseMenu();
+        playControls.UI.Click.performed += _ => Debug.Log("Click");
+
+        playControls.UI.Disable();
+    }
 
     #region PauseMenu
 
     /// <summary>
     /// Affiche le menu pause
     /// </summary>
-    public void ShowPauseMenu(PlayerControls.PlayerActions playerActions)
+    public void ShowPauseMenu()
     {
         Debug.Log("ShowPauseMenu");
-        playControls = playerActions;
-        playControls.Disable();
+        playControls.Player.Disable();
+        playControls.UI.Enable();
         UnityEngine.Cursor.lockState = CursorLockMode.None;
         inGameUI.SetActive(false);
         pauseMenu.SetActive(true);
@@ -173,10 +184,11 @@ public class PlayerUIManager : MonoBehaviour
     /// <summary>
     /// Cache le menu pause
     /// </summary>
-    public void HidePauseMenu(ClickEvent evt)
+    public void HidePauseMenu()
     {
         Debug.Log("HidePauseMenu");
-        playControls.Enable();
+        playControls.Player.Enable();
+        playControls.UI.Disable();
         UnityEngine.Cursor.lockState = CursorLockMode.Locked;
         inGameUI.SetActive(true);
         pauseMenu.SetActive(false);

@@ -17,6 +17,8 @@ TagManager:
   - PickUp
   - ErrorHandler
   - ChannelTap
+  - UpStairs
+  - DownStairs
   layers:
   - Default
   - TransparentFX

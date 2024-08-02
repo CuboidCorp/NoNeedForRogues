@@ -74,7 +74,8 @@ public class LobbyManager : MonoBehaviour
         }
         else
         {
-            //Pas de dataHolder -> Mode solo
+            //Pas de dataHolder -> Mode solo 
+            //--> Debug only en théorie
             SoloMode();
         }
         playerNameText.text = playerName;
@@ -250,17 +251,11 @@ public class LobbyManager : MonoBehaviour
             GameMode gameMode =
                 Enum.Parse<GameMode>(joinedLobby.Data[KEY_GAME_MODE].Value);
 
-            switch (gameMode)
+            gameMode = gameMode switch
             {
-                default:
-                case GameMode.Coop:
-                    gameMode = GameMode.NYI;
-                    break;
-                case GameMode.NYI:
-                    gameMode = GameMode.Coop;
-                    break;
-            }
-
+                GameMode.NYI => GameMode.Coop,
+                _ => GameMode.NYI,
+            };
             UpdateLobbyGameMode(gameMode);
         }
     }
@@ -503,6 +498,12 @@ public class LobbyManager : MonoBehaviour
             try
             {
                 Debug.Log("Startgame");
+
+                if (nbPlayers == 1)
+                {
+                    SoloMode();
+                    return;
+                }
 
                 MultiplayerGameManager.Instance.SetNbPlayersLobby(nbPlayers);
 

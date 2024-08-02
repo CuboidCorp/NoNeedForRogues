@@ -11,5 +11,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TavernLobby.unity
     guid: 5e6beb2e03c82ae41a49e0921c06675a
+  - enabled: 1
+    path: Assets/Scenes/Donjon.unity
+    guid: 613c31d3a3e052f4fae2dced3b6a6e66
+  - enabled: 1
+    path: Assets/Scenes/EndScene.unity
+    guid: f2c4c7f31f36904489f5ecadcac1d116
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 79699150e6935b24ca66c87989314134, type: 2}

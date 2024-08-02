@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using UnityEngine;
 
 public class GenerationItems : MonoBehaviour
@@ -11,8 +13,8 @@ public class GenerationItems : MonoBehaviour
 
     private void GeneratePotion(Vector3 position)
     {
-        GameObject potion = Instantiate(potionsPrefab[Random.Range(0, potionsPrefab.length)], position, Quaternion.identity);
-        int potionType = Random.Range(0,Enum.GetValues(typeof(PotionType)).Cast<PotionType>().Max());
+        GameObject potion = Instantiate(potionsPrefab[UnityEngine.Random.Range(0, potionsPrefab.Length)], position, Quaternion.identity);
+        int potionType = UnityEngine.Random.Range(0, (int)Enum.GetValues(typeof(PotionType)).Cast<PotionType>().Max());
         potion.GetComponent<PotionObject>().SetType(potionType);
     }
 }

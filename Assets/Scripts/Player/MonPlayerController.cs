@@ -1,7 +1,6 @@
 using System.Collections;
 using Unity.Netcode;
 using Unity.Services.Authentication;
-using Unity.Services.Vivox;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
@@ -96,32 +95,32 @@ public class MonPlayerController : Entity
         playerActions = controls.Player;
 
         playerActions.Move.performed += ctx => OnMove(ctx);
-        playerActions.Move.canceled += ctx => moveInput = Vector2.zero;
-        playerActions.Jump.performed += ctx => Jump();
+        playerActions.Move.canceled += _ => moveInput = Vector2.zero;
+        playerActions.Jump.performed += _ => Jump();
         playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
-        playerActions.Run.started += ctx => StartRun();
-        playerActions.Run.canceled += ctx => StopRun();
-        playerActions.BasicAttack.started += ctx => StartBasicAttack();
-        playerActions.BasicAttack.performed += ctx => StopBasicAttack();
-        playerActions.BasicAttack.canceled += ctx => StopBasicAttack();
-        playerActions.LongAttack.started += ctx => StartLongAttack();
-        playerActions.LongAttack.performed += ctx => StopLongAttack();
-        playerActions.LongAttack.canceled += ctx => StopLongAttack();
+        playerActions.Run.started += _ => StartRun();
+        playerActions.Run.canceled += _ => StopRun();
+        playerActions.BasicAttack.started += _ => StartBasicAttack();
+        playerActions.BasicAttack.performed += _ => StopBasicAttack();
+        playerActions.BasicAttack.canceled += _ => StopBasicAttack();
+        playerActions.LongAttack.started += _ => StartLongAttack();
+        playerActions.LongAttack.performed += _ => StopLongAttack();
+        playerActions.LongAttack.canceled += _ => StopLongAttack();
 
-        playerActions.Interact.performed += ctx => Interact();
+        playerActions.Interact.performed += _ => Interact();
 
-        playerActions.Emote1.started += ctx => StartEmote1();
-        playerActions.Emote2.started += ctx => StartEmote2();
-        playerActions.Emote3.started += ctx => StartEmote3();
-        playerActions.Emote4.started += ctx => StartEmote4();
-        playerActions.Emote5.started += ctx => StartEmote5();
-        playerActions.Emote6.started += ctx => StartEmote6();
-        playerActions.Emote7.started += ctx => StartEmote7();
-        playerActions.Emote8.started += ctx => StartEmote8();
-        playerActions.Emote9.started += ctx => StartEmote9();
-        playerActions.Emote10.started += ctx => StartEmote10();
+        playerActions.Emote1.started += _ => StartEmote1();
+        playerActions.Emote2.started += _ => StartEmote2();
+        playerActions.Emote3.started += _ => StartEmote3();
+        playerActions.Emote4.started += _ => StartEmote4();
+        playerActions.Emote5.started += _ => StartEmote5();
+        playerActions.Emote6.started += _ => StartEmote6();
+        playerActions.Emote7.started += _ => StartEmote7();
+        playerActions.Emote8.started += _ => StartEmote8();
+        playerActions.Emote9.started += _ => StartEmote9();
+        playerActions.Emote10.started += _ => StartEmote10();
 
-        playerActions.Pause.performed += ctx => PlayerUIManager.Instance.ShowPauseMenu(playerActions);
+        playerActions.Pause.performed += _ => PlayerUIManager.Instance.ShowPauseMenu();
 
         healthSlider = PlayerUIManager.Instance.healthSlider;
         healthText = PlayerUIManager.Instance.healthText;
@@ -152,7 +151,6 @@ public class MonPlayerController : Entity
     {
         gameObject.GetComponent<PlayerRandomizer>().Randomize(seed);
         DisableRagdoll();
-        Debug.Log("MonPlayerCOntroller " + IsOwner);
         if (IsOwner) //Quand on est le proprietaire on passe en mode premiere personne et on desactive toutes les parties du corps sauf les mains
         {
             if (MultiplayerGameManager.Instance.soloMode)
@@ -160,6 +158,8 @@ public class MonPlayerController : Entity
                 gameObject.tag = "Player";
             }
             instanceLocale = this;
+
+            PlayerUIManager.Instance.SetupPlayerControls(controls);
 
             PlayerUIManager.Instance.AfficherInGameUI();
 

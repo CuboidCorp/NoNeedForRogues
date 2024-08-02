@@ -51,15 +51,12 @@ public class GenerationDonjon : MonoBehaviour
 
     void Awake()
     {
-        if(instance != null && instance != this)
+        if (instance != null && instance != this)
         {
             Destroy(this.gameObject);
         }
 
-        if(seeds == null)
-        {
-            seeds = new[maxEtage];
-        }
+        seeds ??= new int[maxEtage];
 
         instance = this;
         DontDestroyOnLoad(this);
@@ -81,12 +78,12 @@ public class GenerationDonjon : MonoBehaviour
             SetSeed();
             Generate(false);
         }
-        
+
     }
 
     private void Generate(bool isNewEtage)
     {
-        
+
         switch (typeEtage)
         {
             case TypeEtage.Labyrinthe:
@@ -102,15 +99,15 @@ public class GenerationDonjon : MonoBehaviour
         genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), 1, cellSize);
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs);
         genEtage.GenerateEtage();
-        if(isNewEtage)
+        if (isNewEtage)
         {
             genEtage.GenerateItems();
         }
-        
-        
+
+
     }
 
-    private void RandomizeSeed()
+    public void RandomizeSeed()
     {
         seed = Random.Range(0, 1000000);
         SetSeed();

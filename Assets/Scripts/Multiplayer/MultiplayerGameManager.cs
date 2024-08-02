@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
@@ -16,6 +17,8 @@ public class MultiplayerGameManager : NetworkBehaviour
     public bool soloMode = false;
 
     public bool gameCanStart = false;
+
+    public int countdownToNextLevel = 5;
 
     public static MultiplayerGameManager Instance;
 
@@ -60,12 +63,12 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private bool isInLobby = true;
 
-    private GameObject[] escaliersCountdown = new();
+    private GameObject[] escaliersGo;
 
     //Les audio mixers pr les voix
     private AudioMixer mainMixer;
 
-    private IEnumerator changeLevelCoroutine;
+    private Coroutine changeLevelCoroutine;
 
     #region Prefabs
     private GameObject copyCamPrefab;
@@ -83,16 +86,16 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private void Awake()
     {
-        if(Instance != null && Instance != this)
+        if (Instance != null && Instance != this)
         {
-            Destroy(this.gameObject);
+            Destroy(gameObject);
         }
         Instance = this;
 
         DontDestroyOnLoad(this);
         LoadPrefabs();
         authServicePlayerIds = new Dictionary<string, (VivoxParticipant, GameObject)>();
-        
+
     }
 
     private void LoadPrefabs()
@@ -151,6 +154,9 @@ public class MultiplayerGameManager : NetworkBehaviour
         playersStates[0] = PlayerState.Alive;
         players = new GameObject[1];
         playerNames = new string[1];
+        playersReady = new bool[1];
+        playerGoingUp = new bool[1];
+        playerNames[0] = "SOLO";
         gameCanStart = true;
     }
 
@@ -168,6 +174,8 @@ public class MultiplayerGameManager : NetworkBehaviour
         players = new GameObject[nbMaxPlayers];
         playerNames = allNames.Array;
         playersStates = new PlayerState[nbMaxPlayers];
+        playersReady = new bool[nbMaxPlayers];
+        playerGoingUp = new bool[nbMaxPlayers];
         for (int i = 0; i < nbMaxPlayers; i++)
         {
             playersStates[i] = PlayerState.Alive;
@@ -256,7 +264,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         if (soloMode)
         {
             players[0] = GameObject.FindWithTag("Player");
-            playerNames[0] = "SOLO";
+
             SpawnGrabZone(id);
         }
 
@@ -266,10 +274,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// When a player is disconnected
     /// </summary>
     /// <param name="id">Player id </param>
-    public void OnClientDisconnected(ulong id) 
+    public void OnClientDisconnected(ulong id)
     {
         //TODO : Handle la vrai deconnection genre message de deconnection
-        
+
         if (NetworkManager.Singleton.LocalClientId == id) //Si on s'est fait deconnecter
         {
             Cursor.lockState = CursorLockMode.None;
@@ -966,12 +974,12 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void SyncPlayerStateServerRpc(ulong playerId, bool isReady, bool isStairUp = false)
     {
         int index = Array.IndexOf(playersIds, playerId);
-        if(index !=-1)
+        if (index != -1)
         {
             playersReady[index] = isReady;
-            if(!isReady)
+            if (!isReady)
             {
-                playerGoingUp[index] = null;
+                playerGoingUp[index] = false;
                 ResetCountDown();
                 return;
             }
@@ -983,23 +991,23 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private void CheckGameCanStart()
     {
-        if(PlayersAreReady() && PlayersAreGoingSameWay())
+        if (PlayersAreReady() && PlayersAreGoingSameWay())
         {
             //On start la coroutine sur tous les escaliers qui vont du meme coté que les joueurs
             //A la fin de la coroutine on change la scene
-            changeLevelCoroutine = StartCoroutine(StartMovingCountdown());
+            changeLevelCoroutine = StartCoroutine(StartMovingCountdown(countdownToNextLevel));
             bool direction = playerGoingUp[0];
-            if(direction)
+            if (direction)
             {
-                escaliersCountdown = GameObject.FindGameObjectsWithTag("UpStairs");
+                escaliersGo = GameObject.FindGameObjectsWithTag("UpStairs");
             }
             else
             {
-                escaliersCountdown = GameObject.FindGameObjectsWithTag("DownStairs");
+                escaliersGo = GameObject.FindGameObjectsWithTag("DownStairs");
             }
-            foreach(GameObject esc in escaliersCountdown)
+            foreach (GameObject esc in escaliersGo)
             {
-                esc.GetComponent<Escalier>().StartCountdown();
+                esc.GetComponent<Escalier>().StartCountdown(countdownToNextLevel);
             }
         }
     }
@@ -1010,7 +1018,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     private void ResetCountDown()
     {
         StopCoroutine(changeLevelCoroutine);
-        foreach (GameObject esc in escaliersCountdown)
+        foreach (GameObject esc in escaliersGo)
         {
             esc.GetComponent<Escalier>().CancelCountdown();
         }
@@ -1026,14 +1034,14 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         bool direction = playerGoingUp[0];
 
-        if(isInLobby)
+        if (isInLobby)
         {
             NetworkManager.SceneManager.LoadScene("Donjon", LoadSceneMode.Additive);
         }
         else
         {
             //On vérifie en fonction du génération donjon le current level
-            if(direction == false) //On descend
+            if (direction == false) //On descend
             {
                 GenerationDonjon.instance.currentEtage++;
             }
@@ -1051,9 +1059,9 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <returns>True si ils sont tous prets, false sinon</returns>
     private bool PlayersAreReady()
     {
-        foreach(bool state in playersStates)
+        foreach (bool state in playersReady)
         {
-            if(state == false)
+            if (state == false)
             {
                 return false;
             }
@@ -1068,9 +1076,9 @@ public class MultiplayerGameManager : NetworkBehaviour
     private bool PlayersAreGoingSameWay()
     {
         bool dirInit = playerGoingUp[0];
-        for(int i =1 ;i<playerGoingUp.length ;i++)
+        for (int i = 1; i < playerGoingUp.Length; i++)
         {
-            if (playerGoingUp[i]!=dirInit)
+            if (playerGoingUp[i] != dirInit)
             {
                 return false;
             }
