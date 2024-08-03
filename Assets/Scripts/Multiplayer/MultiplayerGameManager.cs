@@ -108,6 +108,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         resurectio = Resources.Load<GameObject>("Sorts/ResurectioProjectile");
         healProj = Resources.Load<GameObject>("Sorts/HealProjectile");
         speedProj = Resources.Load<GameObject>("Sorts/SpeedProjectile");
+        fusrohdahProj = Resources.Load<GameObject>("Sorts/FusRoDahProjectile");
     }
 
     private void Start()
@@ -667,6 +668,17 @@ public class MultiplayerGameManager : NetworkBehaviour
     #region SyncRagdoll
 
     /// <summary>
+    /// Permet de sync l'etat de la ragdoll d'un joueur aux autres
+    /// </summary>
+    /// <param name="playerId">Le joueur qui change l'etat de sa ragdoll</param>
+    /// <param name="ragdollActive">Si la ragdoll deviient active ou inactive</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void SyncRagdollStateServerRpc(ulong playerId, bool ragdollActive)
+    {
+        SyncRagdoll(playerId, ragdollActive);
+    }
+
+    /// <summary>
     /// Sync l'etat de la ragdoll d'un joueur aux autres
     /// </summary>
     /// <param name="playerId">L'id du joueur à ragdoll</param>
@@ -875,7 +887,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     internal void SummonFusrohdahServerRpc(Vector3 pos, Vector3 dir, float speed, float time, float expRange, float expForce)
     {
         GameObject fusrohdah = Instantiate(fusrohdahProj, pos, Quaternion.LookRotation(dir));
-        fusrohdah.transform.LookAt(transform.position + dir); //Pour la rotation on ne se soucie que du y en vrai
         fusrohdah.GetComponent<Rigidbody>().velocity = dir * speed;
         fusrohdah.GetComponent<Fusrohdah>().SetupFusRohDah(expRange, expForce);
         fusrohdah.GetComponent<Fusrohdah>().StartCoroutine(nameof(Fusrohdah.DestroyIn), time);
@@ -970,7 +981,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     /// <param name="playerId">L'id du player qui est pret</param>
     /// <param name="isReady">Si le joueur est ready ou non</param>
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void SyncPlayerStateServerRpc(ulong playerId, bool isReady, bool isStairUp = false)
     {
         int index = Array.IndexOf(playersIds, playerId);
@@ -997,18 +1008,28 @@ public class MultiplayerGameManager : NetworkBehaviour
             //A la fin de la coroutine on change la scene
             changeLevelCoroutine = StartCoroutine(StartMovingCountdown(countdownToNextLevel));
             bool direction = playerGoingUp[0];
-            if (direction)
-            {
-                escaliersGo = GameObject.FindGameObjectsWithTag("UpStairs");
-            }
-            else
-            {
-                escaliersGo = GameObject.FindGameObjectsWithTag("DownStairs");
-            }
-            foreach (GameObject esc in escaliersGo)
-            {
-                esc.GetComponent<Escalier>().StartCountdown(countdownToNextLevel);
-            }
+            StartCountdownClientRpc(direction);
+        }
+    }
+
+    /// <summary>
+    /// Client rpc pour lire le countdown chez tous les clients
+    /// </summary>
+    /// <param name="direction">Direction des escaliers</param>
+    [ClientRpc]
+    private void StartCountdownClientRpc(bool direction)
+    {
+        if (direction)
+        {
+            escaliersGo = GameObject.FindGameObjectsWithTag("UpStairs");
+        }
+        else
+        {
+            escaliersGo = GameObject.FindGameObjectsWithTag("DownStairs");
+        }
+        foreach (GameObject esc in escaliersGo)
+        {
+            esc.GetComponent<Escalier>().StartCountdown(countdownToNextLevel);
         }
     }
 
@@ -1017,10 +1038,25 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     private void ResetCountDown()
     {
-        StopCoroutine(changeLevelCoroutine);
-        foreach (GameObject esc in escaliersGo)
+        if (changeLevelCoroutine != null)
         {
-            esc.GetComponent<Escalier>().CancelCountdown();
+            StopCoroutine(changeLevelCoroutine);
+        }
+        ResetCountdownClientRpc();
+    }
+
+    /// <summary>
+    /// Reset le countdown pr tous les clients
+    /// </summary>
+    [ClientRpc]
+    private void ResetCountdownClientRpc()
+    {
+        if (escaliersGo != null)
+        {
+            foreach (GameObject esc in escaliersGo)
+            {
+                esc.GetComponent<Escalier>().CancelCountdown();
+            }
         }
     }
 

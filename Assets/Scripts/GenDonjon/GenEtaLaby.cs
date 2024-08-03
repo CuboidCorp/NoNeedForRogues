@@ -13,9 +13,9 @@ public class GenEtaLaby : GenerationEtage
     public enum WallState
     {
         LEFT = 1,
-        UP = 2,
+        DOWN = 2,
         RIGHT = 4,
-        DOWN = 8,
+        UP = 8,
         VISITED = 16
     }
 
@@ -31,7 +31,7 @@ public class GenEtaLaby : GenerationEtage
     private List<Vector2Int> deadEnds;
     private Vector2Int[] stairsPos;
 
-    private const float yCoordinateUpStairs = 1;
+    private const float yCoordinateUpStairs = 0;
     private const float yCoordinateDownStairs = -1;
 
     private WallState[,] etage;
@@ -78,22 +78,22 @@ public class GenEtaLaby : GenerationEtage
             int side = Random.Range(0, 4); //0 gauche 1 Haut 2 droite 3 bas
             switch (side)
             {
-                case 0:
+                case 0: //Angle a 90
                     stairPos.x = -1;
                     stairPos.y = Random.Range(0, tailleEtage.y);
                     cellPos = new Vector2Int(0, stairPos.y);
                     break;
-                case 1:
+                case 1: // Angle a 0
                     stairPos.x = Random.Range(0, tailleEtage.x);
                     stairPos.y = -1;
                     cellPos = new Vector2Int(stairPos.x, 0);
                     break;
-                case 2:
+                case 2: //Angle a 270
                     stairPos.x = tailleEtage.x;
                     stairPos.y = Random.Range(0, tailleEtage.y);
                     cellPos = new Vector2Int(tailleEtage.x - 1, stairPos.y);
                     break;
-                case 3:
+                case 3: //Angle a 180
                     stairPos.x = Random.Range(0, tailleEtage.x);
                     stairPos.y = tailleEtage.y;
                     cellPos = new Vector2Int(stairPos.x, tailleEtage.y - 1);
@@ -102,16 +102,23 @@ public class GenEtaLaby : GenerationEtage
 
             if (IsStairPlaceable(stairPos))
             {
-                GameObject stairs = Instantiate(stairPrefab, new Vector3(stairPos.x, yCoordinateUpStairs, stairPos.y), Quaternion.identity);
-                stairs.transform.eulerAngles = new Vector3(0, side * 90, 0);
+                GameObject stairs = Instantiate(stairPrefab, new Vector3(stairPos.x, yCoordinateUpStairs, stairPos.y) * cellSize, Quaternion.identity);
+                stairs.name = "SUp" + stairPos.x + "_" + stairPos.y;
+                stairs.transform.eulerAngles = new Vector3(0, 90 - (side * 90), 0);
 
                 stairsPos[cptStairs] = stairPos;
+                cptStairs++;
 
+                //Tout ce qui va vers le haut/bas ne marche pas
+                Debug.Log("Side : " + side);
+                Debug.Log((WallState)(1 << side));
                 etage[cellPos.x, cellPos.y] ^= (WallState)(1 << side);
 
-                cptStairs++;
+
             }
         }
+
+        Debug.Log("Down stairs");
 
         //Points de sorties
         while (cptStairs < nbStairs * 2)
@@ -119,22 +126,22 @@ public class GenEtaLaby : GenerationEtage
             int side = Random.Range(0, 4); //0 gauche 1 Haut 2 droite 3 bas
             switch (side)
             {
-                case 0:
+                case 0: //270
                     stairPos.x = -1;
                     stairPos.y = Random.Range(0, tailleEtage.y);
                     cellPos = new Vector2Int(0, stairPos.y);
                     break;
-                case 1:
+                case 1://180
                     stairPos.x = Random.Range(0, tailleEtage.x);
                     stairPos.y = -1;
                     cellPos = new Vector2Int(stairPos.x, 0);
                     break;
-                case 2:
+                case 2://90
                     stairPos.x = tailleEtage.x;
                     stairPos.y = Random.Range(0, tailleEtage.y);
                     cellPos = new Vector2Int(tailleEtage.x - 1, stairPos.y);
                     break;
-                case 3:
+                case 3://0
                     stairPos.x = Random.Range(0, tailleEtage.x);
                     stairPos.y = tailleEtage.y;
                     cellPos = new Vector2Int(stairPos.x, tailleEtage.y - 1);
@@ -143,13 +150,32 @@ public class GenEtaLaby : GenerationEtage
 
             if (IsStairPlaceable(stairPos))
             {
-                GameObject stairs = Instantiate(stairPrefab, new Vector3(stairPos.x, yCoordinateDownStairs, stairPos.y), Quaternion.identity);
-                stairs.transform.eulerAngles = new Vector3(0, (side - 3) * 90, 0);
-
-                etage[cellPos.x, cellPos.y] ^= (WallState)(1 << side);
-
+                switch (side)
+                {
+                    case 0:
+                        stairPos.x--;
+                        break;
+                    case 1:
+                        stairPos.y--;
+                        break;
+                    case 2:
+                        stairPos.x++;
+                        break;
+                    case 3:
+                        stairPos.y++;
+                        break;
+                }
+                GameObject stairs = Instantiate(stairPrefab, new Vector3(stairPos.x, yCoordinateDownStairs, stairPos.y) * cellSize, Quaternion.identity);
+                stairs.name = "SDown" + stairPos.x + "_" + stairPos.y;
+                stairs.transform.eulerAngles = new Vector3(0, 270 - (side * 90), 0);
                 stairsPos[cptStairs] = stairPos;
                 cptStairs++;
+
+                //Tout ce qui va vers le haut/bas ne marche pas
+                Debug.Log("Side : " + side);
+                Debug.Log((WallState)(1 << side));
+                etage[cellPos.x, cellPos.y] ^= (WallState)(1 << side);
+
             }
         }
     }
@@ -209,6 +235,7 @@ public class GenEtaLaby : GenerationEtage
             for (int j = 0; j < tailleEtage.y; j++)
             {
                 GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], new Vector3(i, 0, j) * cellSize, Quaternion.identity);
+                go.name = "Couloir" + GetIndexCouloir(new Vector2Int(i, j)) + "P" + i + "_" + j;
                 GameObject goToRemove = go.transform.GetChild(0).gameObject;
                 foreach (Transform child in go.transform)
                 {

@@ -43,7 +43,7 @@ public class CowController : NetworkBehaviour
 
     #region Jump
     private bool isGrounded = false;
-    [SerializeField] private float jumpPower = 1f;
+    [SerializeField] private float jumpPower = 7f;
 
     #endregion
 
@@ -55,7 +55,7 @@ public class CowController : NetworkBehaviour
     [SerializeField] private Camera playerCamera; //Le gameObject de la camera
 
     [SerializeField] private bool invertCamera = false;
-    [SerializeField] private float mouseSensitivity = 100f;
+    [SerializeField] private float mouseSensitivity = 60f;
     [SerializeField] private float minLookAngle = 50f;
 
     [SerializeField] private float fov = 60f;

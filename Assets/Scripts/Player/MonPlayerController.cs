@@ -133,7 +133,6 @@ public class MonPlayerController : Entity
         voiceConnexion = transform.GetComponentInChildren<VivoxVoiceConnexion>();
         vivox = voiceConnexion.gameObject;
 
-        //On recupere le prefab de la ragdoll
         ghostPlayerPrefab = Resources.Load<GameObject>("Perso/GhostPlayer");
         cowPlayerPrefab = Resources.Load<GameObject>("Perso/Cow");
 
@@ -477,7 +476,7 @@ public class MonPlayerController : Entity
         gameObject.tag = "Ragdoll";
         ChangerRenderCorps(ShadowCastingMode.On);
 
-        SyncRagdollStateServerRpc(OwnerClientId, true);
+        MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
         EnableRagdoll();
 
         controls.Disable();
@@ -571,7 +570,7 @@ public class MonPlayerController : Entity
         }
         FullHeal();
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
-        SyncRagdollStateServerRpc(OwnerClientId, false);
+        MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, false);
         DisableRagdoll();
         gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;
@@ -638,20 +637,9 @@ public class MonPlayerController : Entity
     }
 
     /// <summary>
-    /// Permet de sync l'etat de la ragdoll d'un joueur aux autres
-    /// </summary>
-    /// <param name="playerId">Le joueur qui change l'etat de sa ragdoll</param>
-    /// <param name="ragdollActive">Si la ragdoll deviient active ou inactive</param>
-    [ServerRpc]
-    private void SyncRagdollStateServerRpc(ulong playerId, bool ragdollActive)
-    {
-        MultiplayerGameManager.Instance.SyncRagdoll(playerId, ragdollActive);
-    }
-
-    /// <summary>
     /// Renvoie la liste des rigidbodies de la ragdoll
     /// </summary>
-    /// <returns>La </returns>
+    /// <returns>La liste des rigidbody</returns>
     public Rigidbody[] GetRagdollRigidbodies()
     {
         return transform.GetChild(2).GetComponentsInChildren<Rigidbody>();
@@ -666,11 +654,11 @@ public class MonPlayerController : Entity
     {
         controls.Disable();
         ChangerRenderCorps(ShadowCastingMode.On);
-        SyncRagdollStateServerRpc(OwnerClientId, true);
+        MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
         EnableRagdoll();
         yield return new WaitForSeconds(time);
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
-        SyncRagdollStateServerRpc(OwnerClientId, false);
+        MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, false);
         DisableRagdoll();
         controls.Enable();
     }
@@ -993,7 +981,7 @@ public class MonPlayerController : Entity
     {
         gameObject.GetComponent<PickUpController>().enabled = false;
         gameObject.GetComponent<SpellRecognition>().enabled = false;
-        SyncRagdollStateServerRpc(OwnerClientId, true);
+        MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
         EnableRagdoll();
         GameObject cow = GameObject.Find("Cow" + OwnerClientId);
         cow.GetComponent<CowController>().root = gameObject;
@@ -1012,7 +1000,7 @@ public class MonPlayerController : Entity
     /// </summary>
     public void Uncow()
     {
-        SyncRagdollStateServerRpc(OwnerClientId, false);
+        MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, false);
         DisableRagdoll();
         gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;

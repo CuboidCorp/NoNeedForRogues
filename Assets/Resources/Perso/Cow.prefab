@@ -133,7 +133,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3591169145
+  GlobalObjectIdHash: 664330985
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -215,11 +215,11 @@ MonoBehaviour:
   walkSpeed: 3
   runSpeed: 5
   boostMaxBonusSpeed: 2
-  jumpPower: 1
+  jumpPower: 7
   cameraPivot: {fileID: 1014632817326433053}
   playerCamera: {fileID: 730871681458129432}
   invertCamera: 0
-  mouseSensitivity: 100
+  mouseSensitivity: 20
   minLookAngle: 50
   fov: 60
   sprintFov: 80

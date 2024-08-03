@@ -19,6 +19,11 @@ public class SpellRecognition : MonoBehaviour
     private const float speedBoostSpeed = 5;
     private const float speedBoostTime = 3;
 
+    private const float fusrohdahSpeed = 3;
+    private const float fusrohdahExplosionRange = 5;
+    private const float fusrohdahExplosionForce = 10;
+    private const float fusrohdahTime = 3;
+
     private const float jumpBonus = 10;
 
     private const float dashForce = 10;
@@ -83,9 +88,7 @@ public class SpellRecognition : MonoBehaviour
                 gameObject.GetComponent<MonPlayerController>().InteractSpell(interactRange);
                 break;
             case "FusRoDah":
-                //On summon un objet (Un collider circulaire)
-                //Il va dans une direction et applique un effet explosion a tout ce qu'il touche si y a des rigidbody dessus
-                //Si ça touche un joueur le ragdoll et lui met le truc d'explosion
+                MultiplayerGameManager.Instance.SummonFusrohdahServerRpc(gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 1f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, fusrohdahSpeed, fusrohdahTime, fusrohdahExplosionRange, fusrohdahExplosionForce);
                 break;
             case "Capere":
                 gameObject.GetComponent<PickUpController>().TryGrabObject();

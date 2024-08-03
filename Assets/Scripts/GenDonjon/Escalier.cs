@@ -29,7 +29,8 @@ public class Escalier : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         //Le joueur qui rentre est donc ready
-        if (MultiplayerGameManager.Instance.gameCanStart && other.gameObject.CompareTag("Player"))
+        Debug.Log(MultiplayerGameManager.Instance.gameCanStart);
+        if ((MultiplayerGameManager.Instance.gameCanStart || !IsHost) && other.gameObject.CompareTag("Player"))
         {
             ulong playerId = other.gameObject.GetComponent<NetworkObject>().OwnerClientId;
             playersInside.Add(playerId);
@@ -81,7 +82,10 @@ public class Escalier : NetworkBehaviour
     /// </summary>
     public void CancelCountdown()
     {
-        StopCoroutine(countDownCoroutine);
+        if (countDownCoroutine != null)
+        {
+            StopCoroutine(countDownCoroutine);
+        }
         titreEscalier.text = "";
         countdownEscalier.text = "";
     }

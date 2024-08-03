@@ -154,7 +154,7 @@ GameObject:
   - component: {fileID: 2154909263846944282}
   - component: {fileID: 2418333539086249910}
   m_Layer: 0
-  m_Name: Left
+  m_Name: Right
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -169,7 +169,7 @@ Transform:
   m_GameObject: {fileID: 2142251066183053731}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -2.4, y: 0, z: 0}
+  m_LocalPosition: {x: 2.4, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -366,7 +366,7 @@ GameObject:
   - component: {fileID: 6046197097160081907}
   - component: {fileID: 6132282710489814471}
   m_Layer: 0
-  m_Name: Up
+  m_Name: Down
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -381,7 +381,7 @@ Transform:
   m_GameObject: {fileID: 7292684573289687980}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 2.4}
+  m_LocalPosition: {x: 0, y: 0, z: -2.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

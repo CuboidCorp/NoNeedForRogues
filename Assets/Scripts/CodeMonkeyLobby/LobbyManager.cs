@@ -497,6 +497,8 @@ public class LobbyManager : MonoBehaviour
         {
             try
             {
+                LobbyUI.Instance.enabled = false;
+
                 Debug.Log("Startgame");
 
                 if (nbPlayers == 1)

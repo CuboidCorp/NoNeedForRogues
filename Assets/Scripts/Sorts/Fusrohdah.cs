@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 public class Fusrohdah : MonoBehaviour
@@ -24,6 +25,9 @@ public class Fusrohdah : MonoBehaviour
 
             if (objetTouche.CompareTag("Player"))
             {
+                //On ragdoll le joueur
+                MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(objetTouche.GetComponent<NetworkObject>().OwnerClientId, true);
+
                 Rigidbody[] ragdollElems = objetTouche.GetComponent<MonPlayerController>().GetRagdollRigidbodies();
 
                 foreach (Rigidbody ragdoll in ragdollElems)
@@ -33,10 +37,13 @@ public class Fusrohdah : MonoBehaviour
             }
             else
             {
+                //TODO : Surement faut que le serveur fasse ça
                 rb.AddExplosionForce(forceExplosion, transform.position, explosionRange);
             }
         }
     }
+
+
 
     public void SetupFusRohDah(float expRange, float expForce)
     {

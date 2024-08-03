@@ -33,6 +33,8 @@ public class GenerationDonjon : MonoBehaviour
     [SerializeField]
     private Vector2Int maxTailleEtage;
 
+    [SerializeField] private int nbStairs = 1;
+
     [Header("Prefabs")]
     [SerializeField]
     private string pathToRooms;
@@ -96,7 +98,7 @@ public class GenerationDonjon : MonoBehaviour
                 genEtage = GetComponent<GenEtaAbre>();
                 break;
         }
-        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), 1, cellSize);
+        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize);
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs);
         genEtage.GenerateEtage();
         if (isNewEtage)

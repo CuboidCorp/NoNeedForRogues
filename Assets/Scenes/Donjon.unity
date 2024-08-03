@@ -225,6 +225,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1398707264}
   - component: {fileID: 1398707263}
+  - component: {fileID: 1398707265}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -309,6 +310,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!114 &1398707265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1398707262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &1901875908
 GameObject:
   m_ObjectHideFlags: 0
@@ -357,15 +381,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nbEtages: 1
+  currentEtage: 1
+  maxEtage: 5
   cellSize: 4.8
   seed: 658989
   cellDistanceBetweenEtages: 0
   typeEtage: 0
   minTailleEtage: {x: 20, y: 20}
   maxTailleEtage: {x: 30, y: 30}
+  nbStairs: 10
   pathToRooms: Donjon/Type1/Rooms
   pathToHallways: Donjon/Type1/HallwaysSimple
-  pathToStairs: Donjon/Type1/Stairs
+  pathToStairs: Donjon/Type1/Stairs/Stair
 --- !u!114 &1901875913
 MonoBehaviour:
   m_ObjectHideFlags: 0

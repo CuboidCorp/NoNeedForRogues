@@ -6,10 +6,7 @@ using UnityEngine.UI;
 
 public class LobbyUI : MonoBehaviour
 {
-
-
     public static LobbyUI Instance { get; private set; }
-
 
     [SerializeField] private Transform playerSingleTemplate;
     [SerializeField] private Transform container;
@@ -27,6 +24,11 @@ public class LobbyUI : MonoBehaviour
 
         playerSingleTemplate.gameObject.SetActive(false);
 
+
+    }
+
+    private void OnEnable()
+    {
         leaveLobbyButton.onClick.AddListener(() =>
         {
             LobbyManager.Instance.LeaveLobby();
@@ -41,6 +43,13 @@ public class LobbyUI : MonoBehaviour
         {
             LobbyManager.Instance.StartGame();
         });
+    }
+
+    private void OnDisable()
+    {
+        leaveLobbyButton.onClick.RemoveAllListeners();
+        changeGameModeButton.onClick.RemoveAllListeners();
+        startGameButton.onClick.RemoveAllListeners();
     }
 
     private void Start()
