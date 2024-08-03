@@ -1,8 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
-using UnityEditor.ShaderGraph;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
@@ -12,15 +11,13 @@ public class PlayerUIManager : MonoBehaviour
 {
     [Header("UI Elements")]
     [SerializeField] private GameObject inGameUI;
-    [SerializeField] private GameObject pauseMenu;
-    [SerializeField] private GameObject gameOverMenu;
-    [SerializeField] private GameObject optionsMenu;
+    [SerializeField] private UIDocument uiMenu;
 
-    private UIDocument pauseDoc;
-    private UIDocument gameOverDoc;
-    private UIDocument optionsDoc;
+    [SerializeField] private VisualTreeAsset pauseMenu;
+    [SerializeField] private VisualTreeAsset gameOverMenu;
+    [SerializeField] private VisualTreeAsset optionsMenu;
 
-    [Header("inGameUI Elements")]
+    [Header("InGameUI Elements")]
     [SerializeField] private GameObject crossHair;
     [SerializeField] private GameObject interactText;
     public GameObject francois;
@@ -34,10 +31,10 @@ public class PlayerUIManager : MonoBehaviour
     private Button optionsButton;
     private Button quitButton;
 
-    [Header("Options Menu")]
     private Slider musicVolumeSlider;
     private Slider sfxVolumeSlider;
     private Slider voiceVolumeSlider;
+    private Button returnToPauseButton;
 
     [SerializeField] private AudioMixer mainAudioMixer;
 
@@ -48,73 +45,8 @@ public class PlayerUIManager : MonoBehaviour
 
     private void Awake()
     {
-        pauseDoc = pauseMenu.GetComponent<UIDocument>();
-
-        resumeButton = pauseDoc.rootVisualElement.Q<Button>("continueBtn");
-        optionsButton = pauseDoc.rootVisualElement.Q<Button>("optionsMenu");
-        quitButton = pauseDoc.rootVisualElement.Q<Button>("quitBtn");
-
-        gameOverDoc = gameOverMenu.GetComponent<UIDocument>();
-        optionsDoc = optionsMenu.GetComponent<UIDocument>();
-
-        musicVolumeSlider = optionsDoc.rootVisualElement.Q<Slider>("musicSlider");
-        sfxVolumeSlider = optionsDoc.rootVisualElement.Q<Slider>("sfxSlider");
-        voiceVolumeSlider = optionsDoc.rootVisualElement.Q<Slider>("voiceSlider");
-
         inGameUI.SetActive(false);
-        pauseMenu.SetActive(false);
-        gameOverMenu.SetActive(false);
-        optionsMenu.SetActive(false);
         Instance = this;
-    }
-
-    private void OnEnable()
-    {
-
-        resumeButton.clickable.clicked += () => Debug.Log("WTF");
-
-        resumeButton.clicked += () => Debug.Log("Wesh");
-
-        resumeButton.RegisterCallback<ClickEvent>(evt => HidePauseMenu());
-        optionsButton.RegisterCallback<ClickEvent>(evt => ShowOptionsMenu());
-        quitButton.RegisterCallback<ClickEvent>(evt => Disconnect());
-
-        musicVolumeSlider.RegisterValueChangedCallback(evt =>
-        {
-            mainAudioMixer.SetFloat("musicVolume", Mathf.Log10(evt.newValue) * 20);
-        });
-
-        sfxVolumeSlider.RegisterValueChangedCallback(evt =>
-        {
-            mainAudioMixer.SetFloat("sfxVolume", Mathf.Log10(evt.newValue) * 20);
-        });
-
-        voiceVolumeSlider.RegisterValueChangedCallback(evt =>
-        {
-            mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(evt.newValue) * 20);
-        });
-    }
-
-    private void OnDisable()
-    {
-        resumeButton.UnregisterCallback<ClickEvent>(evt => HidePauseMenu());
-        optionsButton.UnregisterCallback<ClickEvent>(evt => ShowOptionsMenu());
-        quitButton.UnregisterCallback<ClickEvent>(evt => Disconnect());
-
-        musicVolumeSlider.UnregisterValueChangedCallback(evt =>
-        {
-            mainAudioMixer.SetFloat("musicVolume", Mathf.Log10(evt.newValue) * 20);
-        });
-
-        sfxVolumeSlider.UnregisterValueChangedCallback(evt =>
-        {
-            mainAudioMixer.SetFloat("sfxVolume", Mathf.Log10(evt.newValue) * 20);
-        });
-
-        voiceVolumeSlider.UnregisterValueChangedCallback(evt =>
-        {
-            mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(evt.newValue) * 20);
-        });
     }
 
     #region InGameUI
@@ -156,12 +88,15 @@ public class PlayerUIManager : MonoBehaviour
     }
     #endregion
 
+    /// <summary>
+    /// Setup les controles du joueur
+    /// </summary>
+    /// <param name="playerControls">Les controles du joueurs</param>
     public void SetupPlayerControls(PlayerControls playerControls)
     {
         playControls = playerControls;
 
-        playControls.UI.Continue.performed += _ => HidePauseMenu();
-        playControls.UI.Click.performed += _ => Debug.Log("Click");
+        playControls.UI.Continue.performed += _ => HidePauseMenu(); // Pas ouf quand sur le menu pause
 
         playControls.UI.Disable();
     }
@@ -173,12 +108,12 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void ShowPauseMenu()
     {
-        Debug.Log("ShowPauseMenu");
         playControls.Player.Disable();
         playControls.UI.Enable();
         UnityEngine.Cursor.lockState = CursorLockMode.None;
         inGameUI.SetActive(false);
-        pauseMenu.SetActive(true);
+        uiMenu.visualTreeAsset = pauseMenu;
+        SetupPauseMenu();
     }
 
     /// <summary>
@@ -186,12 +121,37 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void HidePauseMenu()
     {
-        Debug.Log("HidePauseMenu");
         playControls.Player.Enable();
         playControls.UI.Disable();
         UnityEngine.Cursor.lockState = CursorLockMode.Locked;
         inGameUI.SetActive(true);
-        pauseMenu.SetActive(false);
+        uiMenu.visualTreeAsset = null;
+        UnSetupPauseMenu();
+    }
+
+    /// <summary>
+    /// Connecte les events du menu pause
+    /// </summary>
+    private void SetupPauseMenu()
+    {
+        VisualElement root = uiMenu.rootVisualElement;
+        resumeButton = root.Q<Button>("continueBtn");
+        optionsButton = root.Q<Button>("optionsMenu");
+        quitButton = root.Q<Button>("quitBtn");
+
+        resumeButton.clicked += HidePauseMenu;
+        optionsButton.clicked += ShowOptionsMenu;
+        quitButton.clicked += Disconnect;
+    }
+
+    /// <summary>
+    /// Deconnecte tous les events du menu pause
+    /// </summary>
+    private void UnSetupPauseMenu()
+    {
+        resumeButton.clicked -= HidePauseMenu;
+        optionsButton.clicked -= ShowOptionsMenu;
+        quitButton.clicked -= Disconnect;
     }
 
     /// <summary>
@@ -199,8 +159,8 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void ShowOptionsMenu()
     {
-        optionsMenu.SetActive(true);
-        pauseMenu.SetActive(false);
+        uiMenu.visualTreeAsset = optionsMenu;
+        SetupOptionsMenu();
     }
 
     /// <summary>
@@ -208,6 +168,8 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void Disconnect()
     {
+        Debug.Log("Disconnect");
+        UnSetupOptionsMenu();
         MonPlayerController.instanceLocale.gameObject.GetComponent<PickUpController>().DropObject();
         NetworkManager.Singleton.Shutdown();
         SceneManager.LoadScene("MenuPrincipal");
@@ -222,9 +184,7 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void ShowGameOverMenu()
     {
-        pauseMenu.SetActive(false);
-        optionsMenu.SetActive(false);
-        gameOverMenu.SetActive(true);
+        uiMenu.visualTreeAsset = gameOverMenu;
         StartCoroutine(HideGameOver());
     }
 
@@ -235,17 +195,74 @@ public class PlayerUIManager : MonoBehaviour
     private IEnumerator HideGameOver()
     {
         yield return new WaitForSeconds(2);
-        gameOverMenu.SetActive(false);
+        uiMenu.visualTreeAsset = null;
     }
 
     #endregion
 
     #region Options
 
+    /// <summary>
+    /// Connecte les events du menu des options
+    /// </summary>
+    private void SetupOptionsMenu()
+    {
+        VisualElement root = uiMenu.rootVisualElement;
+
+        musicVolumeSlider = root.Q<Slider>("musicSlider");
+        sfxVolumeSlider = root.Q<Slider>("sfxSlider");
+        voiceVolumeSlider = root.Q<Slider>("voiceSlider");
+        returnToPauseButton = root.Q<Button>("returnBtn");
+
+        musicVolumeSlider.RegisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("musicVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+
+        sfxVolumeSlider.RegisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("sfxVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+
+        voiceVolumeSlider.RegisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+
+        returnToPauseButton.clicked += HideOptionsMenu;
+    }
+
+    /// <summary>
+    /// Deconnecte tous les events du menu des options
+    /// </summary>
+    private void UnSetupOptionsMenu()
+    {
+        musicVolumeSlider.UnregisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("musicVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+
+        sfxVolumeSlider.UnregisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("sfxVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+
+        voiceVolumeSlider.UnregisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(evt.newValue) * 20);
+        });
+
+        returnToPauseButton.clicked -= HideOptionsMenu;
+    }
+
+    /// <summary>
+    /// Cache le menu des options
+    /// </summary>
     public void HideOptionsMenu()
     {
-        optionsMenu.SetActive(false);
-        pauseMenu.SetActive(true);
+        uiMenu.visualTreeAsset = pauseMenu;
+        UnSetupOptionsMenu();
+        SetupPauseMenu();
     }
     #endregion
 
