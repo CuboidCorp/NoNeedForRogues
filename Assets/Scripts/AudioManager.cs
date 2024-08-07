@@ -18,6 +18,22 @@ public class AudioManager : MonoBehaviour
         instance = this;
     }
 
+    #region Musique
+
+    public void SetMusic()
+    {
+        //TODO : Voir quoi mettre pr les musiques
+    }
+
+    public void ActivateMusic()
+    {
+        GetComponent<AudioSource>().Play();
+    }
+
+    #endregion
+
+
+    #region Sound Effects
     /// <summary>
     /// Fait le bruit du screamer
     /// </summary>
@@ -31,4 +47,6 @@ public class AudioManager : MonoBehaviour
 
         Destroy(audioSource.gameObject, screamClip.length);
     }
+
+    #endregion
 }

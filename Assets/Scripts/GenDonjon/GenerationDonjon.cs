@@ -10,10 +10,18 @@ public class GenerationDonjon : MonoBehaviour
     }
 
     [Header("Params Donjon")]
-
+    /// <summary>
+    /// Etage actuel va de 1 a maxEtage
+    /// </summary>
     public int currentEtage = 1;
+    /// <summary>
+    /// Le nombre d'etage du donjon
+    /// </summary>
     public int maxEtage = 5;
 
+    /// <summary>
+    /// Dernier etage atteint, permet de ne pas regenerer des items quand on revient dans un etage déjà atteint
+    /// </summary>
     private int maxEtageReached = 0;
 
     [SerializeField]
@@ -30,7 +38,11 @@ public class GenerationDonjon : MonoBehaviour
     [SerializeField]
     private Vector2Int maxTailleEtage;
 
-    [SerializeField] private int nbStairs = 1;
+    public int nbStairs = 1;
+
+    public int baseDifficulty = 1;
+    public int difficultyScaling = 1;
+    private int currentDifficulty;
 
     /// <summary>
     /// Liste des seeds des etages déjà visité
@@ -69,8 +81,10 @@ public class GenerationDonjon : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        currentDifficulty = baseDifficulty + (currentEtage-1) * difficultyScaling;
         if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
         {
+
             RandomizeSeed();
             seeds[currentEtage] = seed;
             maxEtageReached = currentEtage;
@@ -87,7 +101,6 @@ public class GenerationDonjon : MonoBehaviour
 
     private void Generate(bool isNewEtage)
     {
-
         switch (typeEtage)
         {
             case TypeEtage.Labyrinthe:
@@ -100,7 +113,7 @@ public class GenerationDonjon : MonoBehaviour
                 genEtage = GetComponent<GenEtaAbre>();
                 break;
         }
-        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize);
+        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize,baseDifficulty);
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs);
         genEtage.GenerateEtage();
         if (isNewEtage)

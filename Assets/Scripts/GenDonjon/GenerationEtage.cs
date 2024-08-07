@@ -10,11 +10,12 @@ public abstract class GenerationEtage : MonoBehaviour
         Stairs
     }
 
-    public void Initialize(Vector2Int tailleEtage, int nbStairs, float cellSize)
+    public void Initialize(Vector2Int tailleEtage, int nbStairs, float cellSize,int difficulty)
     {
         this.tailleEtage = tailleEtage;
         this.nbStairs = nbStairs;
         this.cellSize = cellSize;
+        this.difficulty = difficulty;
     }
 
     protected Vector2Int tailleEtage;
@@ -22,6 +23,8 @@ public abstract class GenerationEtage : MonoBehaviour
     protected int nbStairs;
 
     protected float cellSize;
+
+    protected int difficulty;
 
     /// <summary>
     /// Génère l'étage 
