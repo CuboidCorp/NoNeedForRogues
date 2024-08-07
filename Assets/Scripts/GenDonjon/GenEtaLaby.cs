@@ -109,9 +109,6 @@ public class GenEtaLaby : GenerationEtage
                 stairsPos[cptStairs] = stairPos;
                 cptStairs++;
 
-                //Tout ce qui va vers le haut/bas ne marche pas
-                Debug.Log("Side : " + side);
-                Debug.Log((WallState)(1 << side));
                 etage[cellPos.x, cellPos.y] ^= (WallState)(1 << side);
 
 
@@ -171,9 +168,6 @@ public class GenEtaLaby : GenerationEtage
                 stairsPos[cptStairs] = stairPos;
                 cptStairs++;
 
-                //Tout ce qui va vers le haut/bas ne marche pas
-                Debug.Log("Side : " + side);
-                Debug.Log((WallState)(1 << side));
                 etage[cellPos.x, cellPos.y] ^= (WallState)(1 << side);
 
             }
@@ -192,6 +186,9 @@ public class GenEtaLaby : GenerationEtage
         return true;
     }
 
+    /// <summary>
+    /// Décide du retrait des murs en se promenant dans le labyrinthe et en faisant machine arrière des qu'il rencontre une impasse
+    /// </summary>
     private void GenerationTheorique()
     {
         deadEnds = new List<Vector2Int>();

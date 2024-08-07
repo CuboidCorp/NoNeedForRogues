@@ -9,7 +9,7 @@ public class CowController : NetworkBehaviour
     private PlayerControls controls;
     private PlayerControls.PlayerActions playerActions;
 
-    // <summary>
+    /// <summary>
     /// La référence au joueur
     /// </summary>
     [HideInInspector]
@@ -85,8 +85,11 @@ public class CowController : NetworkBehaviour
         playerActions.Run.canceled += ctx => StopRun();
 
         controls.Enable();
+
+        StartCoroutine(TurnBackIn(60));
     }
 
+    #region Mouvement
     /// <summary>
     /// Recoit l'input du joueur pour se déplacer
     /// </summary>
@@ -140,22 +143,6 @@ public class CowController : NetworkBehaviour
         }
     }
 
-    private void Look(Vector2 direction)
-    {
-        if (invertCamera)
-        {
-            direction.y *= -1;
-        }
-        yaw += direction.x * mouseSensitivity * Time.deltaTime;
-        pitch -= direction.y * mouseSensitivity * Time.deltaTime;
-
-        pitch = Mathf.Clamp(pitch, -minLookAngle, minLookAngle);
-
-        playerCamera.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
-
-        transform.eulerAngles = new Vector3(0.0f, yaw, 0.0f);
-    }
-
     /// <summary>
     /// Quand on appuye sur la touche pour courir, on augmente la vitesse de déplacement
     /// </summary>
@@ -198,6 +185,25 @@ public class CowController : NetworkBehaviour
         }
         animator.SetBool("isGrounded", isGrounded);
     }
+    #endregion
+
+    #region Camera
+    private void Look(Vector2 direction)
+    {
+        if (invertCamera)
+        {
+            direction.y *= -1;
+        }
+        yaw += direction.x * mouseSensitivity * Time.deltaTime;
+        pitch -= direction.y * mouseSensitivity * Time.deltaTime;
+
+        pitch = Mathf.Clamp(pitch, -minLookAngle, minLookAngle);
+
+        playerCamera.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
+
+        transform.eulerAngles = new Vector3(0.0f, yaw, 0.0f);
+    }
+    #endregion
 
     private void FixedUpdate()
     {
@@ -205,11 +211,10 @@ public class CowController : NetworkBehaviour
         CheckGround();
     }
 
-
     /// <summary>
-    /// Redeviens un humain
+    /// Redeviens un humain au bout de time s
     /// </summary>
-    /// <param name="time"></param>
+    /// <param name="time">Le temps avant de redevenir humain</param>
     /// <returns></returns>
     public IEnumerator TurnBackIn(float time)
     {

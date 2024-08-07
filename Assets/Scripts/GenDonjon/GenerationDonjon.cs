@@ -10,8 +10,6 @@ public class GenerationDonjon : MonoBehaviour
     }
 
     [Header("Params Donjon")]
-    [SerializeField]
-    int nbEtages;
 
     public int currentEtage = 1;
     public int maxEtage = 5;
@@ -22,9 +20,8 @@ public class GenerationDonjon : MonoBehaviour
     private float cellSize = 1;
     [SerializeField]
     private int seed;
-    [SerializeField]
-    private int cellDistanceBetweenEtages;
 
+    [Header("Params Etage")]
     [SerializeField]
     private TypeEtage typeEtage;
 
@@ -35,12 +32,17 @@ public class GenerationDonjon : MonoBehaviour
 
     [SerializeField] private int nbStairs = 1;
 
+    /// <summary>
+    /// Liste des seeds des etages déjà visité
+    /// </summary>
+    private int[] seeds;
+
     [Header("Prefabs")]
     [SerializeField]
     private string pathToRooms;
 
     [SerializeField]
-    private string pathToHallways; //Pour la bonne prefab on peut faire avec bitmask ou en generant des prefabs pour chaque cas TODO : Voir lequel on prend
+    private string pathToHallways;
 
     [SerializeField]
     private string pathToStairs;
@@ -49,7 +51,7 @@ public class GenerationDonjon : MonoBehaviour
 
     public static GenerationDonjon instance;
 
-    private int[] seeds;
+    
 
     void Awake()
     {

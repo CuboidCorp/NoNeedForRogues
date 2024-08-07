@@ -17,6 +17,10 @@ public class StatsManager : NetworkBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
         Instance = this;
     }
 

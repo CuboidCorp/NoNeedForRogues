@@ -69,7 +69,6 @@ public class SpellRecognition : MonoBehaviour
                 SpellList.Explosion(transform, explosionRange, explosionForce);
                 break;
             case "Lux":
-                //On prend le vecteur qui est la direction de la caméra du joueur *2f et on prend la nouvelle position de ce vecteur
                 MultiplayerGameManager.Instance.SummonLightballServerRpc(posProj, lightIntensity, lightTime);
                 break;
             case "Mortuus":
@@ -103,7 +102,6 @@ public class SpellRecognition : MonoBehaviour
                 StartCoroutine(gameObject.GetComponent<MonPlayerController>().SortFrancois());
                 break;
             case "Resurrectio":
-                //Envoie un projectile , si il touche un fantome , le fantome est ressuscité
                 MultiplayerGameManager.Instance.SummonResurectioServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, resSpeed, resDuration);
                 break;
             case "Acceleratio":
@@ -126,7 +124,6 @@ public class SpellRecognition : MonoBehaviour
                 {
                     MultiplayerGameManager.Instance.SummonHealProjServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, healSpeed, healDuration, healAmount);
                 }
-                //Lance un projectile qui soigne le joueur si multi ou heal direct si solo
                 break;
             case "Saltus":
                 gameObject.GetComponent<MonPlayerController>().GreaterJump(jumpBonus);

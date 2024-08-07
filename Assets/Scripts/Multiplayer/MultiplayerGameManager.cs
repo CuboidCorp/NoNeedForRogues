@@ -169,7 +169,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ClientRpc]
     private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds, NetworkStringArray allNames)
     {
-        Debug.Log("Ouais on a un array");
         nbTotalPlayers = nbMaxPlayers;
         playersIds = allIds;
         players = new GameObject[nbMaxPlayers];
@@ -192,6 +191,8 @@ public class MultiplayerGameManager : NetworkBehaviour
                     playerTemp.name = "Player" + id;
 
                     players[cpt] = playerTemp;
+                    //TODO : On met
+                    playerTemp.GetComponent<MonPlayerController>().playerUI.GetComponentInChildren<TMP_Text>().text = playerNames[Array.IndexOf(allIds, id)];
                     cpt++;
                 }
             }
@@ -245,6 +246,17 @@ public class MultiplayerGameManager : NetworkBehaviour
     public GameObject[] GetAllPlayersGo()
     {
         return players;
+    }
+
+    /// <summary>
+    /// Despawn un objet donnée après une certaine periode de temps
+    /// </summary>
+    /// <param name="networkObj">Le network object a despawn</param>
+    /// <param name="time">Dans combien de temps il faut le despawn</param>
+    private static IEnumerator DespawnAfterTimer(NetworkObject networkObj, float time)
+    {
+        yield return new WaitForSeconds(time);
+        networkObj.Despawn();
     }
     #endregion
 
@@ -893,6 +905,15 @@ public class MultiplayerGameManager : NetworkBehaviour
         fusrohdah.GetComponent<NetworkObject>().Spawn();
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    internal void SummonExplosionServerRpc(Vector3 pos, float expRange, float time)
+    {
+        GameObject explosion = Instantiate(explosionPrefab, pos, Quaternion.Identity);
+        explosion.transform.localScale = new Vector3(expRange, expRange, expRange);
+        explosion.GetComponent<NetworkObject>().Spawn();
+        StartCoroutine(DespawnAfterTimer(explosion.GetComponent<NetworkObject>(),time))
+    }
+
     /// <summary>
     /// Sync le respawn d'un joueur
     /// </summary>
@@ -1070,16 +1091,16 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         bool direction = playerGoingUp[0];
 
-        if (isInLobby)
-        {
-            NetworkManager.SceneManager.LoadScene("Donjon", LoadSceneMode.Additive);
-        }
-        else
+        if (!isInLobby)
         {
             //On vérifie en fonction du génération donjon le current level
             if (direction == false) //On descend
             {
                 GenerationDonjon.instance.currentEtage++;
+                if(GenerationDonjon.instance.currentEtage > GenerationDonjon.instance.maxEtage)
+                {
+                    NetworkManager.SceneManager.LoadScene("EndScene", LoadSceneMode.Additive);
+                }
             }
             else
             {
