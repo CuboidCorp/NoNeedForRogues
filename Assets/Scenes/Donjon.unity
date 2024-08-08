@@ -380,16 +380,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 260d2423755d42b4ab53e333e58fb082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nbEtages: 1
   currentEtage: 1
   maxEtage: 5
   cellSize: 4.8
   seed: 658989
-  cellDistanceBetweenEtages: 0
   typeEtage: 0
   minTailleEtage: {x: 20, y: 20}
   maxTailleEtage: {x: 30, y: 30}
   nbStairs: 10
+  baseDifficulty: 1
+  difficultyScaling: 1
   pathToRooms: Donjon/Type1/Rooms
   pathToHallways: Donjon/Type1/HallwaysSimple
   pathToStairs: Donjon/Type1/Stairs/Stair

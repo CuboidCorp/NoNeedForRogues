@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using Unity.Netcode;
 using Unity.Services.Vivox;
 using Unity.Services.Vivox.AudioTaps;
@@ -84,6 +85,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     private GameObject healProj;
     private GameObject speedProj;
     private GameObject fusrohdahProj;
+    private GameObject explosionPrefab;
     #endregion
 
     private void Awake()
@@ -111,6 +113,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         healProj = Resources.Load<GameObject>("Sorts/HealProjectile");
         speedProj = Resources.Load<GameObject>("Sorts/SpeedProjectile");
         fusrohdahProj = Resources.Load<GameObject>("Sorts/FusRoDahProjectile");
+        explosionPrefab = Resources.Load<GameObject>("Sorts/Explosion");
     }
 
     private void Start()
@@ -909,10 +912,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     internal void SummonExplosionServerRpc(Vector3 pos, float expRange, float time)
     {
-        GameObject explosion = Instantiate(explosionPrefab, pos, Quaternion.Identity);
+        GameObject explosion = Instantiate(explosionPrefab, pos, Quaternion.identity);
         explosion.transform.localScale = new Vector3(expRange, expRange, expRange);
         explosion.GetComponent<NetworkObject>().Spawn();
-        StartCoroutine(DespawnAfterTimer(explosion.GetComponent<NetworkObject>(),time))
+        StartCoroutine(DespawnAfterTimer(explosion.GetComponent<NetworkObject>(), time));
     }
 
     /// <summary>
@@ -1098,7 +1101,7 @@ public class MultiplayerGameManager : NetworkBehaviour
             if (direction == false) //On descend
             {
                 GenerationDonjon.instance.currentEtage++;
-                if(GenerationDonjon.instance.currentEtage > GenerationDonjon.instance.maxEtage)
+                if (GenerationDonjon.instance.currentEtage > GenerationDonjon.instance.maxEtage)
                 {
                     NetworkManager.SceneManager.LoadScene("EndScene", LoadSceneMode.Additive);
                 }

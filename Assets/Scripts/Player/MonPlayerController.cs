@@ -157,7 +157,7 @@ public class MonPlayerController : Entity
                 gameObject.tag = "Player";
             }
 
-            playerUI.enabled = false; //On desactive notre propre UI
+            playerUI.SetActive(false); //On desactive notre propre UI
 
             instanceLocale = this;
 
@@ -968,7 +968,6 @@ public class MonPlayerController : Entity
         if (cowObj.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
         {
             OnCowSpawn();
-            StartCoroutine(TurnBackToHuman(60f));
         }
         else
         {

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -14,7 +15,7 @@ public class ManaWell : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if(other.gameObject.CompareTag("Player") && manaGainCoroutine == null)
+        if (other.gameObject.CompareTag("Player") && manaGainCoroutine == null)
         {
             manaGainCoroutine = StartCoroutine(DistrubuteMana(other.gameObject));
         }
@@ -22,7 +23,7 @@ public class ManaWell : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if(other.gameObject.CompareTag("Player") && manaGainCoroutine != null)
+        if (other.gameObject.CompareTag("Player") && manaGainCoroutine != null)
         {
             StopCoroutine(manaGainCoroutine);
         }
@@ -33,7 +34,7 @@ public class ManaWell : MonoBehaviour
         yield return new WaitForSeconds(interval);
         player.GetComponent<MonPlayerController>().GainMana(manaGain);
         manaDistributed += manaGain;
-        if(maxMana !=-1 &&  manaDistributed > maxMana)
+        if (maxMana != -1 && manaDistributed > maxMana)
         {
             enabled = false;
         }
