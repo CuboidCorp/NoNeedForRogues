@@ -24,6 +24,17 @@ public class Escalier : NetworkBehaviour
     private void Awake()
     {
         playersInside = new();
+
+        //TODO : Rajouter des murs noirs pr empecher les joueurs de voir a travers l'autre coté, ça dépend de isUpStairs
+    }
+
+    /// <summary>
+    /// Renvoie les players dans l'escalier
+    /// </summary>
+    /// <returns>Un array avec tt les joueurs dans l'escalier</returns>
+    public GameObject[] GetPlayers()
+    {
+        return [..playersInside];
     }
 
     private void OnTriggerEnter(Collider other)

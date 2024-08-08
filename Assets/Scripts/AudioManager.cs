@@ -48,5 +48,16 @@ public class AudioManager : MonoBehaviour
         Destroy(audioSource.gameObject, screamClip.length);
     }
 
+    public void StartUnableToInteract(Vector3 position)
+    {
+        AudioSource audioSource = Instantiate(soundFxPrefab).GetComponent<AudioSource>();
+
+        audioSource.clip = interactFail;
+
+        audioSource.Play();
+
+        Destroy(audioSource.gameObject, interactFail.length);
+    }
+
     #endregion
 }

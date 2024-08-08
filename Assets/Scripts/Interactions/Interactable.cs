@@ -16,16 +16,11 @@ public abstract class Interactable : NetworkBehaviour, IInteragissable
     /// </summary>
     public string interactText;
 
-    /// <summary>
-    /// Le sound effect a jouer quand on ne peut pas interagir avec l'objet
-    /// </summary>
-    //private 
-
     public virtual void OnInteract()
     {
         if (!isInteractable)
         {
-            //TODO : Faire le sound effect qd on peut pas interagir
+            AudioManager.instance.StartUnableToInteract(transform.position);
             return;
         }
         SendInteractionServerRpc();

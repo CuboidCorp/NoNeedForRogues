@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class GenerationDonjon : MonoBehaviour
 {
-    private enum TypeEtage
+    public enum TypeEtage
     {
         Labyrinthe,
         Salles,
@@ -62,8 +62,6 @@ public class GenerationDonjon : MonoBehaviour
     private GenerationEtage genEtage;
 
     public static GenerationDonjon instance;
-
-    
 
     void Awake()
     {

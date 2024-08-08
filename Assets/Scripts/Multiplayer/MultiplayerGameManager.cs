@@ -70,6 +70,8 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private Coroutine changeLevelCoroutine;
 
+    private ConfigDonjon conf;
+
     #region Prefabs
     private GameObject copyCamPrefab;
     private GameObject grabZonePrefab;
@@ -191,7 +193,6 @@ public class MultiplayerGameManager : NetworkBehaviour
                     playerTemp.name = "Player" + id;
 
                     players[cpt] = playerTemp;
-                    //TODO : On met
                     playerTemp.GetComponent<MonPlayerController>().playerUI.GetComponentInChildren<TMP_Text>().text = playerNames[Array.IndexOf(allIds, id)];
                     cpt++;
                 }
@@ -1104,10 +1105,22 @@ public class MultiplayerGameManager : NetworkBehaviour
             }
             else
             {
+                //TODO : Si on est à l'étage 1 soit on renvoit au lobby soit ça fait rien
                 GenerationDonjon.instance.currentEtage--;
             }
         }
-        NetworkManager.SceneManager.LoadScene("Donjon", LoadSceneMode.Additive);
+        else
+        {
+            //On recup les settings du donjon
+            conf = ConfigDonjonUI.Instance.conf;
+        }
+        NetworkManager.SceneManager.LoadScene("Donjon", LoadSceneMode.Additive); //TODO : Ptet mettre a SIngle car la on a deux scene d'ouvertes
+
+        if(isInLobby)
+        {
+            isInLobby = false;
+            //TODO Faut set la conf la dedans dans le jeu GenerationDonjon avant s
+        }
     }
 
     /// <summary>
