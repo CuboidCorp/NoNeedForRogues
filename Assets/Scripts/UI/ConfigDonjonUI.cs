@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Donnees;
 
 public class ConfigDonjonUI : MonoBehaviour
 {
@@ -22,7 +24,7 @@ public class ConfigDonjonUI : MonoBehaviour
 
     public ConfigDonjon conf;
 
-    public ConfigDonjonUI Instance;
+    public static ConfigDonjonUI Instance;
 
     private void Awake()
     {
@@ -44,7 +46,7 @@ public class ConfigDonjonUI : MonoBehaviour
         //Button pr reset
 
         Reset();
-        
+
     }
 
     private void OnEnable()
@@ -56,11 +58,10 @@ public class ConfigDonjonUI : MonoBehaviour
             Ray cameraRay = Camera.main.ScreenPointToRay(Input.mousePosition); //Utiliser l'input de l'autre systeme d'input
             Debug.DrawRay(cameraRay.origin, cameraRay.direction * interactDistance, Color.magenta);
 
-            RaycastHit hit;
-            if(!Physics.Raycast(cameraRay,out hit, interactDistance, LayerMask.GetMask("UI")))
+            if (!Physics.Raycast(cameraRay, out RaycastHit hit, interactDistance, LayerMask.GetMask("UI")))
             {
                 Debug.Log("Invalid position");
-                return invalidPosition;
+                return invalidPos;
             }
 
             Vector2 pixelUV = hit.textureCoord;
@@ -73,15 +74,15 @@ public class ConfigDonjonUI : MonoBehaviour
 
         });
 
-        saveChanges.clicked += SaveSettings();
-        cancelChanges.clicked += Reset();
+        saveChanges.clicked += () => SaveSettings();
+        cancelChanges.clicked += () => Reset();
     }
 
     private void OnDisable()
     {
         doc.panelSettings.SetScreenToPanelSpaceFunction(null);
-        saveChanges.clicked -= SaveSettings();
-        cancelChanges.clicked -= Reset();
+        saveChanges.clicked -= () => SaveSettings();
+        cancelChanges.clicked -= () => Reset();
     }
 
     /// <summary>
@@ -89,17 +90,19 @@ public class ConfigDonjonUI : MonoBehaviour
     /// </summary>
     private void SaveSettings()
     {
-        if(CheckSettings())
+        if (CheckSettings())
         {
-            conf = new();
-            conf.nbEtages = nbEtages.value;
-            conf.seed = seed.value;
-            conf.minTailleEtage = minTailleEtage.value;
-            conf.maxTailleEtage =maxTailleEtage.value;
-            conf.nbStairs = nbStairs.value;
-            conf.typeEtage = typeDonjon.value;
-            conf.baseDiff = baseDifficulty.value;
-            conf.diffScaling = difficultyScaling.value;
+            conf = new()
+            {
+                nbEtages = nbEtages.value,
+                seed = seed.value,
+                minTailleEtage = minTailleEtage.value,
+                maxTailleEtage = maxTailleEtage.value,
+                nbStairs = nbStairs.value,
+                typeEtage = typeDonjon.value,
+                baseDiff = baseDifficulty.value,
+                diffScaling = difficultyScaling.value
+            };
             textErreur.text = "Changements sauvegardés";
         }
     }
@@ -128,25 +131,25 @@ public class ConfigDonjonUI : MonoBehaviour
     /// <returns>True si ok, false sinon</returns>
     private bool CheckSettings()
     {
-        if(minTailleEtage.value.x == 0 || minTailleEtage.value.y == 0 || maxTailleEtage.value.x == 0 || maxTailleEtage.value.y == 0) //TODO : Voir si on peut mettre des valeurs min dans le truc
+        if (minTailleEtage.value.x == 0 || minTailleEtage.value.y == 0 || maxTailleEtage.value.x == 0 || maxTailleEtage.value.y == 0) //TODO : Voir si on peut mettre des valeurs min dans le truc
         {
             textErreur.text = "Tailles etages invalides, trop petites";
             return false;
         }
 
-        if(minTailleEtage.value.x > maxTailleEtage.value.x || minTailleEtage.value.y > maxTailleEtage.value.y)
+        if (minTailleEtage.value.x > maxTailleEtage.value.x || minTailleEtage.value.y > maxTailleEtage.value.y)
         {
             textErreur.text = "Taille etage min doit être inferieure a max";
             return false;
         }
 
-        if(nbStairs > minTailleEtage.value.x || nbStairs > minTailleEtage.y)
+        if (nbStairs.value > minTailleEtage.value.x || nbStairs.value > minTailleEtage.value.y)
         {
             textErreur.text = "Nb stairs trop grand";
             return false;
         }
 
-        if(typeDonjon.value != TypeDonjon.Labyrinthe)
+        if (typeDonjon.value != TypeEtage.Labyrinthe)
         {
             textErreur.text = "Type de donjon non implémenté encore ;(";
             return false;

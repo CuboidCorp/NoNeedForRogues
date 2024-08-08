@@ -1,13 +1,8 @@
 using UnityEngine;
+using Donnees;
 
 public class GenerationDonjon : MonoBehaviour
 {
-    public enum TypeEtage
-    {
-        Labyrinthe,
-        Salles,
-        Arbre
-    }
 
     [Header("Params Donjon")]
     /// <summary>
@@ -79,7 +74,7 @@ public class GenerationDonjon : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        currentDifficulty = baseDifficulty + (currentEtage-1) * difficultyScaling;
+        currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
         if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
         {
 
@@ -111,7 +106,7 @@ public class GenerationDonjon : MonoBehaviour
                 genEtage = GetComponent<GenEtaAbre>();
                 break;
         }
-        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize,baseDifficulty);
+        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, baseDifficulty);
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs);
         genEtage.GenerateEtage();
         if (isNewEtage)

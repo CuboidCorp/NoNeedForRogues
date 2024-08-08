@@ -32,9 +32,9 @@ public class Escalier : NetworkBehaviour
     /// Renvoie les players dans l'escalier
     /// </summary>
     /// <returns>Un array avec tt les joueurs dans l'escalier</returns>
-    public GameObject[] GetPlayers()
+    public ulong[] GetPlayers()
     {
-        return [..playersInside];
+        return playersInside.ToArray();
     }
 
     private void OnTriggerEnter(Collider other)
