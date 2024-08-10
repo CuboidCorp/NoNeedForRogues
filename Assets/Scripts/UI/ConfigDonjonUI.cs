@@ -15,12 +15,13 @@ public class ConfigDonjonUI : MonoBehaviour
     private Vector2IntField minTailleEtage;
     private Vector2IntField maxTailleEtage;
     private SliderInt nbStairs;
-    private EnumField typeDonjon;
     private SliderInt baseDifficulty;
     private SliderInt difficultyScaling;
-    private Label textErreur;
+    private Label labelInfo;
     private Button saveChanges;
     private Button cancelChanges;
+
+    private VisualElement cursor; //TEMPORAIRE
 
     public ConfigDonjon conf;
 
@@ -32,20 +33,20 @@ public class ConfigDonjonUI : MonoBehaviour
         doc = GetComponent<UIDocument>();
         root = doc.rootVisualElement;
 
-        //TODO : Les elements qu'il faut mettre dans le menu uxml c'est
-        //Slider Nombre d'etages, min 1 max 10
-        //Int le seed de base --> Le seed de base est celui de la journée
-        //Slider ou un truc pr Vecteur 2d pr minTailleEtage
-        //Slider ou un truc pr Vecteur 2d pr maxTailleEtage
-        //Slider pr nb Stairs entre 1 et 5
-        //Dropdown pr type etage mais y a que laby pr le moment
-        //Slider pr la difficulté (Nombre de pieges + Nombre de loot) --> Voir comment faire la diffictulté
-        //Slider pr le difficulty scaling
-        //Label pr erreurs et infos aux joueurs
-        //Button pr save 
-        //Button pr reset
+        nbEtages = root.Q<SliderInt>("nbEtages");
+        seed = root.Q<IntegerField>("seed");
+        minTailleEtage = root.Q<Vector2IntField>("minTailleEtage");
+        maxTailleEtage = root.Q<Vector2IntField>("maxTailleEtage");
+        nbStairs = root.Q<SliderInt>("nbStairs");
+        baseDifficulty = root.Q<SliderInt>("baseDiff");
+        difficultyScaling = root.Q<SliderInt>("diffScaling");
+        saveChanges = root.Q<Button>("saveChanges");
+        cancelChanges = root.Q<Button>("cancelChanges");
+        labelInfo = root.Q<Label>("labelInfo");
 
-        Reset();
+        cursor = root.Q<VisualElement>("cursor"); //TEMPORAIRE
+
+        ResetOptions();
 
     }
 
@@ -54,7 +55,6 @@ public class ConfigDonjonUI : MonoBehaviour
         doc.panelSettings.SetScreenToPanelSpaceFunction((Vector2 screenPosition) =>
         {
             Vector2 invalidPos = new(float.NaN, float.NaN);
-
             Ray cameraRay = Camera.main.ScreenPointToRay(Input.mousePosition); //Utiliser l'input de l'autre systeme d'input
             Debug.DrawRay(cameraRay.origin, cameraRay.direction * interactDistance, Color.magenta);
 
@@ -70,19 +70,22 @@ public class ConfigDonjonUI : MonoBehaviour
             pixelUV.x *= doc.panelSettings.targetTexture.width;
             pixelUV.y *= doc.panelSettings.targetTexture.height;
 
+            cursor.style.left = pixelUV.x;
+            cursor.style.top = pixelUV.y;
+
             return pixelUV;
 
         });
 
         saveChanges.clicked += () => SaveSettings();
-        cancelChanges.clicked += () => Reset();
+        cancelChanges.clicked += () => ResetOptions();
     }
 
     private void OnDisable()
     {
         doc.panelSettings.SetScreenToPanelSpaceFunction(null);
         saveChanges.clicked -= () => SaveSettings();
-        cancelChanges.clicked -= () => Reset();
+        cancelChanges.clicked -= () => ResetOptions();
     }
 
     /// <summary>
@@ -99,30 +102,31 @@ public class ConfigDonjonUI : MonoBehaviour
                 minTailleEtage = minTailleEtage.value,
                 maxTailleEtage = maxTailleEtage.value,
                 nbStairs = nbStairs.value,
-                typeEtage = typeDonjon.value,
+                typeEtage = TypeEtage.Labyrinthe,
                 baseDiff = baseDifficulty.value,
                 diffScaling = difficultyScaling.value
             };
-            textErreur.text = "Changements sauvegardés";
+            labelInfo.style.color = new(Color.green);
+            labelInfo.text = "Changements sauvegardés";
         }
     }
 
     /// <summary>
     /// Remet les options de base
     /// </summary>
-    private void Reset()
+    private void ResetOptions()
     {
         conf = new();
+        Debug.Log("Reset " + conf);
         //On charge les valeurs de base de conf dans les autres trucs
         nbEtages.value = conf.nbEtages;
         seed.value = conf.seed;
         minTailleEtage.value = conf.minTailleEtage;
         maxTailleEtage.value = conf.maxTailleEtage;
         nbStairs.value = conf.nbStairs;
-        typeDonjon.value = conf.typeEtage;
         baseDifficulty.value = conf.baseDiff;
         difficultyScaling.value = conf.diffScaling;
-        textErreur.text = "";
+        labelInfo.text = "";
     }
 
     /// <summary>
@@ -133,25 +137,22 @@ public class ConfigDonjonUI : MonoBehaviour
     {
         if (minTailleEtage.value.x == 0 || minTailleEtage.value.y == 0 || maxTailleEtage.value.x == 0 || maxTailleEtage.value.y == 0) //TODO : Voir si on peut mettre des valeurs min dans le truc
         {
-            textErreur.text = "Tailles etages invalides, trop petites";
+            labelInfo.style.color = new(Color.red);
+            labelInfo.text = "Tailles etages invalides, trop petites";
             return false;
         }
 
         if (minTailleEtage.value.x > maxTailleEtage.value.x || minTailleEtage.value.y > maxTailleEtage.value.y)
         {
-            textErreur.text = "Taille etage min doit être inferieure a max";
+            labelInfo.style.color = new(Color.red);
+            labelInfo.text = "Taille etage min doit être inferieure a max";
             return false;
         }
 
         if (nbStairs.value > minTailleEtage.value.x || nbStairs.value > minTailleEtage.value.y)
         {
-            textErreur.text = "Nb stairs trop grand";
-            return false;
-        }
-
-        if (typeDonjon.value != TypeEtage.Labyrinthe)
-        {
-            textErreur.text = "Type de donjon non implémenté encore ;(";
+            labelInfo.style.color = new(Color.red);
+            labelInfo.text = "Nb stairs trop grand";
             return false;
         }
 
@@ -161,7 +162,7 @@ public class ConfigDonjonUI : MonoBehaviour
 
 }
 
-[System.Serializable]
+[Serializable]
 public class ConfigDonjon
 {
     public int nbEtages;
@@ -185,5 +186,19 @@ public class ConfigDonjon
         baseDiff = 1;
         diffScaling = 1;
     }
+
+    public override string ToString()
+    {
+        return $"ConfigDonjon:\n" +
+               $"- Nombre d'étages: {nbEtages}\n" +
+               $"- Seed: {seed}\n" +
+               $"- Taille minimale d'un étage: {minTailleEtage.x} x {minTailleEtage.y}\n" +
+               $"- Taille maximale d'un étage: {maxTailleEtage.x} x {maxTailleEtage.y}\n" +
+               $"- Nombre d'escaliers: {nbStairs}\n" +
+               $"- Type d'étage: {typeEtage}\n" +
+               $"- Difficulté de base: {baseDiff}\n" +
+               $"- Scaling de difficulté: {diffScaling}";
+    }
+
 }
 

@@ -100,9 +100,6 @@ public class MonPlayerController : Entity
         playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
         playerActions.Run.started += _ => StartRun();
         playerActions.Run.canceled += _ => StopRun();
-        playerActions.BasicAttack.started += _ => StartBasicAttack();
-        playerActions.BasicAttack.performed += _ => StopBasicAttack();
-        playerActions.BasicAttack.canceled += _ => StopBasicAttack();
         playerActions.LongAttack.started += _ => StartLongAttack();
         playerActions.LongAttack.performed += _ => StopLongAttack();
         playerActions.LongAttack.canceled += _ => StopLongAttack();
@@ -669,22 +666,6 @@ public class MonPlayerController : Entity
     #endregion
 
     #region Attaques
-
-    /// <summary>
-    /// Commence l'animation d'attaque de base
-    /// </summary>
-    private void StartBasicAttack()
-    {
-        animator.SetBool("isAttacking", true);
-    }
-
-    /// <summary>
-    /// Fin de l'animation d'attaque de base
-    /// </summary>
-    private void StopBasicAttack()
-    {
-        animator.SetBool("isAttacking", false);
-    }
 
     /// <summary>
     /// Commence l'animation d'attaque longue
