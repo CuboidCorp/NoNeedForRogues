@@ -44,8 +44,13 @@ public class PlayerUIManager : MonoBehaviour
 
     private void Awake()
     {
-        inGameUI.SetActive(false);
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
+        DontDestroyOnLoad(this);
         Instance = this;
+        inGameUI.SetActive(false);
     }
 
     #region InGameUI

@@ -1,5 +1,6 @@
 using UnityEngine;
 using Donnees;
+using UnityEngine.SceneManagement;
 
 public class GenerationDonjon : MonoBehaviour
 {
@@ -54,6 +55,16 @@ public class GenerationDonjon : MonoBehaviour
     [SerializeField]
     private string pathToStairs;
 
+    [Header("Transform holders")]
+    [SerializeField]
+    private Transform holderRooms;
+
+    [SerializeField]
+    private Transform holderHallways;
+
+    [SerializeField]
+    private Transform holderStairs;
+
     private GenerationEtage genEtage;
 
     public static GenerationDonjon instance;
@@ -62,23 +73,40 @@ public class GenerationDonjon : MonoBehaviour
     {
         if (instance != null && instance != this)
         {
-            Destroy(this.gameObject);
+            instance.OnSceneLoaded();
+            Destroy(gameObject);
         }
-
-        seeds ??= new int[maxEtage];
 
         instance = this;
         DontDestroyOnLoad(this);
     }
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
+        OnSceneLoaded();
+    }
+
+    /// <summary>
+    /// Appelé quand la scene est chargée
+    /// </summary>
+    private void OnSceneLoaded()
+    {
+        Debug.Log("Scene loaded");
         currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
+
         if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
         {
+            if (maxEtageReached == 0)
+            {
+                //Premier etage
+                Configure(MultiplayerGameManager.Instance.conf);
+            }
+            else
+            {
+                RandomizeSeed();
+            }
 
-            RandomizeSeed();
+
             seeds[currentEtage] = seed;
             maxEtageReached = currentEtage;
             Generate(true);
@@ -89,7 +117,24 @@ public class GenerationDonjon : MonoBehaviour
             SetSeed();
             Generate(false);
         }
+        Destroy(Camera.main.gameObject);
+        MultiplayerGameManager.Instance.SpawnPlayers();
+    }
 
+
+    private void Configure(ConfigDonjon conf)
+    {
+        maxEtage = conf.nbEtages;
+        seed = conf.seed;
+        minTailleEtage = conf.minTailleEtage;
+        maxTailleEtage = conf.maxTailleEtage;
+        nbStairs = conf.nbStairs;
+        typeEtage = conf.typeEtage;
+        baseDifficulty = conf.baseDiff;
+        difficultyScaling = conf.diffScaling;
+        currentEtage = 1;
+        maxEtageReached = 0;
+        seeds = new int[maxEtage];
     }
 
     private void Generate(bool isNewEtage)
@@ -108,6 +153,7 @@ public class GenerationDonjon : MonoBehaviour
         }
         genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, baseDifficulty);
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs);
+        genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs);
         genEtage.GenerateEtage();
         if (isNewEtage)
         {

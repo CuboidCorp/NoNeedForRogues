@@ -26,10 +26,16 @@ public class GenEtaLaby : GenerationEtage
     }
 
     private GameObject[] couloirsPrefabs;
-    private GameObject stairPrefab;
+    private GameObject upStairPrefab;
+    private GameObject downStairPrefab;
+
+    private Transform stairHolder;
+    private Transform hallwaysHolder;
 
     private List<Vector2Int> deadEnds;
     private Vector2Int[] stairsPos;
+
+
 
     private const float yCoordinateUpStairs = 0;
     private const float yCoordinateDownStairs = -1;
@@ -51,7 +57,14 @@ public class GenEtaLaby : GenerationEtage
     public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs)
     {
         couloirsPrefabs = Resources.LoadAll<GameObject>(pathToHallways);
-        stairPrefab = Resources.Load<GameObject>(pathToStairs);
+        upStairPrefab = Resources.Load<GameObject>(pathToStairs + "UpStairs");
+        downStairPrefab = Resources.Load<GameObject>(pathToStairs + "DownStairs");
+    }
+
+    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs)
+    {
+        stairHolder = holderStairs;
+        hallwaysHolder = holderHallways;
     }
 
     private void InitEtage()
@@ -102,7 +115,8 @@ public class GenEtaLaby : GenerationEtage
 
             if (IsStairPlaceable(stairPos))
             {
-                GameObject stairs = Instantiate(stairPrefab, new Vector3(stairPos.x, yCoordinateUpStairs, stairPos.y) * cellSize, Quaternion.identity);
+                GameObject stairs = Instantiate(upStairPrefab, new Vector3(stairPos.x, yCoordinateUpStairs, stairPos.y) * cellSize, Quaternion.identity);
+                stairs.transform.parent = stairHolder;
                 stairs.name = "SUp" + stairPos.x + "_" + stairPos.y;
                 stairs.transform.eulerAngles = new Vector3(0, 90 - (side * 90), 0);
 
@@ -162,7 +176,8 @@ public class GenEtaLaby : GenerationEtage
                         stairPos.y++;
                         break;
                 }
-                GameObject stairs = Instantiate(stairPrefab, new Vector3(stairPos.x, yCoordinateDownStairs, stairPos.y) * cellSize, Quaternion.identity);
+                GameObject stairs = Instantiate(downStairPrefab, new Vector3(stairPos.x, yCoordinateDownStairs, stairPos.y) * cellSize, Quaternion.identity);
+                stairs.transform.parent = stairHolder;
                 stairs.name = "SDown" + stairPos.x + "_" + stairPos.y;
                 stairs.transform.eulerAngles = new Vector3(0, 270 - (side * 90), 0);
                 stairsPos[cptStairs] = stairPos;
@@ -232,6 +247,7 @@ public class GenEtaLaby : GenerationEtage
             for (int j = 0; j < tailleEtage.y; j++)
             {
                 GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], new Vector3(i, 0, j) * cellSize, Quaternion.identity);
+                go.transform.parent = hallwaysHolder;
                 go.name = "Couloir" + GetIndexCouloir(new Vector2Int(i, j)) + "P" + i + "_" + j;
                 GameObject goToRemove = go.transform.GetChild(0).gameObject;
                 foreach (Transform child in go.transform)

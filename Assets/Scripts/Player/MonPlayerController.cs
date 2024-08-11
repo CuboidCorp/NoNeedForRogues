@@ -154,6 +154,9 @@ public class MonPlayerController : Entity
                 gameObject.tag = "Player";
             }
 
+            AudioManager.instance.SetMusicTaverne();
+            AudioManager.instance.ActivateMusic();
+
             playerUI.SetActive(false); //On desactive notre propre UI
 
             instanceLocale = this;

@@ -10,7 +10,7 @@ public abstract class GenerationEtage : MonoBehaviour
         Stairs
     }
 
-    public void Initialize(Vector2Int tailleEtage, int nbStairs, float cellSize,int difficulty)
+    public void Initialize(Vector2Int tailleEtage, int nbStairs, float cellSize, int difficulty)
     {
         this.tailleEtage = tailleEtage;
         this.nbStairs = nbStairs;
@@ -43,4 +43,12 @@ public abstract class GenerationEtage : MonoBehaviour
     /// <param name="pathToHallways">Le chemin dans les resources pr charger des couloirs</param>
     /// <param name="pathToStairs">Le chemin dans les resources pr charger des escaliers</param>
     public abstract void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs);
+
+    /// <summary>
+    /// Charge les holders pour les salles, les corridors et les escaliers
+    /// </summary>
+    /// <param name="holderRooms">Le transform qui contient tt les salles</param>
+    /// <param name="holderHallways">Le transform qui contient tt les hallways</param>
+    /// <param name="holderStairs">Le transform qui contien tt les stairs</param>
+    public abstract void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs);
 }

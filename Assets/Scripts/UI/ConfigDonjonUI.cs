@@ -60,7 +60,6 @@ public class ConfigDonjonUI : MonoBehaviour
 
             if (!Physics.Raycast(cameraRay, out RaycastHit hit, interactDistance, LayerMask.GetMask("UI")))
             {
-                Debug.Log("Invalid position");
                 return invalidPos;
             }
 
@@ -117,7 +116,6 @@ public class ConfigDonjonUI : MonoBehaviour
     private void ResetOptions()
     {
         conf = new();
-        Debug.Log("Reset " + conf);
         //On charge les valeurs de base de conf dans les autres trucs
         nbEtages.value = conf.nbEtages;
         seed.value = conf.seed;

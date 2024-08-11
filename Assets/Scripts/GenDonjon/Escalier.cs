@@ -21,11 +21,11 @@ public class Escalier : NetworkBehaviour
 
     public Coroutine countDownCoroutine;
 
+    public Transform spawnPoint;
+
     private void Awake()
     {
         playersInside = new();
-
-        //TODO : Rajouter des murs noirs pr empecher les joueurs de voir a travers l'autre coté, ça dépend de isUpStairs
     }
 
     /// <summary>
@@ -39,8 +39,8 @@ public class Escalier : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Player entered stairs");
         //Le joueur qui rentre est donc ready
-        Debug.Log(MultiplayerGameManager.Instance.gameCanStart);
         if ((MultiplayerGameManager.Instance.gameCanStart || !IsHost) && other.gameObject.CompareTag("Player"))
         {
             ulong playerId = other.gameObject.GetComponent<NetworkObject>().OwnerClientId;
@@ -51,6 +51,7 @@ public class Escalier : NetworkBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        Debug.Log("Player exited stairs");
         if (other.gameObject.CompareTag("Player"))
         {
             ulong playerId = other.gameObject.GetComponent<NetworkObject>().OwnerClientId;

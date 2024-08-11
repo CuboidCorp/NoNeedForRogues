@@ -64,6 +64,8 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private bool isInLobby = true;
 
+    private ulong[][] playerRepartitionByStairs;
+
     private GameObject[] escaliersGo;
 
     //Les audio mixers pr les voix
@@ -71,7 +73,7 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private Coroutine changeLevelCoroutine;
 
-    private ConfigDonjon conf;
+    public ConfigDonjon conf;
 
     #region Prefabs
     private GameObject copyCamPrefab;
@@ -99,7 +101,6 @@ public class MultiplayerGameManager : NetworkBehaviour
         DontDestroyOnLoad(this);
         LoadPrefabs();
         authServicePlayerIds = new Dictionary<string, (VivoxParticipant, GameObject)>();
-
     }
 
     private void LoadPrefabs()
@@ -118,6 +119,7 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private void Start()
     {
+
         if (!soloMode) //Car le start de LobbyManager est appelé avant celui de MultiplayerGameManager
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
@@ -137,7 +139,6 @@ public class MultiplayerGameManager : NetworkBehaviour
             SceneManager.LoadSceneAsync("MenuPrincipal");
         }
     }
-
 
     /// <summary>
     /// Set le nombre de joueurs dans le lobby qui vont jouer
@@ -1002,6 +1003,38 @@ public class MultiplayerGameManager : NetworkBehaviour
     #region Starting Game
 
     /// <summary>
+    /// Spawne les joueurs dans leurs escaliers respectifs
+    /// </summary>
+    public void SpawnPlayers()
+    {
+        Debug.Log("Spawning players");
+        bool direction = playerGoingUp[0];
+        GameObject[] escaliers;
+        if (direction)
+        {
+            escaliers = GameObject.FindGameObjectsWithTag("DownStairs");
+        }
+        else
+        {
+            escaliers = GameObject.FindGameObjectsWithTag("UpStairs");
+        }
+        //On place les joueurs en fonction de leur ancien endroits
+        for (int i = 0; i < escaliers.Length; i++)
+        {
+            if (i < playerRepartitionByStairs.Length) //Securite car quand on part du lobby y a qu'un escalier
+            {
+                foreach (ulong playerId in playerRepartitionByStairs[i])
+                {
+                    GameObject player = GetPlayerById(playerId);
+                    player.GetComponent<Rigidbody>().AddExplosionForce(1000, escaliers[i].transform.position, 10, 0, ForceMode.Impulse);
+                    player.transform.position = escaliers[i].GetComponent<Escalier>().spawnPoint.position;
+                }
+            }
+        }
+    }
+
+
+    /// <summary>
     /// Envoie au serveur l'information que le joueur est prêt
     /// </summary>
     /// <param name="playerId">L'id du player qui est pret</param>
@@ -1097,33 +1130,67 @@ public class MultiplayerGameManager : NetworkBehaviour
 
         if (!isInLobby)
         {
+            playerRepartitionByStairs = new ulong[escaliersGo.Length][];
+            for (int i = 0; i < escaliersGo.Length; i++)
+            {
+                playerRepartitionByStairs[i] = escaliersGo[i].GetComponent<Escalier>().GetPlayers();
+            }
             //On vérifie en fonction du génération donjon le current level
             if (direction == false) //On descend
             {
                 GenerationDonjon.instance.currentEtage++;
                 if (GenerationDonjon.instance.currentEtage > GenerationDonjon.instance.maxEtage)
                 {
-                    NetworkManager.SceneManager.LoadScene("EndScene", LoadSceneMode.Additive);
+                    NetworkManager.SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
                 }
             }
             else
             {
-                //TODO : Si on est à l'étage 1 soit on renvoit au lobby soit ça fait rien
-                GenerationDonjon.instance.currentEtage--;
+                if (GenerationDonjon.instance.currentEtage == 1)
+                {
+                    //--> 
+                    Debug.Log("On ne peut pas fuir comme ça mec");
+                    //On recup les players dans les stairs qui vont vers le haut
+                    List<ulong> playersAPunir = new();
+                    GameObject[] upStairs = GameObject.FindGameObjectsWithTag("UpStairs");
+                    foreach (GameObject stair in upStairs)
+                    {
+                        ulong[] players = stair.GetComponent<Escalier>().GetPlayers();
+                        foreach (ulong player in players)
+                        {
+                            playersAPunir.Add(player);
+                        }
+                    }
+
+                    foreach (ulong player in playersAPunir)
+                    {
+                        GameObject playerGo = GetPlayerById(player);
+                        //Comment punir le joueur -> Ragdoll
+                        StartCoroutine(playerGo.GetComponent<MonPlayerController>().SetRagdollTemp(5));
+                        AudioManager.instance.CowardPlayer(playerGo.transform.position);
+                    }
+                    return;
+                }
+                else
+                {
+                    GenerationDonjon.instance.currentEtage--;
+                }
+
             }
         }
         else
         {
+            Debug.Log("Leaving lobby");
+            playerRepartitionByStairs = new ulong[1][];
+            playerRepartitionByStairs[0] = playersIds;
             //On recup les settings du donjon
             conf = ConfigDonjonUI.Instance.conf;
-        }
-        NetworkManager.SceneManager.LoadScene("Donjon", LoadSceneMode.Additive); //TODO : Ptet mettre a SIngle car la on a deux scene d'ouvertes
-
-        if(isInLobby)
-        {
             isInLobby = false;
-            //TODO Faut set la conf la dedans dans le jeu GenerationDonjon avant s
         }
+        //On sauvegarde par escalier là ou sont les gens
+
+        NetworkManager.SceneManager.LoadScene("Donjon", LoadSceneMode.Single);
+
     }
 
     /// <summary>

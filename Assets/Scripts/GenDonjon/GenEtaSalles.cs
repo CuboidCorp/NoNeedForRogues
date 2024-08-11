@@ -18,6 +18,11 @@ public class GenEtaSalles : GenerationEtage
     [SerializeField]
     private int nbAttempts;
 
+    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs)
+    {
+        throw new System.NotImplementedException();
+    }
+
     public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs)
     {
         throw new System.NotImplementedException();
