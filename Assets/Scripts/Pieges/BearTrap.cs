@@ -1,3 +1,5 @@
+using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 public class BearTrap : Trap, IInteragissable
@@ -16,18 +18,17 @@ public class BearTrap : Trap, IInteragissable
     /// <summary>
     /// Le texte a afficher qd on peut interagir avec l'objet
     /// </summary>
-    public string interactText = ;
+    public string interactText = "Desactiver";
 
 
     private void Awake()
     {
         anim = GetComponent<Animator>();
-        anim.speed = speed;
     }
 
     private void Update()
     {
-        if(isActivated)
+        if (isActivated)
         {
             playerInside.transform.position = enterPos;
         }
@@ -42,7 +43,7 @@ public class BearTrap : Trap, IInteragissable
     {
         anim.SetBool("Activated", false);
         isActivated = false;
-        if(disableTrapCoroutine != null)
+        if (disableTrapCoroutine != null)
         {
             StopCoroutine(disableTrapCoroutine);
         }
@@ -70,7 +71,7 @@ public class BearTrap : Trap, IInteragissable
     {
         if (!isActivated)
         {
-            AudioManager.instance.PlayOneShotClipServerRpc(transform.position, SoundEffectOneShot.FAIL_INTERACT);
+            AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.FAIL_INTERACT);
             return;
         }
         SendInteractionServerRpc();
@@ -101,11 +102,6 @@ public class BearTrap : Trap, IInteragissable
     private void SendInteractionClientRpc()
     {
         HandleInteraction();
-    }
-
-    public string GetInteractText()
-    {
-        return interactText;
     }
 
     public void HandleInteraction()

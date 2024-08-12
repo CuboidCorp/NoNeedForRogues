@@ -30,9 +30,10 @@ public class MonPlayerController : Entity
     #region Camera Variables
 
     [Header("Camera Movement Variables")]
-    [HideInInspector] public Camera playerCamera; //TODO : Voir pk c'est public
+    [HideInInspector] public Camera playerCamera;
     [HideInInspector] public GameObject copyCam; //Le parent de la grabzone
     [SerializeField] private GameObject cameraPivot; //Le gameObject de la camera
+    [SerializeField] private GameObject camTps; //Le gameObject de la camera troisieme personne
 
     [SerializeField] private bool invertCamera = false;
     [SerializeField] private float mouseSensitivity = 100f;
@@ -154,7 +155,13 @@ public class MonPlayerController : Entity
                 gameObject.tag = "Player";
             }
 
-            AudioManager.instance.SetMusic(Music.TAVERNE);
+            GameObject mainCam = GameObject.Find("UiCamera");
+            if (mainCam != null)
+            {
+                Destroy(mainCam);
+            }
+
+            AudioManager.instance.SetMusic(AudioManager.Musique.TAVERNE);
             AudioManager.instance.ActivateMusic();
 
             playerUI.SetActive(false); //On desactive notre propre UI
@@ -605,6 +612,8 @@ public class MonPlayerController : Entity
     /// </summary>
     public void DisableRagdoll()
     {
+        cameraPivot.SetActive(true);
+        camTps.SetActive(false);
         animator.enabled = true;
         gameObject.GetComponent<CapsuleCollider>().enabled = true;
         gameObject.GetComponent<Rigidbody>().isKinematic = false;
@@ -625,6 +634,8 @@ public class MonPlayerController : Entity
     /// </summary>
     public void EnableRagdoll()
     {
+        cameraPivot.SetActive(false);
+        camTps.SetActive(true);
         animator.enabled = false;
         gameObject.GetComponent<CapsuleCollider>().enabled = false;
         gameObject.GetComponent<Rigidbody>().isKinematic = true;
@@ -867,7 +878,7 @@ public class MonPlayerController : Entity
     {
         //On affiche françois sur l'écran et on joue le son
         PlayerUIManager.Instance.francois.SetActive(true);
-        AudioManager.instance.PlayOneShotClipServerRpc(transform.position, SoundEffectOneShot.SCREAM);
+        AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.SCREAM);
         yield return new WaitForSeconds(1f);
         //On cache françois
         PlayerUIManager.Instance.francois.SetActive(false);

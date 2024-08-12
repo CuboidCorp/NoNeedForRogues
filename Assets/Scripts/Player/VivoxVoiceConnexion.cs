@@ -76,8 +76,11 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         if (MultiplayerGameManager.Instance.soloMode)
         {
             await servVivox.JoinEchoChannelAsync(echoChannelName, ChatCapability.AudioOnly);
-            GameObject channelTap = new GameObject("ChannelTap");
-            channelTap.tag = "ChannelTap"; //Pour les retrouver plus tard
+            GameObject channelTap = new("ChannelTap")
+            {
+                tag = "ChannelTap" //Pour les retrouver plus tard
+            };
+            DontDestroyOnLoad(channelTap);
             channelTap.AddComponent<AudioSource>();
             channelTap.AddComponent<VivoxChannelAudioTap>().ChannelName = echoChannelName;
         }
@@ -128,7 +131,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         await servVivox.LeaveAllChannelsAsync();
         await servVivox.LogoutAsync();
-        await AuthenticationService.Instance.SignOut();
+        AuthenticationService.Instance.SignOut();
         StopAllCoroutines();
     }
 

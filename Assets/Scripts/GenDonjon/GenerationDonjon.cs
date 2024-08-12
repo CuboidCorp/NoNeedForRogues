@@ -1,6 +1,5 @@
 using UnityEngine;
 using Donnees;
-using UnityEngine.SceneManagement;
 
 public class GenerationDonjon : MonoBehaviour
 {
@@ -56,13 +55,10 @@ public class GenerationDonjon : MonoBehaviour
     private string pathToStairs;
 
     [Header("Transform holders")]
-    [SerializeField]
     private Transform holderRooms;
 
-    [SerializeField]
     private Transform holderHallways;
 
-    [SerializeField]
     private Transform holderStairs;
 
     private GenerationEtage genEtage;
@@ -71,14 +67,16 @@ public class GenerationDonjon : MonoBehaviour
 
     void Awake()
     {
-        if (instance != null && instance != this)
+        if (instance != null)
         {
             instance.OnSceneLoaded();
             Destroy(gameObject);
         }
-
-        instance = this;
-        DontDestroyOnLoad(this);
+        else
+        {
+            instance = this;
+            DontDestroyOnLoad(this);
+        }
     }
 
     private void Start()
@@ -91,7 +89,12 @@ public class GenerationDonjon : MonoBehaviour
     /// </summary>
     private void OnSceneLoaded()
     {
-        Debug.Log("Scene loaded");
+        Debug.Log(currentEtage);
+        GameObject holder = GameObject.Find("Dungeon");
+        holderStairs = holder.transform.GetChild(0);
+        holderHallways = holder.transform.GetChild(1);
+        holderRooms = holder.transform.GetChild(2);
+
         currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
 
         if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
@@ -106,18 +109,21 @@ public class GenerationDonjon : MonoBehaviour
                 RandomizeSeed();
             }
 
-
-            seeds[currentEtage] = seed;
+            seeds[currentEtage - 1] = seed;
             maxEtageReached = currentEtage;
             Generate(true);
         }
         else
         {
-            seed = seeds[currentEtage];
+            seed = seeds[currentEtage - 1];
             SetSeed();
             Generate(false);
         }
-        Destroy(Camera.main.gameObject);
+        GameObject cam = GameObject.Find("Main Camera");
+        if (cam != null)
+        {
+            Destroy(cam);
+        }
         MultiplayerGameManager.Instance.SpawnPlayers();
     }
 

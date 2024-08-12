@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -118,6 +119,7 @@ public class GenEtaLaby : GenerationEtage
                 stairs.transform.parent = stairHolder;
                 stairs.name = "SUp" + stairPos.x + "_" + stairPos.y;
                 stairs.transform.eulerAngles = new Vector3(0, 90 - (side * 90), 0);
+                stairs.GetComponentInChildren<NetworkObject>().Spawn();
 
                 stairsPos[cptStairs] = stairPos;
                 cptStairs++;
@@ -177,6 +179,7 @@ public class GenEtaLaby : GenerationEtage
                 stairs.transform.parent = stairHolder;
                 stairs.name = "SDown" + stairPos.x + "_" + stairPos.y;
                 stairs.transform.eulerAngles = new Vector3(0, 270 - (side * 90), 0);
+                stairs.GetComponentInChildren<NetworkObject>().Spawn();
                 stairsPos[cptStairs] = stairPos;
                 cptStairs++;
 
