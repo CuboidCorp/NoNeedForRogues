@@ -1148,10 +1148,10 @@ public class MultiplayerGameManager : NetworkBehaviour
             {
                 if (GenerationDonjon.instance.currentEtage == 1)
                 {
-                    //--> 
                     Debug.Log("On ne peut pas fuir comme ça mec");
                     //On recup les players dans les stairs qui vont vers le haut
                     List<ulong> playersAPunir = new();
+                    List<Vector3> stairPlayerPos = new();
                     GameObject[] upStairs = GameObject.FindGameObjectsWithTag("UpStairs");
                     foreach (GameObject stair in upStairs)
                     {
@@ -1159,15 +1159,22 @@ public class MultiplayerGameManager : NetworkBehaviour
                         foreach (ulong player in players)
                         {
                             playersAPunir.Add(player);
+                            stairPlayerPos.Add(stair.transform.position); //TODO : Ajouter la position de 
                         }
                     }
 
-                    foreach (ulong player in playersAPunir)
+                    for(int i = 0 ;i<playersAPunir.Count ;i++)
                     {
-                        GameObject playerGo = GetPlayerById(player);
+                        GameObject playerGo = GetPlayerById(playersAPunir[i]);
                         //Comment punir le joueur -> Ragdoll
                         StartCoroutine(playerGo.GetComponent<MonPlayerController>().SetRagdollTemp(5));
-                        AudioManager.instance.CowardPlayer(playerGo.transform.position);
+                        AudioManager.instance.PlayOneShotClipServerRpc(playerGo.transform.position, SoundEffectOneShot.NUHUH);
+                        Rigidbody[] ragdollElems = playerGo.GetComponent<MonPlayerController>().GetRagdollRigidbodies();
+
+                        foreach (Rigidbody ragdoll in ragdollElems)
+                        {
+                            ragdoll.AddExplosionForce(500, stairPlayerPos, 10);
+                        }
                     }
                     return;
                 }

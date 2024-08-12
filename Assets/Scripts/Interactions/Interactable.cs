@@ -20,7 +20,7 @@ public abstract class Interactable : NetworkBehaviour, IInteragissable
     {
         if (!isInteractable)
         {
-            AudioManager.instance.StartUnableToInteract(transform.position);
+            AudioManager.instance.PlayOneShotClipServerRpc(transform.position, SoundEffectOneShot.FAIL_INTERACT);
             return;
         }
         SendInteractionServerRpc();

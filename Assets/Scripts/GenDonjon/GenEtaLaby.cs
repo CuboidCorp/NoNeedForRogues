@@ -35,8 +35,6 @@ public class GenEtaLaby : GenerationEtage
     private List<Vector2Int> deadEnds;
     private Vector2Int[] stairsPos;
 
-
-
     private const float yCoordinateUpStairs = 0;
     private const float yCoordinateDownStairs = -1;
 

@@ -154,7 +154,7 @@ public class MonPlayerController : Entity
                 gameObject.tag = "Player";
             }
 
-            AudioManager.instance.SetMusicTaverne();
+            AudioManager.instance.SetMusic(Music.TAVERNE);
             AudioManager.instance.ActivateMusic();
 
             playerUI.SetActive(false); //On desactive notre propre UI
@@ -867,7 +867,7 @@ public class MonPlayerController : Entity
     {
         //On affiche françois sur l'écran et on joue le son
         PlayerUIManager.Instance.francois.SetActive(true);
-        AudioManager.instance.StartScreamerSound(transform.position);
+        AudioManager.instance.PlayOneShotClipServerRpc(transform.position, SoundEffectOneShot.SCREAM);
         yield return new WaitForSeconds(1f);
         //On cache françois
         PlayerUIManager.Instance.francois.SetActive(false);

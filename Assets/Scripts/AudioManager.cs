@@ -1,26 +1,51 @@
 using UnityEngine;
 
-public class AudioManager : MonoBehaviour
+public class AudioManager : NetworkBehaviour
 {
     public static AudioManager instance;
 
     [Header("Music")]
-    [SerializeField] private AudioClip tavernMusicClip;
+    [SerializeField] private AudioClip[] musiques;
 
-
+    public enum Musique
+    {
+        TAVERNE,
+        DONJON,
+        END,
+        MAIN
+    }
 
     #region Sound Effects
 
     [Header("Sound Effects")]
     [SerializeField] private GameObject soundFxPrefab;
 
-    [SerializeField] private AudioClip screamClip;
-    [SerializeField] private AudioClip interactFail;
-    [SerializeField] private AudioClip moneyGained;
-    [SerializeField] private AudioClip ressurection;
-    [SerializeField] private AudioClip explosion;
-    [SerializeField] private AudioClip nuhUh;
+    //LEs sounds effect oneshot --> Genre une seule fois appelé
+    [SerializeField] private AudioClip[] oneShotClips;
+    
+    public enum SoundEffectOneShot
+    {
+        SCREAM,
+        FAIL_INTERACT,
+        MONEY_GAINED,
+        RESURRECTION,
+        EXPLOSION,
+        NUHUH,
+        PLAYER_DAMAGED,
+        PLAYER_DEAD,
+        SPELL_CAST,
+        CHEST_OPENED,
+        ARROW_TRAP,
+        FLOOR_TRAP,
+        PP_DOWN,
+        PP_UP,
+        BEAT_TRAP,
+        SPIKE_UP
+    }
+
     #endregion
+
+
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -33,14 +58,14 @@ public class AudioManager : MonoBehaviour
 
     #region Musique
 
-    public void SetMusicTaverne()
+    public void SetMusic(Musique musicToPlay)
     {
-        GetComponent<AudioSource>().clip = tavernMusicClip;
-    }
-
-    public void SetMusic()
-    {
-        //TODO : Voir quoi mettre pr les musiques
+        AudioClip music = musiques[(int)musicToPlay];
+        if(music == null)
+        {
+            Debug.LogWarning("La musique " + musicToPlay + " n'est pas attribuée");
+        }
+        GetComponent<AudioSource>().clip = music;
     }
 
     public void ActivateMusic()
@@ -48,80 +73,44 @@ public class AudioManager : MonoBehaviour
         GetComponent<AudioSource>().Play();
     }
 
+    public void StopMusic()
+    {
+        GetComponent<AudioSource>().Stop(); 
+    }
+
     #endregion
 
 
     #region Sound Effects
     /// <summary>
-    /// Fait le bruit du screamer
+    /// Appele le serveur pour faire spawn un sound effect temporaire sur tous les clients
     /// </summary>
-    public void StartScreamerSound(Vector3 position)
+    /// <param name="position">Position du sound effect</param>
+    /// <param name="soundEffect">Le sound effect a jouer</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void PlayOneShotClipServerRpc(Vector3 position, SoundEffectOneShot soundEffect)
     {
-        AudioSource audioSource = Instantiate(soundFxPrefab).GetComponent<AudioSource>();
-
-        audioSource.clip = screamClip;
-
-        audioSource.Play();
-
-        Destroy(audioSource.gameObject, screamClip.length);
+        PlayOneShotClipClientRpc(position,soundEffect);
     }
 
-    public void StartUnableToInteract(Vector3 position)
+    /// <summary>
+    /// Joue un sound effect sur tous les joueurs au meme endroit
+    /// </summary>
+    /// <param name="position">Position du sound effect</param>
+    /// <param name="soundEffect">Le sound effect en question</param>
+    [ClientRpc]
+    private void PlayOneShotClipClientRpc(Vector3 position, SoundEffectOneShot soundEffect)
     {
-        AudioSource audioSource = Instantiate(soundFxPrefab).GetComponent<AudioSource>();
-
-        audioSource.clip = interactFail;
-
+        AudioSource audioSource = Instantiate(soundFxPrefab, position, Quaternion.identity).GetComponent<AudioSource>();
+        AudioClip clip = oneShotClips[(int)soundEffect];
+        if(clip == null)
+        {
+            Debug.LogWarning("Le clip " + soundEffect + " n'est pas encore attribué");
+        }
+        audioSource.clip = clip;
         audioSource.Play();
+        Destroy(audioSource.gameObject, clip.length);
 
-        Destroy(audioSource.gameObject, interactFail.length);
     }
-
-    public void CowardPlayer(Vector3 position)
-    {
-        AudioSource audioSource = Instantiate(soundFxPrefab).GetComponent<AudioSource>();
-
-        audioSource.clip = nuhUh;
-
-        audioSource.Play();
-
-        Destroy(audioSource.gameObject, nuhUh.length);
-    }
-
-    public void StartMoneyGained(Vector3 position) //TODO : Pas de se pr l'argent encore
-    {
-        AudioSource audioSource = Instantiate(soundFxPrefab).GetComponent<AudioSource>();
-
-        audioSource.clip = moneyGained;
-
-        audioSource.Play();
-
-        Destroy(audioSource.gameObject, moneyGained.length);
-    }
-
-    public void StartRessurection(Vector3 position)
-    {
-        AudioSource audioSource = Instantiate(soundFxPrefab).GetComponent<AudioSource>();
-
-        audioSource.clip = ressurection;
-
-        audioSource.Play();
-
-        Destroy(audioSource.gameObject, ressurection.length);
-    }
-
-    public void StartExplosion(Vector3 position)
-    {
-        AudioSource audioSource = Instantiate(soundFxPrefab).GetComponent<AudioSource>();
-
-        audioSource.clip = explosion;
-
-        audioSource.Play();
-
-        Destroy(audioSource.gameObject, explosion.length);
-    }
-
-
-
     #endregion
 }
