@@ -13,6 +13,7 @@ public class PlayerStats : INetworkSerializable
     public float healTaken; //Total de Soin reçu
     public float distanceMoved; //Distance courue/Marchée
     public int nbPotionDrank; //Nombre de potions consommée
+    public int nbMorts; //Nombre de mort
 
     /// <summary>
     /// Constructeur de base qui met tout a 0
@@ -26,6 +27,7 @@ public class PlayerStats : INetworkSerializable
         healTaken = 0;
         distanceMoved = 0;
         nbPotionDrank = 0;
+        nbMorts = 0;
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -37,5 +39,6 @@ public class PlayerStats : INetworkSerializable
         serializer.SerializeValue(ref healTaken);
         serializer.SerializeValue(ref distanceMoved);
         serializer.SerializeValue(ref nbPotionDrank);
+        serializer.SerializeValue(ref nbMorts);
     }
 }

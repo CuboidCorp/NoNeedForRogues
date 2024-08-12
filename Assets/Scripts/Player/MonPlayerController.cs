@@ -476,6 +476,8 @@ public class MonPlayerController : Entity
         gameObject.GetComponent<PickUpController>().enabled = false;
         StopEmotes();
 
+        StatsManager.Instance.AddMort();
+
         gameObject.tag = "Ragdoll";
         ChangerRenderCorps(ShadowCastingMode.On);
 
@@ -545,8 +547,6 @@ public class MonPlayerController : Entity
     /// </summary>
     public void HandleDeath()
     {
-        animator.SetTrigger("Died");
-        StopEmotes();
         gameObject.tag = "Ragdoll";
     }
 

@@ -128,6 +128,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         await servVivox.LeaveAllChannelsAsync();
         await servVivox.LogoutAsync();
+        await AuthenticationService.Instance.SignOut();
         StopAllCoroutines();
     }
 

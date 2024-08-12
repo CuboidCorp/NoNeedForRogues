@@ -88,5 +88,12 @@ public abstract class Entity : NetworkBehaviour
         manaText.text = currentMana + "/" + MaxMana;
     }
 
+    public void FullMana()
+    {
+        currentMana = MaxMana;
+        manaSlider.value = currentMana;
+        manaText.text = currentMana + "/" + MaxMana;
+    }
+
 
 }

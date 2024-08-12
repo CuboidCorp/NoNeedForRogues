@@ -294,8 +294,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="id">Player id </param>
     public void OnClientDisconnected(ulong id)
     {
-        //TODO : Handle la vrai deconnection genre message de deconnection
-
         if (NetworkManager.Singleton.LocalClientId == id) //Si on s'est fait deconnecter
         {
             Cursor.lockState = CursorLockMode.None;
@@ -1187,16 +1185,29 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
         else
         {
-            Debug.Log("Leaving lobby");
-            playerRepartitionByStairs = new ulong[1][];
-            playerRepartitionByStairs[0] = playersIds;
-            //On recup les settings du donjon
-            conf = ConfigDonjonUI.Instance.conf;
-            isInLobby = false;
+            LeaveLobby();
         }
         //On sauvegarde par escalier là ou sont les gens
 
         NetworkManager.SceneManager.LoadScene("Donjon", LoadSceneMode.Single);
+
+    }
+
+    private void LeaveLobby()
+    {
+        Debug.Log("Leaving lobby");
+        playerRepartitionByStairs = new ulong[1][];
+        playerRepartitionByStairs[0] = playersIds;
+        //On recup les settings du donjon
+        conf = ConfigDonjonUI.Instance.conf;
+        isInLobby = false;
+
+        //On suppose que tous les clients font ces lignes
+        MonPlayerController.instanceLocale.FullHeal();
+        MonPlayerController.instanceLocale.FullMana();
+
+        StatsManager.Instance.dateDebutGame = DateTime.Now;
+        StatsManager.Instance.InitializeGame(MonPlayerController.instanceLocale.OwnerClientId);
 
     }
 

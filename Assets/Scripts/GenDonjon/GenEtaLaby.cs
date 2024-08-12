@@ -50,6 +50,7 @@ public class GenEtaLaby : GenerationEtage
         GenerationTheorique();
         GenerationEscaliers();
         RenderingLabyrinthe();
+        GeneratePieges();
     }
 
     public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs)
@@ -127,8 +128,6 @@ public class GenEtaLaby : GenerationEtage
             }
         }
 
-        Debug.Log("Down stairs");
-
         //Points de sorties
         while (cptStairs < nbStairs * 2)
         {
@@ -187,6 +186,11 @@ public class GenEtaLaby : GenerationEtage
         }
     }
 
+    /// <summary>
+    /// Verifie si il y a deja un escalier placé
+    /// </summary>
+    /// <param name="pos">La position du possible escalier</param>
+    /// <returns>True si placeable, false sinon</returns>
     private bool IsStairPlaceable(Vector2Int pos)
     {
         foreach (Vector2Int vector in stairsPos)
@@ -317,7 +321,11 @@ public class GenEtaLaby : GenerationEtage
     #endregion
 
     #region Generation Pieges
-
+    private void GeneratePieges()
+    {
+        //On genere les pieges en fonction de la diffculté --> Pr le moment pas de lien entre les items et tt
+        //Donc n'importe quel pos mais pas dans les deadends pr certains
+    }
     #endregion
 
 }

@@ -14,6 +14,7 @@ public class StatsManager : NetworkBehaviour
     public Dictionary<ulong, PlayerStats> allStatsHolder;
 
     public NetworkVariable<int> totalGold = new NetworkVariable<int>();
+    public DateTime dateDebutGame;
 
     private void Awake()
     {
@@ -108,6 +109,14 @@ public class StatsManager : NetworkBehaviour
     public void AddPotionDrank()
     {
         localPlayerStats.nbPotionDrank++;
+    }
+
+    /// <summary>
+    /// Rajoute une mort au compteur de mort du joueur local
+    /// </summary>
+    public void AddMort()
+    {
+        localPlayerStats.nbMorts++;
     }
 
     #endregion
