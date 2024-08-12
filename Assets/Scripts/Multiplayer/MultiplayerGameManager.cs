@@ -338,10 +338,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     private void GameSetup()
     {
         gameCanStart = true;
-        foreach (string valeur in playerNames)
-        {
-            Debug.Log("Nom : " + valeur);
-        }
         NetworkStringArray stringArray = new()
         {
             Array = playerNames
@@ -391,6 +387,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="vivox">Le participant associé au vivox particpant</param>
     public void AddPlayerVivoxInfo(string authId, VivoxParticipant vivox, GameObject talkIcon)
     {
+        Debug.Log("Adding player vivox info");
         authServicePlayerIds[authId] = (vivox, talkIcon);
 
         //On regarde l'index dans les keys du dictionnaire pour savoir quel joueur est concerné

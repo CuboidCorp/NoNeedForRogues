@@ -188,7 +188,7 @@ public class MainMenuUI : MonoBehaviour
 #if UNITY_EDITOR
         AuthenticationService.Instance.SwitchProfile(Profile);
 #endif
-        await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        await AuthenticationService.Instance.SignInAnonymouslyAsync(); //TODO : Faire gaffe a pas etre deja connecté
         //On se deplace vers le TavernLobby
         SceneManager.LoadScene("TavernLobby");
     }
