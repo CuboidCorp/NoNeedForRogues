@@ -995,6 +995,17 @@ public class MultiplayerGameManager : NetworkBehaviour
     }
     #endregion
 
+    /// <summary>
+    /// Synchronise la config du donjon entre l'hote et les autres clients
+    /// </summary>
+    /// <param name="conf">La nouvelle configuration du donjon</param>
+    /// <param name="destinataires"></param>
+    [ClientRpc]
+    public void SyncConfigDonjonClientRpc(ConfigDonjon conf, ClientRpcParams destinataires)
+    {
+        ConfigDonjonUI.Instance.SetConf(conf);
+    }
+
     #region Starting Game
 
     /// <summary>

@@ -107,6 +107,7 @@ public class ConfigDonjonUI : MonoBehaviour
             };
             labelInfo.style.color = new(Color.green);
             labelInfo.text = "Changements sauvegardés";
+            MultiplayerGameManager.instance.SyncConfigDonjonClientRpc(conf, MultiplayerGameManager.instance.SendRpcToOtherPlayers());
         }
     }
 
@@ -117,7 +118,8 @@ public class ConfigDonjonUI : MonoBehaviour
     {
         conf = new();
         //On charge les valeurs de base de conf dans les autres trucs
-        SetConf(conf);   
+        SetConf(conf);
+        MultiplayerGameManager.instance.SyncConfigDonjonClientRpc(conf, MultiplayerGameManager.instance.SendRpcToOtherPlayers());
     }
 
     /// <summary>
