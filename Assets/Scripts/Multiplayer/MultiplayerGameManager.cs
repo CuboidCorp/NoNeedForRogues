@@ -101,6 +101,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         DontDestroyOnLoad(this);
         LoadPrefabs();
         authServicePlayerIds = new Dictionary<string, (VivoxParticipant, GameObject)>();
+        conf = new();
     }
 
     private void LoadPrefabs()
@@ -282,8 +283,6 @@ public class MultiplayerGameManager : NetworkBehaviour
         if (soloMode)
         {
             players[0] = GameObject.FindWithTag("Player");
-
-            SpawnGrabZone(id);
         }
 
     }
@@ -343,10 +342,6 @@ public class MultiplayerGameManager : NetworkBehaviour
             Array = playerNames
         };
         SendGameInfoClientRpc(nbTotalPlayers, playersIds, stringArray);
-        foreach (ulong playerId in playersIds)
-        {
-            SpawnGrabZone(playerId);
-        }
     }
 
     /// <summary>
@@ -742,7 +737,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// Renvoie les client rpc params pour envoyer une id à tous les autres joueurs
     /// </summary>
     /// <returns>La client rpc params avec les bonnes info</returns>
-    private ClientRpcParams SendRpcToOtherPlayers()
+    public ClientRpcParams SendRpcToOtherPlayers()
     {
         ulong[] otherPlayerIds = playersIds.Where(id => id != OwnerClientId).ToArray();
 
@@ -960,50 +955,56 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <summary>
     /// Demande au serv de dire a tt le monde de summon la copie d'un objet 
     /// </summary>
+    /// <param name="obj">La reference au vrai objet</param>
     /// <param name="cheminObj">Chemin pr spawn l'objet</param>
     /// <param name="playerId">L'id du joueur qui grab l'objet</param>
     [ServerRpc(RequireOwnership = false)]
-    public void SummonCopieObjetServerRpc(string cheminObj,  ulong playerId)
+    public void SummonCopieObjetServerRpc(NetworkObjectReference obj, string cheminObj, ulong playerId)
     {
-        SummonCopieObjetClientRpc(cheminObj, playerId);
+        SummonCopieObjetClientRpc(obj, cheminObj, playerId);
     }
 
     /// <summary>
     /// Summon sur un client la copie de l'objet
     /// </summary>
+    /// <param name="obj">La reference au vrai objet</param>
     /// <param name="cheminObj">Le chemin de l'objet</param>
     /// <param name="playerId">L'id du joueur sur qui spawne</param>
     [ClientRpc]
-    private void SummonCopieObjetClientRpc(string cheminObj, ulong playerId)
+    private void SummonCopieObjetClientRpc(NetworkObjectReference obj, string cheminObj, ulong playerId)
     {
+        ((GameObject)obj).SetActive(false);
         int playerIndex = Array.IndexOf(playersIds, playerId);
-        if(playerIndex != -1)
+        if (playerIndex != -1)
         {
-            players[i].GetComponentInChildren<PickUpController>().CreeCopie(cheminObj);
+            players[playerIndex].GetComponentInChildren<PickUpController>().CreeCopie(cheminObj);
         }
     }
 
     /// <summary>
     /// Demande au serv la copie tenue par un player 
     /// </summary>
+    /// <param name="obj">La reference au vrai objet</param>
     /// <param name="playerId">L'id du joueur dont on veut suppr la copie</param>
     [ServerRpc(RequireOwnership = false)]
-    public void DestroyCopieServerRpc(ulong playerId)
+    public void DestroyCopieServerRpc(NetworkObjectReference obj, ulong playerId)
     {
-        DestroyCopieClientRpc(playerId);
+        DestroyCopieClientRpc(obj, playerId);
     }
 
     /// <summary>
     /// Detruit la copie tenue du joueur
     /// </summary>
+    /// <param name="obj">La reference au vrai objet</param>
     /// <param name="playerId">L'id du joueur dont on veut suppr la copie</param>
     [ClientRpc]
-    public void DestroyCopieClientRpc(ulong playerId)
+    public void DestroyCopieClientRpc(NetworkObjectReference obj, ulong playerId)
     {
         int playerIndex = Array.IndexOf(playersIds, playerId);
+        ((GameObject)obj).SetActive(true);
         if (playerIndex != -1)
         {
-            players[i].GetComponentInChildren<PickUpController>().SupprimerCopie();
+            players[playerIndex].GetComponentInChildren<PickUpController>().SupprimerCopie();
         }
     }
     #endregion
@@ -1012,11 +1013,11 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// Synchronise la config du donjon entre l'hote et les autres clients
     /// </summary>
     /// <param name="conf">La nouvelle configuration du donjon</param>
-    /// <param name="destinataires"></param>
     [ClientRpc]
-    public void SyncConfigDonjonClientRpc(ConfigDonjon conf, ClientRpcParams destinataires)
+    public void SyncConfigDonjonClientRpc(ConfigDonjon conf)
     {
         ConfigDonjonUI.Instance.SetConf(conf);
+        this.conf = conf;
     }
 
     #region Starting Game
@@ -1143,6 +1144,7 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private void ChangeLevel()
     {
+        Debug.Log("Change Level");
         bool direction = playerGoingUp[0];
 
         if (!isInLobby)
@@ -1196,7 +1198,6 @@ public class MultiplayerGameManager : NetworkBehaviour
         playerRepartitionByStairs = new ulong[1][];
         playerRepartitionByStairs[0] = playersIds;
         //On recup les settings du donjon
-        conf = ConfigDonjonUI.Instance.conf;
         isInLobby = false;
 
         //On suppose que tous les clients font ces lignes

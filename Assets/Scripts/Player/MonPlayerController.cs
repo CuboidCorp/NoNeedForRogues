@@ -4,6 +4,7 @@ using Unity.Services.Authentication;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 [DisallowMultipleComponent]
 public class MonPlayerController : Entity
@@ -150,7 +151,7 @@ public class MonPlayerController : Entity
     {
         gameObject.GetComponent<PlayerRandomizer>().Randomize(seed);
         DisableRagdoll();
-        if(!IsHost)
+        if (!IsHost)
         {
             //Si on est pas un hote on desactive le configDonjonUI
             ConfigDonjonUI.Instance.enabled = false;
@@ -191,9 +192,14 @@ public class MonPlayerController : Entity
         else //Si on est pas le propriétaire du joueur, on desactive le script
         {
             gameObject.GetComponent<SpellRecognition>().enabled = false;
-            gameObject.GetComponent<PickUpController>().enabled = false;
+            //gameObject.GetComponent<PickUpController>().enabled = false;
             Destroy(vivox);
-            cameraPivot.SetActive(false);
+            Destroy(cameraPivot.GetComponent<AudioListener>());
+            Destroy(cameraPivot.GetComponent<UniversalAdditionalCameraData>());
+            Destroy(cameraPivot.GetComponent<Camera>());
+            Destroy(camTps.GetComponent<AudioListener>());
+            Destroy(camTps.GetComponent<UniversalAdditionalCameraData>());
+            Destroy(camTps.GetComponent<Camera>());
             enabled = false;
         }
     }

@@ -251,7 +251,7 @@ GameObject:
   - component: {fileID: 5635220962665524759}
   m_Layer: 0
   m_Name: Leave
-  m_TagString: DownStairs
+  m_TagString: UpStairs
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -291,8 +291,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.6837153, z: 3.0274992}
-  m_Center: {x: 0, y: -0.3418579, z: -0.1357565}
+  m_Size: {x: 1.859287, y: 2.755227, z: 3.0274992}
+  m_Center: {x: -0.5, y: -0.5, z: -0.13}
 --- !u!114 &917300335554731620
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -305,7 +305,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 457771495
+  GlobalObjectIdHash: 416407656
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -325,9 +325,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4a0d647c9dd94748b2f05f7dcb07df4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isUpStairs: 0
+  isUpStairs: 1
   titreEscalier: {fileID: 2862553200082457728}
   countdownEscalier: {fileID: 4523581474754360401}
+  spawnPoint: {fileID: 0}
 --- !u!1 &4105816923095121277
 GameObject:
   m_ObjectHideFlags: 0

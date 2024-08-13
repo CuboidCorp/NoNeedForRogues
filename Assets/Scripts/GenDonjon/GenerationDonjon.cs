@@ -24,6 +24,8 @@ public class GenerationDonjon : MonoBehaviour
     [SerializeField]
     private int seed;
 
+    private bool estServeur = false;
+
     [Header("Params Etage")]
     [SerializeField]
     private TypeEtage typeEtage;
@@ -89,11 +91,12 @@ public class GenerationDonjon : MonoBehaviour
     /// </summary>
     private void OnSceneLoaded()
     {
-        Debug.Log(currentEtage);
         GameObject holder = GameObject.Find("Dungeon");
         holderStairs = holder.transform.GetChild(0);
         holderHallways = holder.transform.GetChild(1);
         holderRooms = holder.transform.GetChild(2);
+
+        estServeur = MultiplayerGameManager.Instance.IsServer;
 
         currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
 
@@ -111,20 +114,25 @@ public class GenerationDonjon : MonoBehaviour
 
             seeds[currentEtage - 1] = seed;
             maxEtageReached = currentEtage;
-            Generate(true);
+            Generate(true, estServeur);
         }
         else
         {
             seed = seeds[currentEtage - 1];
             SetSeed();
-            Generate(false);
+            Generate(false, estServeur);
         }
         GameObject cam = GameObject.Find("Main Camera");
         if (cam != null)
         {
             Destroy(cam);
         }
-        MultiplayerGameManager.Instance.SpawnPlayers();
+
+        if (estServeur)
+        {
+
+            MultiplayerGameManager.Instance.SpawnPlayers();
+        }
     }
 
 
@@ -143,7 +151,7 @@ public class GenerationDonjon : MonoBehaviour
         seeds = new int[maxEtage];
     }
 
-    private void Generate(bool isNewEtage)
+    private void Generate(bool isNewEtage, bool estServ)
     {
         switch (typeEtage)
         {
@@ -157,7 +165,7 @@ public class GenerationDonjon : MonoBehaviour
                 genEtage = GetComponent<GenEtaAbre>();
                 break;
         }
-        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, baseDifficulty);
+        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, baseDifficulty, estServ);
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs);
         genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs);
         genEtage.GenerateEtage();

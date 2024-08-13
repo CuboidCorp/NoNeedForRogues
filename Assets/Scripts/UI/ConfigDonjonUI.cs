@@ -2,13 +2,14 @@ using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Donnees;
+using Unity.Netcode;
 
 public class ConfigDonjonUI : MonoBehaviour
 {
     private UIDocument doc;
     private VisualElement root;
 
-    [SerializeField] private float interactDistance = 100f;
+    [SerializeField] private float interactDistance = 10f;
 
     private SliderInt nbEtages;
     private IntegerField seed;
@@ -77,14 +78,14 @@ public class ConfigDonjonUI : MonoBehaviour
         });
 
         saveChanges.clicked += () => SaveSettings();
-        cancelChanges.clicked += () => ResetOptions();
+        cancelChanges.clicked += () => { ResetOptions(); MultiplayerGameManager.Instance.SyncConfigDonjonClientRpc(conf); };
     }
 
     private void OnDisable()
     {
         doc.panelSettings.SetScreenToPanelSpaceFunction(null);
         saveChanges.clicked -= () => SaveSettings();
-        cancelChanges.clicked -= () => ResetOptions();
+        cancelChanges.clicked -= () => { ResetOptions(); MultiplayerGameManager.Instance.SyncConfigDonjonClientRpc(conf); };
     }
 
     /// <summary>
@@ -107,7 +108,7 @@ public class ConfigDonjonUI : MonoBehaviour
             };
             labelInfo.style.color = new(Color.green);
             labelInfo.text = "Changements sauvegardés";
-            MultiplayerGameManager.instance.SyncConfigDonjonClientRpc(conf, MultiplayerGameManager.instance.SendRpcToOtherPlayers());
+            MultiplayerGameManager.Instance.SyncConfigDonjonClientRpc(conf);
         }
     }
 
@@ -119,7 +120,7 @@ public class ConfigDonjonUI : MonoBehaviour
         conf = new();
         //On charge les valeurs de base de conf dans les autres trucs
         SetConf(conf);
-        MultiplayerGameManager.instance.SyncConfigDonjonClientRpc(conf, MultiplayerGameManager.instance.SendRpcToOtherPlayers());
+        labelInfo.text = "";
     }
 
     /// <summary>
@@ -135,7 +136,6 @@ public class ConfigDonjonUI : MonoBehaviour
         nbStairs.value = config.nbStairs;
         baseDifficulty.value = config.baseDiff;
         difficultyScaling.value = config.diffScaling;
-        labelInfo.text = "";
     }
 
     /// <summary>

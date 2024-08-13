@@ -29,6 +29,7 @@ public class GenEtaLaby : GenerationEtage
     private GameObject[] couloirsPrefabs;
     private GameObject upStairPrefab;
     private GameObject downStairPrefab;
+    private GameObject leavePrefab;
 
     private Transform stairHolder;
     private Transform hallwaysHolder;
@@ -59,6 +60,7 @@ public class GenEtaLaby : GenerationEtage
         couloirsPrefabs = Resources.LoadAll<GameObject>(pathToHallways);
         upStairPrefab = Resources.Load<GameObject>(pathToStairs + "UpStairs");
         downStairPrefab = Resources.Load<GameObject>(pathToStairs + "DownStairs");
+        leavePrefab = Resources.Load<GameObject>("Donjon/Leave");
     }
 
     public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs)
@@ -119,7 +121,14 @@ public class GenEtaLaby : GenerationEtage
                 stairs.transform.parent = stairHolder;
                 stairs.name = "SUp" + stairPos.x + "_" + stairPos.y;
                 stairs.transform.eulerAngles = new Vector3(0, 90 - (side * 90), 0);
-                stairs.GetComponentInChildren<NetworkObject>().Spawn();
+                if (estServ)
+                {
+                    GameObject leave = Instantiate(leavePrefab, new Vector3(stairPos.x, 0, stairPos.y) * cellSize + new Vector3(0, 6, -6.5f), Quaternion.Euler(0, 180 - (side * 90), 0));
+                    leave.name = "LeaveUP" + stairPos.x + "_" + stairPos.y;
+                    leave.GetComponent<Escalier>().spawnPoint = stairs.transform.GetChild(5);
+                    leave.GetComponent<Escalier>().isUpStairs = true;
+                    leave.GetComponent<NetworkObject>().Spawn();
+                }
 
                 stairsPos[cptStairs] = stairPos;
                 cptStairs++;
@@ -179,7 +188,14 @@ public class GenEtaLaby : GenerationEtage
                 stairs.transform.parent = stairHolder;
                 stairs.name = "SDown" + stairPos.x + "_" + stairPos.y;
                 stairs.transform.eulerAngles = new Vector3(0, 270 - (side * 90), 0);
-                stairs.GetComponentInChildren<NetworkObject>().Spawn();
+                if (estServ)
+                {
+                    GameObject leave = Instantiate(leavePrefab, new Vector3(stairPos.x, 0, stairPos.y) * cellSize + new Vector3(0, 3, 1.3f), Quaternion.Euler(0, 180 - (side * 90), 0));
+                    leave.name = "LeaveDown" + stairPos.x + "_" + stairPos.y;
+                    leave.GetComponent<Escalier>().spawnPoint = stairs.transform.GetChild(5);
+                    leave.GetComponent<Escalier>().isUpStairs = false;
+                    leave.GetComponent<NetworkObject>().Spawn();
+                }
                 stairsPos[cptStairs] = stairPos;
                 cptStairs++;
 

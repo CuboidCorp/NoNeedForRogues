@@ -12,7 +12,7 @@ public class Escalier : NetworkBehaviour
     /// <summary>
     /// Si les escaliers vont vers le haut
     /// </summary>
-    [SerializeField] private bool isUpStairs;
+    public bool isUpStairs;
 
     private List<ulong> playersInside;
 
@@ -39,7 +39,6 @@ public class Escalier : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Player entered stairs");
         //Le joueur qui rentre est donc ready
         if ((MultiplayerGameManager.Instance.gameCanStart || !IsHost) && other.gameObject.CompareTag("Player"))
         {

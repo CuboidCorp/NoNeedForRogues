@@ -4,11 +4,10 @@ using UnityEngine;
 public class PickUpController : NetworkBehaviour
 {
     [Header("Pick Up Settings")]
-    [HideInInspector] public Transform holdArea;
+    [SerializeField] private Transform holdArea;
     [SerializeField] private Camera playerCam;
     private GameObject heldObj;
     private GameObject copieObj;
-    private Rigidbody heldObjRb;
     private Rigidbody copieRb;
     private bool isRotating;
     [SerializeField] private float rotationSensitivity;
@@ -52,10 +51,8 @@ public class PickUpController : NetworkBehaviour
     private void PickupObject(GameObject objetRamasse)
     {
         heldObj = objetRamasse;
-        heldObj.GetComponent<WeightedObject>().isHeld.Value = true;
+        heldObj.GetComponent<WeightedObject>().ChangeStateServerRpc(true);
         SubstituteRealForCopy();
-        heldObjRb = heldObj.GetComponent<Rigidbody>();
-        heldObjRb.isKinematic = false;
     }
 
     /// <summary>
@@ -63,11 +60,9 @@ public class PickUpController : NetworkBehaviour
     /// </summary>
     private void SubstituteRealForCopy()
     {
-        heldObj.GetComponent<MeshRenderer>().enabled = false;
-        heldObj.GetComponent<Rigidbody>().enabled = false;
-        heldObj.GetComponent<Collider>().enabled = false;
+        heldObj.SetActive(false);
         string cheminCopie = heldObj.GetComponent<WeightedObject>().cheminCopie;
-        MultiplayerGameManager.Instance.SummonCopieObjetServerRpc(cheminCopie, OwnerClientId);
+        MultiplayerGameManager.Instance.SummonCopieObjetServerRpc(heldObj, cheminCopie, OwnerClientId);
     }
 
     /// <summary>
@@ -78,7 +73,11 @@ public class PickUpController : NetworkBehaviour
     {
         GameObject prefabObj = Resources.Load<GameObject>(cheminCopie);
         copieObj = Instantiate(prefabObj, holdArea);
+        copieObj.transform.position = holdArea.position;
         copieRb = copieObj.GetComponent<Rigidbody>();
+        copieRb.drag = 10;
+        copieRb.constraints = RigidbodyConstraints.FreezeRotation;
+        DisableCollision();
     }
 
     /// <summary>
@@ -92,14 +91,20 @@ public class PickUpController : NetworkBehaviour
     /// <summary>
     /// Supprime la copie sur tt le monde et remet le nouvel objet pr de vrai
     /// </summary>
-    private void SubstituteCopyForReal() //TODO : Ptet faut copier les données du rigidbody aussi
+    /// <param name="force">La force à appliquer à l'objet</param>
+    private void SubstituteCopyForReal(Vector3 force)
     {
         Vector3 posCopie = copieObj.transform.position;
-        MultiplayerGameManager.Instance.DestroyCopieServerRpc(OwnerClientId);
-        heldObj.transform.position = posCopie;  
-        heldObj.GetComponent<Collider>().enabled = true;
-        heldObj.GetComponent<Rigidbody>().enabled = true;
-        heldObj.GetComponent<MeshRenderer>().enabled = true;
+        MultiplayerGameManager.Instance.DestroyCopieServerRpc(heldObj, OwnerClientId);
+        SetObjectDataServerRpc(heldObj, posCopie, force);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SetObjectDataServerRpc(NetworkObjectReference obj, Vector3 newPosition, Vector3 force)
+    {
+        ((GameObject)obj).transform.position = newPosition;
+        ((GameObject)obj).GetComponent<Rigidbody>().AddForce(force, ForceMode.Impulse);
+
     }
 
     /// <summary>
@@ -112,10 +117,9 @@ public class PickUpController : NetworkBehaviour
             return;
         }
         //On le drop
-        SubstituteCopyForReal();
+        SubstituteCopyForReal(Vector3.zero);
         StopClipping();
-        heldObj.GetComponent<WeightedObject>().isHeld.Value = false;
-        heldObjRb = null;
+        heldObj.GetComponent<WeightedObject>().ChangeStateServerRpc(false);
         heldObj = null;
     }
 
@@ -128,38 +132,23 @@ public class PickUpController : NetworkBehaviour
         {
             return;
         }
-        SubstituteCopyForReal();
-        heldObjRb.AddForce(playerCam.transform.forward * throwForce, ForceMode.Impulse);
-        heldObj.GetComponent<WeightedObject>().isHeld.Value = false;
+        SubstituteCopyForReal(playerCam.transform.forward * throwForce);
+        heldObj.GetComponent<WeightedObject>().ChangeStateServerRpc(false);
         StopClipping();
-        heldObjRb = null;
         heldObj = null;
     }
 
     /// <summary>
-    /// Réactive la collision entre l'objet et tous les joueurs
+    /// Desactive la collision entre le copie objet et tous les joueurs
     /// </summary>
-    private void EnableCollision(NetworkObjectReference networkObjectReference)
+    private void DisableCollision()
     {
         GameObject[] players = MultiplayerGameManager.Instance.GetAllPlayersGo();
         foreach (GameObject player in players)
         {
-            Physics.IgnoreCollision(((GameObject)networkObjectReference).GetComponent<Collider>(), player.GetComponent<Collider>(), true);
+            Physics.IgnoreCollision(copieObj.GetComponent<Collider>(), player.GetComponent<Collider>(), true);
         }
     }
-
-    /// <summary>
-    /// Desactive la collision entre l'objet et tous les joueurs
-    /// </summary>
-    private void DisableCollision(NetworkObjectReference networkObjectReference)
-    {
-        GameObject[] players = MultiplayerGameManager.Instance.GetAllPlayersGo();
-        foreach (GameObject player in players)
-        {
-            Physics.IgnoreCollision(((GameObject)networkObjectReference).GetComponent<Collider>(), player.GetComponent<Collider>(), false);
-        }
-    }
-
 
     private void Update()
     {
@@ -217,13 +206,12 @@ public class PickUpController : NetworkBehaviour
 
     void StopClipping() //function only called when dropping/throwing
     {
-        var clipRange = Vector3.Distance(heldObj.transform.position, transform.position); //distance from holdPos to the camera
+        float clipRange = Vector3.Distance(heldObj.transform.position, transform.position); //distance from holdPos to the camera
         //have to use RaycastAll as object blocks raycast in center screen
         //RaycastAll returns array of all colliders hit within the cliprange
-        RaycastHit[] hits;
-        hits = Physics.RaycastAll(transform.position, transform.TransformDirection(Vector3.forward), clipRange);
+        Ray ray = new(transform.position, transform.TransformDirection(Vector3.forward));
         //if the array length is greater than 1, meaning it has hit more than just the object we are carrying
-        if (hits.Length > 1)
+        if (Physics.RaycastNonAlloc(ray, new RaycastHit[0], clipRange) > 1)
         {
             //change object position to camera position 
             heldObj.transform.position = transform.position + new Vector3(0f, -0.5f, 0f); //offset slightly downward to stop object dropping above player 

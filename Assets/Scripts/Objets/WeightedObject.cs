@@ -25,7 +25,7 @@ public abstract class WeightedObject : NetworkBehaviour, IRamassable
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void ChangeStateServerRpc(bool newState)
+    public void ChangeStateServerRpc(bool newState)
     {
         isHeld.Value = newState;
     }

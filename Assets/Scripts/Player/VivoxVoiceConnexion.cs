@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -52,8 +53,16 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         servVivox.ParticipantAddedToChannel += ParticipantAdded;
         servVivox.ParticipantRemovedFromChannel += ParticipantRemoved;
         servVivox.LoggedOut += OnLoggedOut;
-        await servVivox.InitializeAsync();
-        await servVivox.LoginAsync();
+        try
+        {
+            await servVivox.InitializeAsync();
+            await servVivox.LoginAsync();
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e);
+            enabled = false;
+        }
     }
 
     /// <summary>
@@ -99,7 +108,6 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <param name="vivoxParticipant">Le participant ajouté</param>
     private void ParticipantAdded(VivoxParticipant vivoxParticipant)
     {
-        Debug.Log(vivoxParticipant.ChannelName);
         Debug.Log(vivoxParticipant.PlayerId + " / " + AuthenticationService.Instance.PlayerId);
         if (vivoxParticipant.PlayerId != AuthenticationService.Instance.PlayerId)
         {
@@ -142,10 +150,8 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     private void CheckSpeaking()
     {
-        Debug.Log("Checking speaking");
         foreach ((VivoxParticipant, GameObject) participantEtGo in MultiplayerGameManager.Instance.authServicePlayerIds.Values) //TODO : Sur les clients on a pas du tout ça
         {
-            Debug.Log(participantEtGo);
             if (participantEtGo.Item1 != null)
             {
                 Debug.Log("Speech :" + participantEtGo.Item1.SpeechDetected);
