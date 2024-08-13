@@ -1005,7 +1005,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     public void SpawnPlayers()
     {
-        Debug.Log("Spawning players");
         bool direction = playerGoingUp[0];
         GameObject[] escaliers;
         if (direction)

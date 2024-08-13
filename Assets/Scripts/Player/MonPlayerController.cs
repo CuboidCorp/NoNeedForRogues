@@ -147,6 +147,11 @@ public class MonPlayerController : Entity
     {
         gameObject.GetComponent<PlayerRandomizer>().Randomize(seed);
         DisableRagdoll();
+        if(!IsHost)
+        {
+            //Si on est pas un hote on desactive le configDonjonUI
+            ConfigDonjonUI.Instance.enabled = false;
+        }
         if (IsOwner) //Quand on est le proprietaire on passe en mode premiere personne et on desactive toutes les parties du corps sauf les mains
         {
             if (MultiplayerGameManager.Instance.soloMode)

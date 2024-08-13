@@ -117,13 +117,22 @@ public class ConfigDonjonUI : MonoBehaviour
     {
         conf = new();
         //On charge les valeurs de base de conf dans les autres trucs
-        nbEtages.value = conf.nbEtages;
-        seed.value = conf.seed;
-        minTailleEtage.value = conf.minTailleEtage;
-        maxTailleEtage.value = conf.maxTailleEtage;
-        nbStairs.value = conf.nbStairs;
-        baseDifficulty.value = conf.baseDiff;
-        difficultyScaling.value = conf.diffScaling;
+        SetConf(conf);   
+    }
+
+    /// <summary>
+    /// Set la configuration du menu des config ui
+    /// </summary>
+    /// <param name="config"></param>
+    public void SetConf(ConfigDonjon config)
+    {
+        nbEtages.value = config.nbEtages;
+        seed.value = config.seed;
+        minTailleEtage.value = config.minTailleEtage;
+        maxTailleEtage.value = config.maxTailleEtage;
+        nbStairs.value = config.nbStairs;
+        baseDifficulty.value = config.baseDiff;
+        difficultyScaling.value = config.diffScaling;
         labelInfo.text = "";
     }
 
@@ -161,7 +170,7 @@ public class ConfigDonjonUI : MonoBehaviour
 }
 
 [Serializable]
-public class ConfigDonjon
+public class ConfigDonjon : INetworkSerializable
 {
     public int nbEtages;
     public int seed;
@@ -196,6 +205,18 @@ public class ConfigDonjon
                $"- Type d'étage: {typeEtage}\n" +
                $"- Difficulté de base: {baseDiff}\n" +
                $"- Scaling de difficulté: {diffScaling}";
+    }
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref nbEtages);
+        serializer.SerializeValue(ref seed);
+        serializer.SerializeValue(ref minTailleEtage);
+        serializer.SerializeValue(ref maxTailleEtage);
+        serializer.SerializeValue(ref nbStairs);
+        serializer.SerializeValue(ref typeEtage);
+        serializer.SerializeValue(ref baseDiff);
+        serializer.SerializeValue(ref diffScaling);
     }
 
 }
