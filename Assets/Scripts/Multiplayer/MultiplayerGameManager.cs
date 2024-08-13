@@ -958,40 +958,53 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     #region GrabZone
     /// <summary>
-    /// ServerRpc pr spawn la grab zone
+    /// Demande au serv de dire a tt le monde de summon la copie d'un objet 
     /// </summary>
-    /// <param name="ownerId">L'id de l'owner de la grabzone</param>
-    private void SpawnGrabZone(ulong ownerId)
+    /// <param name="cheminObj">Chemin pr spawn l'objet</param>
+    /// <param name="playerId">L'id du joueur qui grab l'objet</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void SummonCopieObjetServerRpc(string cheminObj,  ulong playerId)
     {
-        GameObject copyCam = Instantiate(copyCamPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-        copyCam.name = "CopyCam" + ownerId;
-        copyCam.GetComponent<NetworkObject>().SpawnWithOwnership(ownerId);
-        GameObject grabZone = Instantiate(grabZonePrefab, new Vector3(0, 0, 0), Quaternion.identity);
-        grabZone.name = "GrabZone" + ownerId;
-        grabZone.GetComponent<NetworkObject>().SpawnWithOwnership(ownerId);
-        grabZone.transform.parent = copyCam.transform;
-        grabZone.transform.localPosition = new Vector3(0, 0, 1.5f);
-
-        GameObject player = GetPlayerById(ownerId);
-        copyCam.transform.parent = player.transform;
-        copyCam.transform.localPosition = new Vector3(0, 1.6f, -.1f);
-        ChangeParentClientRpc(copyCam, SendRpcToPlayer(ownerId));
+        SummonCopieObjetClientRpc(cheminObj, playerId);
     }
 
+    /// <summary>
+    /// Summon sur un client la copie de l'objet
+    /// </summary>
+    /// <param name="cheminObj">Le chemin de l'objet</param>
+    /// <param name="playerId">L'id du joueur sur qui spawne</param>
     [ClientRpc]
-    private void ChangeParentClientRpc(NetworkObjectReference networkRef, ClientRpcParams clientRpcParams)
+    private void SummonCopieObjetClientRpc(string cheminObj, ulong playerId)
     {
-        GameObject copyCam = (GameObject)networkRef;
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if(playerIndex != -1)
+        {
+            players[i].GetComponentInChildren<PickUpController>().CreeCopie(cheminObj);
+        }
+    }
 
-        ulong ownerId = copyCam.GetComponent<NetworkObject>().OwnerClientId;
-        copyCam.name = "CopyCam" + ownerId;
-        copyCam.transform.localPosition = new Vector3(0, 1.6f, -.1f);
-        copyCam.transform.GetChild(0).localPosition = new Vector3(0, 0, 1.5f);
-        copyCam.transform.GetChild(0).gameObject.name = "GrabZone" + ownerId;
-        GameObject player = GetPlayerById(ownerId);
-        //On met la grab zone dans le playerController
-        player.GetComponent<MonPlayerController>().copyCam = copyCam;
-        player.GetComponent<PickUpController>().holdArea = copyCam.transform.GetChild(0);
+    /// <summary>
+    /// Demande au serv la copie tenue par un player 
+    /// </summary>
+    /// <param name="playerId">L'id du joueur dont on veut suppr la copie</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void DestroyCopieServerRpc(ulong playerId)
+    {
+        DestroyCopieClientRpc(playerId);
+    }
+
+    /// <summary>
+    /// Detruit la copie tenue du joueur
+    /// </summary>
+    /// <param name="playerId">L'id du joueur dont on veut suppr la copie</param>
+    [ClientRpc]
+    public void DestroyCopieClientRpc(ulong playerId)
+    {
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if (playerIndex != -1)
+        {
+            players[i].GetComponentInChildren<PickUpController>().SupprimerCopie();
+        }
     }
     #endregion
 

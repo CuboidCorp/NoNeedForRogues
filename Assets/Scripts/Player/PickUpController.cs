@@ -7,9 +7,12 @@ public class PickUpController : NetworkBehaviour
     [HideInInspector] public Transform holdArea;
     [SerializeField] private Camera playerCam;
     private GameObject heldObj;
+    private GameObject copieObj;
     private Rigidbody heldObjRb;
+    private Rigidbody copieRb;
     private bool isRotating;
     [SerializeField] private float rotationSensitivity;
+
 
     [Header("Physics Settings")]
     [SerializeField] private float pickupRange = 5.0f;
@@ -49,11 +52,54 @@ public class PickUpController : NetworkBehaviour
     private void PickupObject(GameObject objetRamasse)
     {
         heldObj = objetRamasse;
-        heldObj.GetComponent<WeightedObject>().ChangeState(true);
+        heldObj.GetComponent<WeightedObject>().isHeld.Value = true;
+        SubstituteRealForCopy();
         heldObjRb = heldObj.GetComponent<Rigidbody>();
-        SetHeldObjRbParamsServerRpc(heldObj, true);
         heldObjRb.isKinematic = false;
-        MultiplayerGameManager.Instance.ChangeParentServerRpc(holdArea.gameObject, heldObj);
+    }
+
+    /// <summary>
+    /// Cache le vrai objet et renvoie la copie créée
+    /// </summary>
+    private void SubstituteRealForCopy()
+    {
+        heldObj.GetComponent<MeshRenderer>().enabled = false;
+        heldObj.GetComponent<Rigidbody>().enabled = false;
+        heldObj.GetComponent<Collider>().enabled = false;
+        string cheminCopie = heldObj.GetComponent<WeightedObject>().cheminCopie;
+        MultiplayerGameManager.Instance.SummonCopieObjetServerRpc(cheminCopie, OwnerClientId);
+    }
+
+    /// <summary>
+    /// Crée une copie en la chargeant depuis les resources
+    /// </summary>
+    /// <param name="cheminCopie">Le chemin de la copie dans les resources</param>
+    public void CreeCopie(string cheminCopie)
+    {
+        GameObject prefabObj = Resources.Load<GameObject>(cheminCopie);
+        copieObj = Instantiate(prefabObj, holdArea);
+        copieRb = copieObj.GetComponent<Rigidbody>();
+    }
+
+    /// <summary>
+    /// Supprime la copie
+    /// </summary>
+    public void SupprimerCopie()
+    {
+        Destroy(copieObj);
+    }
+
+    /// <summary>
+    /// Supprime la copie sur tt le monde et remet le nouvel objet pr de vrai
+    /// </summary>
+    private void SubstituteCopyForReal() //TODO : Ptet faut copier les données du rigidbody aussi
+    {
+        Vector3 posCopie = copieObj.transform.position;
+        MultiplayerGameManager.Instance.DestroyCopieServerRpc(OwnerClientId);
+        heldObj.transform.position = posCopie;  
+        heldObj.GetComponent<Collider>().enabled = true;
+        heldObj.GetComponent<Rigidbody>().enabled = true;
+        heldObj.GetComponent<MeshRenderer>().enabled = true;
     }
 
     /// <summary>
@@ -66,11 +112,9 @@ public class PickUpController : NetworkBehaviour
             return;
         }
         //On le drop
-        heldObj.GetComponent<WeightedObject>().ChangeState(false);
-        SetHeldObjRbParamsServerRpc(heldObj, false);
-
-        MultiplayerGameManager.Instance.RemoveParentServerRpc(heldObj);
+        SubstituteCopyForReal();
         StopClipping();
+        heldObj.GetComponent<WeightedObject>().isHeld.Value = false;
         heldObjRb = null;
         heldObj = null;
     }
@@ -84,39 +128,12 @@ public class PickUpController : NetworkBehaviour
         {
             return;
         }
-        heldObj.GetComponent<WeightedObject>().ChangeState(false);
-        SetHeldObjRbParamsServerRpc(heldObj, false);
+        SubstituteCopyForReal();
         heldObjRb.AddForce(playerCam.transform.forward * throwForce, ForceMode.Impulse);
-
-        MultiplayerGameManager.Instance.RemoveParentServerRpc(heldObj);
+        heldObj.GetComponent<WeightedObject>().isHeld.Value = false;
         StopClipping();
         heldObjRb = null;
         heldObj = null;
-    }
-
-    /// <summary>
-    /// Envoie une serverRpc pour changer les paramètres du rigidbody de l'objet tenu
-    /// </summary>
-    /// <param name="networkObjectReference">La réference à l'objet tenu</param>
-    /// <param name="estTenu">Si l'objet est tenu ou non</param>
-    [ServerRpc(RequireOwnership = false)]
-    private void SetHeldObjRbParamsServerRpc(NetworkObjectReference networkObjectReference, bool estTenu)
-    {
-        Rigidbody rb = ((GameObject)networkObjectReference).GetComponent<Rigidbody>();
-        if (estTenu)
-        {
-            DisableCollision(networkObjectReference);
-            rb.useGravity = false;
-            rb.drag = 10;
-            rb.constraints = RigidbodyConstraints.FreezeRotation;
-        }
-        else
-        {
-            EnableCollision(networkObjectReference);
-            rb.useGravity = true;
-            rb.drag = 1;
-            rb.constraints = RigidbodyConstraints.None;
-        }
     }
 
     /// <summary>
@@ -146,7 +163,7 @@ public class PickUpController : NetworkBehaviour
 
     private void Update()
     {
-        if (heldObj != null)
+        if (copieObj != null)
         {
             MoveObject();
             if (isRotating)
@@ -187,14 +204,14 @@ public class PickUpController : NetworkBehaviour
     /// </summary>
     private void MoveObject()
     {
-        if (Vector3.Distance(heldObj.transform.position, holdArea.position) > 0.1f)
+        if (Vector3.Distance(copieObj.transform.position, holdArea.position) > 0.1f)
         {
-            Vector3 moveDirection = (holdArea.position - heldObj.transform.position);
-            heldObjRb.AddForce(pickupForce * moveDirection);
+            Vector3 moveDirection = (holdArea.position - copieObj.transform.position);
+            copieRb.AddForce(pickupForce * moveDirection);
         }
         else
         {
-            heldObjRb.velocity = Vector3.zero;
+            copieRb.velocity = Vector3.zero;
         }
     }
 

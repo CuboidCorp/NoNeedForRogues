@@ -6,6 +6,7 @@ using Unity.Netcode;
 public abstract class WeightedObject : NetworkBehaviour, IRamassable
 {
     public float weight = 1;
+    public string cheminCopie;
 
     public NetworkVariable<bool> isHeld = new(false);
 

@@ -27,6 +27,8 @@ public class MonPlayerController : Entity
 
     public GameObject playerUI;
 
+    public Transform grabZone; //TODO : L'assigner dans l'editeur
+
     #region Camera Variables
 
     [Header("Camera Movement Variables")]
