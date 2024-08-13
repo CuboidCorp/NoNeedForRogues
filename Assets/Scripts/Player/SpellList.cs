@@ -13,7 +13,7 @@ public class SpellList : MonoBehaviour
     /// </summary>
     public static void Explosion(Transform target, float radius, float degats)
     {
-        AudioManager.instance.PlayOneShotClipServerRpc(target.position, SoundEffectOneShot.EXPLOSION);
+        AudioManager.instance.PlayOneShotClipServerRpc(target.position, AudioManager.SoundEffectOneShot.EXPLOSION);
         GameObject explosionGo = Instantiate(Resources.Load<GameObject>("Sorts/Explosion"), target.position, Quaternion.identity); //Explosion
         explosionGo.transform.localScale = new Vector3(radius, radius, radius);
 

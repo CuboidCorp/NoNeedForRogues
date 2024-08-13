@@ -1114,7 +1114,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1230768740262115316}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.037}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1124,8 +1124,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 2.5}
-  m_SizeDelta: {x: 3, y: 1}
+  m_AnchoredPosition: {x: 0, y: 2.174}
+  m_SizeDelta: {x: 2, y: 0.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &7072107395098911315
 Canvas:
@@ -4638,8 +4638,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 3114739103749965513}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.8, y: 0.2}
-  m_AnchorMax: {x: 1, y: 0.8}
+  m_AnchorMin: {x: 0.7966128, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -7295,6 +7295,7 @@ Transform:
   - {fileID: 1558975312154354616}
   - {fileID: 8657916034461968866}
   - {fileID: 1075378867558917200}
+  - {fileID: 3471609198791870800}
   - {fileID: 111399192824558168}
   - {fileID: 4603282920489530763}
   - {fileID: 3114739103749965513}
@@ -7445,77 +7446,77 @@ MonoBehaviour:
     DestinationState: 125937960
     TransitionDuration: 0.25
     TriggerNameHash: 125937960
-    TransitionIndex: 2
+    TransitionIndex: 1
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 790364397
     DestinationState: -165924479
     TransitionDuration: 0.25
     TriggerNameHash: -165924479
-    TransitionIndex: 4
+    TransitionIndex: 3
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 790364397
     DestinationState: 1863671867
     TransitionDuration: 0.25
     TriggerNameHash: 1863671867
-    TransitionIndex: 5
+    TransitionIndex: 4
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 790364397
     DestinationState: 403853485
     TransitionDuration: 0.25
     TriggerNameHash: 403853485
-    TransitionIndex: 6
+    TransitionIndex: 5
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 790364397
     DestinationState: -2039036658
     TransitionDuration: 0.25
     TriggerNameHash: -2039036658
-    TransitionIndex: 7
+    TransitionIndex: 6
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 790364397
     DestinationState: -244189800
     TransitionDuration: 0.25
     TriggerNameHash: -244189800
-    TransitionIndex: 8
+    TransitionIndex: 7
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 790364397
     DestinationState: 1752736802
     TransitionDuration: 0.25
     TriggerNameHash: 1752736802
-    TransitionIndex: 9
+    TransitionIndex: 8
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 790364397
     DestinationState: 528454836
     TransitionDuration: 0.25
     TriggerNameHash: 528454836
-    TransitionIndex: 10
+    TransitionIndex: 9
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 790364397
     DestinationState: -1883207387
     TransitionDuration: 0.25
     TriggerNameHash: -1883207387
-    TransitionIndex: 11
+    TransitionIndex: 10
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 790364397
     DestinationState: -121128525
     TransitionDuration: 0.25
     TriggerNameHash: -121128525
-    TransitionIndex: 12
+    TransitionIndex: 11
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 790364397
     DestinationState: 1855090854
     TransitionDuration: 0.25
     TriggerNameHash: 1855090854
-    TransitionIndex: 13
+    TransitionIndex: 12
   m_Animator: {fileID: 2710973246709822963}
 --- !u!114 &3735361027301479225
 MonoBehaviour:
@@ -7586,6 +7587,7 @@ MonoBehaviour:
   playerCamera: {fileID: 567784544684724839}
   copyCam: {fileID: 0}
   cameraPivot: {fileID: 7823187933646535831}
+  camTps: {fileID: 6501286553652556422}
   invertCamera: 0
   mouseSensitivity: 100
   minLookAngle: 60
@@ -7960,6 +7962,143 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.4831066, y: -0.21310933, z: -0.5332715}
     m_Extent: {x: 0.08766079, y: 0.08084495, z: 0.079957366}
   m_DirtyAABB: 0
+--- !u!1 &6501286553652556422
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3471609198791870800}
+  - component: {fileID: 6336564915508950925}
+  - component: {fileID: 2674418129966242671}
+  - component: {fileID: 1512297495125721537}
+  m_Layer: 0
+  m_Name: CamTPS
+  m_TagString: MainCamera
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &3471609198791870800
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6501286553652556422}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.17364816, y: 0, z: 0, w: 0.9848078}
+  m_LocalPosition: {x: 0, y: 2.4801538, z: -2.27101}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8328293433109390074}
+  m_LocalEulerAnglesHint: {x: 20, y: 0, z: 0}
+--- !u!20 &6336564915508950925
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6501286553652556422}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 55
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!114 &2674418129966242671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6501286553652556422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
+  m_TaaSettings:
+    quality: 3
+    frameInfluence: 0.1
+    jitterScale: 1
+    mipBias: 0
+    varianceClampScale: 0.9
+    contrastAdaptiveSharpening: 0
+--- !u!81 &1512297495125721537
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6501286553652556422}
+  m_Enabled: 1
 --- !u!1 &6511578542503904756
 GameObject:
   m_ObjectHideFlags: 0
@@ -9086,10 +9225,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 3114739103749965513}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.1, y: 0.5}
-  m_AnchorMax: {x: 0.8, y: 0.5}
+  m_AnchorMin: {x: 0.1, y: 0}
+  m_AnchorMax: {x: 0.8, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 1}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4029834681181151941
 CanvasRenderer:
@@ -9182,7 +9321,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0.016918182, y: 0, z: 0, w: 0}
+  m_margin: {x: 0.016918182, y: 0.49971676, z: 0, w: 0.49344993}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

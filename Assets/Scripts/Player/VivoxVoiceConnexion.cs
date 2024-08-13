@@ -76,8 +76,11 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         if (MultiplayerGameManager.Instance.soloMode)
         {
             await servVivox.JoinEchoChannelAsync(echoChannelName, ChatCapability.AudioOnly);
-            GameObject channelTap = new GameObject("ChannelTap");
-            channelTap.tag = "ChannelTap"; //Pour les retrouver plus tard
+            GameObject channelTap = new("ChannelTap")
+            {
+                tag = "ChannelTap" //Pour les retrouver plus tard
+            };
+            DontDestroyOnLoad(channelTap);
             channelTap.AddComponent<AudioSource>();
             channelTap.AddComponent<VivoxChannelAudioTap>().ChannelName = echoChannelName;
         }
@@ -96,6 +99,8 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <param name="vivoxParticipant">Le participant ajouté</param>
     private void ParticipantAdded(VivoxParticipant vivoxParticipant)
     {
+        Debug.Log(vivoxParticipant.ChannelName);
+        Debug.Log(vivoxParticipant.PlayerId + " / " + AuthenticationService.Instance.PlayerId);
         if (vivoxParticipant.PlayerId != AuthenticationService.Instance.PlayerId)
         {
             Debug.Log("Player added" + vivoxParticipant.PlayerId);
@@ -128,7 +133,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         await servVivox.LeaveAllChannelsAsync();
         await servVivox.LogoutAsync();
-        await AuthenticationService.Instance.SignOut();
+        AuthenticationService.Instance.SignOut();
         StopAllCoroutines();
     }
 
@@ -137,10 +142,13 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     private void CheckSpeaking()
     {
-        foreach ((VivoxParticipant, GameObject) participantEtGo in MultiplayerGameManager.Instance.authServicePlayerIds.Values)
+        Debug.Log("Checking speaking");
+        foreach ((VivoxParticipant, GameObject) participantEtGo in MultiplayerGameManager.Instance.authServicePlayerIds.Values) //TODO : Sur les clients on a pas du tout ça
         {
+            Debug.Log(participantEtGo);
             if (participantEtGo.Item1 != null)
             {
+                Debug.Log("Speech :" + participantEtGo.Item1.SpeechDetected);
                 if (participantEtGo.Item1.SpeechDetected)
                 {
                     participantEtGo.Item2.SetActive(true);

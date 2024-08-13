@@ -13252,6 +13252,7 @@ MonoBehaviour:
     healTaken: 0
     distanceMoved: 0
     nbPotionDrank: 0
+    nbMorts: 0
   localPlayerId: 0
   totalGold:
     m_InternalValue: 0
@@ -16651,6 +16652,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1874000863}
+  - component: {fileID: 1874000865}
   - component: {fileID: 1874000861}
   - component: {fileID: 1874000864}
   m_Layer: 0
@@ -16672,14 +16674,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b132878ed94117143a79ad1e6466cb84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tavernMusicClip: {fileID: 8300000, guid: 32f808275bc2d1d4582e6b8a331fd850, type: 3}
+  musiques:
+  - {fileID: 8300000, guid: 32f808275bc2d1d4582e6b8a331fd850, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   soundFxPrefab: {fileID: 878706812287644236, guid: be1cbe099c850c744a1afb2e9bbbf7c4, type: 3}
-  screamClip: {fileID: 8300000, guid: 61eacbf903d88f745869805f56106ca0, type: 3}
-  interactFail: {fileID: 8300000, guid: bcb92448cfbf0af458fb82499dc59883, type: 3}
-  moneyGained: {fileID: 0}
-  ressurection: {fileID: 8300000, guid: 68f72c5e36cfd0544a0a91c93a913cb8, type: 3}
-  explosion: {fileID: 8300000, guid: c0489064bd7155c418df29bf972e83ca, type: 3}
-  nuhUh: {fileID: 8300000, guid: ef4092d2e05f8f048b70f5f5d1d88df3, type: 3}
+  oneShotClips:
+  - {fileID: 8300000, guid: 61eacbf903d88f745869805f56106ca0, type: 3}
+  - {fileID: 8300000, guid: bcb92448cfbf0af458fb82499dc59883, type: 3}
+  - {fileID: 0}
+  - {fileID: 8300000, guid: 68f72c5e36cfd0544a0a91c93a913cb8, type: 3}
+  - {fileID: 8300000, guid: c0489064bd7155c418df29bf972e83ca, type: 3}
+  - {fileID: 8300000, guid: ef4092d2e05f8f048b70f5f5d1d88df3, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!4 &1874000863
 Transform:
   m_ObjectHideFlags: 0
@@ -16791,6 +16808,26 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1874000865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874000860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 1696845117
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1001 &1889582227
 PrefabInstance:
   m_ObjectHideFlags: 0

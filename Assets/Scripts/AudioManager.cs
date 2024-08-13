@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class AudioManager : NetworkBehaviour
@@ -22,7 +23,7 @@ public class AudioManager : NetworkBehaviour
 
     //LEs sounds effect oneshot --> Genre une seule fois appelé
     [SerializeField] private AudioClip[] oneShotClips;
-    
+
     public enum SoundEffectOneShot
     {
         SCREAM,
@@ -61,7 +62,7 @@ public class AudioManager : NetworkBehaviour
     public void SetMusic(Musique musicToPlay)
     {
         AudioClip music = musiques[(int)musicToPlay];
-        if(music == null)
+        if (music == null)
         {
             Debug.LogWarning("La musique " + musicToPlay + " n'est pas attribuée");
         }
@@ -75,7 +76,7 @@ public class AudioManager : NetworkBehaviour
 
     public void StopMusic()
     {
-        GetComponent<AudioSource>().Stop(); 
+        GetComponent<AudioSource>().Stop();
     }
 
     #endregion
@@ -90,7 +91,7 @@ public class AudioManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void PlayOneShotClipServerRpc(Vector3 position, SoundEffectOneShot soundEffect)
     {
-        PlayOneShotClipClientRpc(position,soundEffect);
+        PlayOneShotClipClientRpc(position, soundEffect);
     }
 
     /// <summary>
@@ -103,7 +104,7 @@ public class AudioManager : NetworkBehaviour
     {
         AudioSource audioSource = Instantiate(soundFxPrefab, position, Quaternion.identity).GetComponent<AudioSource>();
         AudioClip clip = oneShotClips[(int)soundEffect];
-        if(clip == null)
+        if (clip == null)
         {
             Debug.LogWarning("Le clip " + soundEffect + " n'est pas encore attribué");
         }

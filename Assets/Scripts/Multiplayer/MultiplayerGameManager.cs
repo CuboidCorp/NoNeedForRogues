@@ -338,10 +338,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     private void GameSetup()
     {
         gameCanStart = true;
-        foreach (string valeur in playerNames)
-        {
-            Debug.Log("Nom : " + valeur);
-        }
         NetworkStringArray stringArray = new()
         {
             Array = playerNames
@@ -391,6 +387,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="vivox">Le participant associé au vivox particpant</param>
     public void AddPlayerVivoxInfo(string authId, VivoxParticipant vivox, GameObject talkIcon)
     {
+        Debug.Log("Adding player vivox info");
         authServicePlayerIds[authId] = (vivox, talkIcon);
 
         //On regarde l'index dans les keys du dictionnaire pour savoir quel joueur est concerné
@@ -1023,7 +1020,6 @@ public class MultiplayerGameManager : NetworkBehaviour
                 foreach (ulong playerId in playerRepartitionByStairs[i])
                 {
                     GameObject player = GetPlayerById(playerId);
-                    player.GetComponent<Rigidbody>().AddExplosionForce(1000, escaliers[i].transform.position, 10, 0, ForceMode.Impulse);
                     player.transform.position = escaliers[i].GetComponent<Escalier>().spawnPoint.position;
                 }
             }
@@ -1127,6 +1123,7 @@ public class MultiplayerGameManager : NetworkBehaviour
 
         if (!isInLobby)
         {
+            Debug.Log("Change level going " + (direction ? "up" : "down") + "Current etage : " + GenerationDonjon.instance.currentEtage);
             playerRepartitionByStairs = new ulong[escaliersGo.Length][];
             for (int i = 0; i < escaliersGo.Length; i++)
             {
@@ -1143,36 +1140,10 @@ public class MultiplayerGameManager : NetworkBehaviour
             }
             else
             {
-                if (GenerationDonjon.instance.currentEtage == 1)
+
+                if (GenerationDonjon.instance.currentEtage == 1) //On ne part pas
                 {
-                    Debug.Log("On ne peut pas fuir comme ça mec");
-                    //On recup les players dans les stairs qui vont vers le haut
-                    List<ulong> playersAPunir = new();
-                    List<Vector3> stairPlayerPos = new();
-                    GameObject[] upStairs = GameObject.FindGameObjectsWithTag("UpStairs");
-                    foreach (GameObject stair in upStairs)
-                    {
-                        ulong[] players = stair.GetComponent<Escalier>().GetPlayers();
-                        foreach (ulong player in players)
-                        {
-                            playersAPunir.Add(player);
-                            stairPlayerPos.Add(stair.transform.position); //TODO : Ajouter la position de 
-                        }
-                    }
-
-                    for(int i = 0 ;i<playersAPunir.Count ;i++)
-                    {
-                        GameObject playerGo = GetPlayerById(playersAPunir[i]);
-                        //Comment punir le joueur -> Ragdoll
-                        StartCoroutine(playerGo.GetComponent<MonPlayerController>().SetRagdollTemp(5));
-                        AudioManager.instance.PlayOneShotClipServerRpc(playerGo.transform.position, SoundEffectOneShot.NUHUH);
-                        Rigidbody[] ragdollElems = playerGo.GetComponent<MonPlayerController>().GetRagdollRigidbodies();
-
-                        foreach (Rigidbody ragdoll in ragdollElems)
-                        {
-                            ragdoll.AddExplosionForce(500, stairPlayerPos, 10);
-                        }
-                    }
+                    TrollCowardPlayer();
                     return;
                 }
                 else
@@ -1187,14 +1158,17 @@ public class MultiplayerGameManager : NetworkBehaviour
             LeaveLobby();
         }
         //On sauvegarde par escalier là ou sont les gens
-
+        DestroyStairs();
         NetworkManager.SceneManager.LoadScene("Donjon", LoadSceneMode.Single);
 
     }
 
     private void LeaveLobby()
     {
-        Debug.Log("Leaving lobby");
+        AudioManager.instance.StopMusic();
+        AudioManager.instance.SetMusic(AudioManager.Musique.DONJON);
+        AudioManager.instance.ActivateMusic();
+
         playerRepartitionByStairs = new ulong[1][];
         playerRepartitionByStairs[0] = playersIds;
         //On recup les settings du donjon
@@ -1208,6 +1182,57 @@ public class MultiplayerGameManager : NetworkBehaviour
         StatsManager.Instance.dateDebutGame = DateTime.Now;
         StatsManager.Instance.InitializeGame(MonPlayerController.instanceLocale.OwnerClientId);
 
+    }
+
+    private void TrollCowardPlayer()
+    {
+        Debug.Log("On ne peut pas fuir comme ça mec");
+        //On recup les players dans les stairs qui vont vers le haut
+        List<ulong> playersAPunir = new();
+        List<Vector3> stairPlayerPos = new();
+        GameObject[] upStairs = GameObject.FindGameObjectsWithTag("UpStairs");
+        foreach (GameObject stair in upStairs)
+        {
+            ulong[] players = stair.GetComponent<Escalier>().GetPlayers();
+            foreach (ulong player in players)
+            {
+                playersAPunir.Add(player);
+                stairPlayerPos.Add(stair.transform.position); //TODO : Ajouter la position de 
+            }
+        }
+
+        for (int i = 0; i < playersAPunir.Count; i++)
+        {
+            GameObject playerGo = GetPlayerById(playersAPunir[i]);
+            //Comment punir le joueur -> Ragdoll
+            playerGo.GetComponent<Rigidbody>().AddExplosionForce(100, stairPlayerPos[i], 10, 1, ForceMode.Impulse);
+            StartCoroutine(playerGo.GetComponent<MonPlayerController>().SetRagdollTemp(5));
+            AudioManager.instance.PlayOneShotClipServerRpc(playerGo.transform.position, AudioManager.SoundEffectOneShot.NUHUH);
+            Rigidbody[] ragdollElems = playerGo.GetComponent<MonPlayerController>().GetRagdollRigidbodies();
+
+            foreach (Rigidbody ragdoll in ragdollElems)
+            {
+                ragdoll.AddExplosionForce(500, stairPlayerPos[i], 10, 1, ForceMode.Force);
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// A cause d'un bug qui fait que les leaves des prefabs ont les memes globalobjectid, on supprime les anciens escaliers avant de quitter la scene pr qu'il soient bien generés
+    /// </summary>
+    private void DestroyStairs()
+    {
+        GameObject[] escaliersUp = GameObject.FindGameObjectsWithTag("UpStairs");
+        GameObject[] escaliersDown = GameObject.FindGameObjectsWithTag("DownStairs");
+        foreach (GameObject escalier in escaliersUp)
+        {
+            escalier.GetComponent<NetworkObject>().Despawn();
+        }
+        foreach (GameObject escalier in escaliersDown)
+        {
+            escalier.GetComponent<NetworkObject>().Despawn();
+        }
     }
 
     /// <summary>

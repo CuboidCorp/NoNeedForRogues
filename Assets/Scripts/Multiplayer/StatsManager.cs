@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 
@@ -44,7 +45,7 @@ public class StatsManager : NetworkBehaviour
         localPlayerStats = new PlayerStats();
         localPlayerId = playerId;
     }
-    
+
     /// <summary>
     /// Appelé quand la valeur de gold total est changé
     /// Change l'ui du jeu pour afficher le nouveau gold
