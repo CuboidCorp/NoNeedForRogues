@@ -64,7 +64,7 @@ public abstract class Entity : NetworkBehaviour
         healthText.text = currentHealth + "/" + MaxHP;
     }
 
-    protected abstract void Die();
+    public abstract void Die();
 
     public virtual void UseMana(float mana)
     {

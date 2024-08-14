@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Netcode;
 
 /// <summary>
 /// A rajouter aux objets qui peuvent être ouverts (Portes, coffres, etc.)
@@ -37,9 +38,9 @@ public class Openable : NetworkBehaviour //TODO : Ptet plus opti de faire juste 
 
     public override void OnNetworkSpawn()
     {
-        if(IsSever)
+        if (IsServer)
         {
-            isOpen = initialValueIsOpen;
+            isOpen.Value = initialValueIsOpen;
         }
         else
         {
@@ -87,7 +88,7 @@ public class Openable : NetworkBehaviour //TODO : Ptet plus opti de faire juste 
     /// Change l'etat de la network variable isOpen
     /// </summary>
     /// <param name="newState">Le nouvel etat de la variable</param>
-    [ServerRpc(RequireOwnerShip = false)]
+    [ServerRpc(RequireOwnership = false)]
     private void ChangeStateServerRpc(bool newState)
     {
         isOpen.Value = newState;

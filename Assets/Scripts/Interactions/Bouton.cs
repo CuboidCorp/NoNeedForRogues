@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -14,6 +15,10 @@ public class Bouton : NetworkBehaviour, IInteractable
     /// L'animator du bouton
     /// </summary>
     private Animator animator;
+
+    public bool isInteractable = true;
+
+    [SerializeField] private string interactText = "Presser";
 
     /// <summary>
     /// Le nom de l'animation de pression

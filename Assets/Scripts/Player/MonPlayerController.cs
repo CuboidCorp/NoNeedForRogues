@@ -401,7 +401,7 @@ public class MonPlayerController : Entity
     {
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDistance))
         {
-            if (hit.collider.TryGetComponent(out Interactable interactable))
+            if (hit.collider.TryGetComponent(out IInteractable interactable))
             {
                 PlayerUIManager.Instance.ShowInteractText(interactable.GetInteractText());
             }
@@ -994,8 +994,8 @@ public class MonPlayerController : Entity
         EnableRagdoll();
         gameObject.GetComponent<PickUpController>().enabled = false;
         gameObject.GetComponent<SpellRecognition>().enabled = false;
-        
-        
+
+
         GameObject cow = GameObject.Find("Cow" + OwnerClientId);
         cow.GetComponent<CowController>().root = gameObject;
         cow.GetComponent<CowController>().vivox = vivox;

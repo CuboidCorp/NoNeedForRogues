@@ -22,12 +22,13 @@ public class PotionObject : WeightedObject, IInteractable
                 type = PotionType.HEAL;
                 break;
             case 1:
-                type = PotionType.MANA_REGEN; 
+                type = PotionType.MANA_REGEN;
                 break;
             case 2:
-                type = PotionType.POISON; 
+                type = PotionType.POISON;
                 break;
-            default: type = PotionType.HEAL; 
+            default:
+                type = PotionType.HEAL;
                 break;
         }
     }
@@ -36,11 +37,6 @@ public class PotionObject : WeightedObject, IInteractable
 
     public void OnInteract()
     {
-        if (!isInteractable)
-        {
-            AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.FAIL_INTERACT);
-            return;
-        }
         //On boit la potion localement
         HandleInteraction();
         DespawnObjectServerRpc();

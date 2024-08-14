@@ -1,6 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Services.Authentication;
@@ -15,6 +15,8 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     public const string echoChannelName = "EchoTest";
 
     private IVivoxService servVivox;
+
+    private bool isConnected = false;
 
     #region Config Channel
     /// <summary>
@@ -82,6 +84,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     private async void OnLoggedIn()
     {
+        Debug.Log("Logged in");
         if (MultiplayerGameManager.Instance.soloMode)
         {
             await servVivox.JoinEchoChannelAsync(echoChannelName, ChatCapability.AudioOnly);
@@ -96,7 +99,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         else
         {
             await JoinPositionalChannelAsync();
-            StartCoroutine(CheckPlayerSkeaking());
+
         }
         MultiplayerGameManager.Instance.ActiveAudioTaps();
 
@@ -108,10 +111,10 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <param name="vivoxParticipant">Le participant ajouté</param>
     private void ParticipantAdded(VivoxParticipant vivoxParticipant)
     {
-        Debug.Log(vivoxParticipant.PlayerId + " / " + AuthenticationService.Instance.PlayerId);
-        if (vivoxParticipant.PlayerId != AuthenticationService.Instance.PlayerId)
+        if (!vivoxParticipant.IsSelf)
         {
             Debug.Log("Player added" + vivoxParticipant.PlayerId);
+            vivoxParticipant.ParticipantSpeechDetected += () => OnSpeechDetected(gameObject.GetComponent<MonPlayerController>().playerUI.transform.GetChild(1).gameObject);
             participants.Add(vivoxParticipant);
             //vivoxParticipant.SpeechDetected
             GameObject tap = vivoxParticipant.CreateVivoxParticipantTap("Tap " + vivoxParticipant.PlayerId);
@@ -121,7 +124,19 @@ public class VivoxVoiceConnexion : NetworkBehaviour
             tap.transform.localPosition = new Vector3(0, 1.6f, 0);
             MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant, gameObject.GetComponent<MonPlayerController>().playerUI.transform.GetChild(1).gameObject);
         }
+        else
+        {
+            isConnected = true;
+        }
 
+    }
+
+    private void Update()
+    {
+        if (isConnected)
+        {
+            servVivox.Set3DPosition(gameObject, channelName);
+        }
     }
 
     /// <summary>
@@ -130,8 +145,11 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <param name="vivoxParticipant">Le participant qui se deconnecte</param>
     private void ParticipantRemoved(VivoxParticipant vivoxParticipant)
     {
-        participants.Remove(vivoxParticipant);
-        vivoxParticipant.DestroyVivoxParticipantTap();
+        if (!vivoxParticipant.IsSelf)
+        {
+            participants.Remove(vivoxParticipant);
+            vivoxParticipant.DestroyVivoxParticipantTap();
+        }
     }
 
     /// <summary>
@@ -139,6 +157,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     private async void OnLoggedOut()
     {
+        isConnected = false;
         await servVivox.LeaveAllChannelsAsync();
         await servVivox.LogoutAsync();
         AuthenticationService.Instance.SignOut();
@@ -146,34 +165,12 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     }
 
     /// <summary>
-    /// Faut vérifier si tous les joueurs sont a speaking
+    /// Quand on detecte du speech de la part d'un participant
     /// </summary>
-    private void CheckSpeaking()
+    /// <param name="obj">L'objet a activer pr le speech detected</param>
+    private void OnSpeechDetected(GameObject obj)
     {
-        foreach ((VivoxParticipant, GameObject) participantEtGo in MultiplayerGameManager.Instance.authServicePlayerIds.Values) //TODO : Sur les clients on a pas du tout ça
-        {
-            if (participantEtGo.Item1 != null)
-            {
-                Debug.Log("Speech :" + participantEtGo.Item1.SpeechDetected);
-                if (participantEtGo.Item1.SpeechDetected)
-                {
-                    participantEtGo.Item2.SetActive(true);
-                }
-                else
-                {
-                    participantEtGo.Item2.SetActive(false);
-                }
-            }
-
-        }
-    }
-
-    private IEnumerator CheckPlayerSkeaking()
-    {
-        while (true)
-        {
-            CheckSpeaking();
-            yield return new WaitForSeconds(checkSpeakingInterval);
-        }
+        Debug.Log("Speech detected");
+        obj.SetActive(true);
     }
 }

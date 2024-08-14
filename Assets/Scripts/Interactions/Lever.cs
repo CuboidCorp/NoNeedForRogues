@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -8,7 +9,7 @@ using UnityEngine.Serialization;
 /// En interagissant avec le levier, on change son etat
 /// </summary>
 [RequireComponent(typeof(Animator))]
-public class Lever : NetworkBehhaviour, IInteractable
+public class Lever : NetworkBehaviour, IInteractable
 {
 
     /// <summary>
@@ -68,7 +69,7 @@ public class Lever : NetworkBehhaviour, IInteractable
             AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.FAIL_INTERACT);
             return;
         }
-        SendInteractionServerRpc();
+        HandleInteraction();
     }
 
     /// <summary>
@@ -80,7 +81,7 @@ public class Lever : NetworkBehhaviour, IInteractable
         return interactText;
     }
 
-    
+
     /// <summary>
     /// Gère l'interaction avec l'objet
     /// </summary>
