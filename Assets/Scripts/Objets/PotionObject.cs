@@ -4,11 +4,11 @@ using UnityEngine;
 /// <summary>
 /// Classe qui répresente les potions avec lesquels on peut intéragir pour recuperer certains effets (recup HP, recup mana, poison
 /// </summary>
-public class PotionObject : Interactable, IRamassable
+public class PotionObject : WeightedObject, IInteractable
 {
-    [SerializeField] private float power = 1;
+    [SerializeField] private string interactText = "BOIRE";
 
-    public NetworkVariable<bool> isHeld = new(false);
+    [SerializeField] private float power = 1;
 
     private PotionType type;
 
@@ -33,13 +33,33 @@ public class PotionObject : Interactable, IRamassable
     }
 
     #region Interaction
+
+    public void OnInteract()
+    {
+        if (!isInteractable)
+        {
+            AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.FAIL_INTERACT);
+            return;
+        }
+        //On boit la potion localement
+        HandleInteraction();
+        DespawnObjectServerRpc();
+    }
+
+    /// <summary>
+    /// Renvoie le texte a afficher qd on peut interagir avec l'objet
+    /// </summary>
+    /// <returns>Le string qui correspond au texte d'interaction</returns>
+    public string GetInteractText()
+    {
+        return interactText;
+    }
+
     /// <summary>
     /// Gère l'interaction avec l'objet
     /// </summary>
-    public override void HandleInteraction()
+    public void HandleInteraction()
     {
-        //Quand on interagit avec la potion on la boit
-        //TODO : Recup le joueur qui intéragit avec la boisson
         StatsManager.Instance.AddPotionDrank();
         switch (type)
         {
@@ -55,28 +75,13 @@ public class PotionObject : Interactable, IRamassable
         }
     }
 
-    #endregion
-
-    #region Pickup
-
     /// <summary>
-    /// Change l'etat de l'objet si il est tenu ou non
+    /// Si qqn interagit avec le bouton on envoie un message au serv pr lui dire
     /// </summary>
-    /// <param name="newState">Le nouvel etat de l'objet</param>
-    public void ChangeState(bool newState)
-    {
-        if (!IsServer)
-        {
-            ChangeStateServerRpc(newState);
-            return;
-        }
-        isHeld.Value = newState;
-    }
-
     [ServerRpc(RequireOwnership = false)]
-    private void ChangeStateServerRpc(bool newState)
+    private void DespawnObjectServerRpc()
     {
-        isHeld.Value = newState;
+        GetComponent<NetworkObject>().Despawn(true);
     }
 
     #endregion

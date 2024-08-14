@@ -2,7 +2,7 @@
 /// A rajouter aux objets avec lesquels le joueur peut interagir (Boutons, portes, etc.)
 /// Il faut implementer la fonction HandleInteraction() pour definir le comportement de l'objet
 /// </summary>
-public interface IInteragissable
+public interface IInteractable
 {
     /// <summary>
     /// Quand on interagit avec l'objet

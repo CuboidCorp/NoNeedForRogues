@@ -177,7 +177,6 @@ public class MonPlayerController : Entity
             instanceLocale = this;
 
             PlayerUIManager.Instance.SetupPlayerControls(controls);
-
             PlayerUIManager.Instance.AfficherInGameUI();
 
             ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
@@ -851,7 +850,7 @@ public class MonPlayerController : Entity
 
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDistance))
         {
-            if (hit.collider.TryGetComponent(out Interactable interactable))
+            if (hit.collider.TryGetComponent(out IInteractable interactable))
             {
                 interactable.OnInteract();
             }

@@ -8,13 +8,13 @@ using UnityEngine.Serialization;
 /// En interagissant avec le levier, on change son etat
 /// </summary>
 [RequireComponent(typeof(Animator))]
-public class Lever : Interactable
+public class Lever : NetworkBehhaviour, IInteractable
 {
 
     /// <summary>
     /// La position du levier
     /// </summary>
-    [SerializeField] private bool isSwitchedOn = false;
+    public bool isSwitchedOn = false;
 
     /// <summary>
     /// L'animator du levier
@@ -45,15 +45,46 @@ public class Lever : Interactable
     [SerializeField]
     private FunctionAction onAction = new();
 
+    /// <summary>
+    /// Si on peut interagir avec l'objet
+    /// </summary>
+    public bool isInteractable = true;
+
+    /// <summary>
+    /// Le texte a afficher qd on peut interagir avec l'objet
+    /// </summary>
+    public string interactText;
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
     }
 
+
+    public void OnInteract()
+    {
+        if (!isInteractable)
+        {
+            AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.FAIL_INTERACT);
+            return;
+        }
+        SendInteractionServerRpc();
+    }
+
+    /// <summary>
+    /// Renvoie le texte a afficher qd on peut interagir avec l'objet
+    /// </summary>
+    /// <returns>Le string qui correspond au texte d'interaction</returns>
+    public string GetInteractText()
+    {
+        return interactText;
+    }
+
+    
     /// <summary>
     /// Gère l'interaction avec l'objet
     /// </summary>
-    public override void HandleInteraction()
+    public void HandleInteraction()
     {
         if (!isSwitchedOn)
         {

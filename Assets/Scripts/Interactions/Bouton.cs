@@ -6,7 +6,8 @@ using UnityEngine.Serialization;
 /// A rajouter aux elements avec lesquels le joueur peut interagir 
 /// Les objets de type Bouton se reinitialisent apres un certain temps
 /// </summary>
-public class Bouton : Interactable
+[RequireComponent(typeof(Animator))]
+public class Bouton : NetworkBehaviour, IInteractable
 {
 
     /// <summary>
@@ -53,10 +54,29 @@ public class Bouton : Interactable
         animator = GetComponent<Animator>();
     }
 
+    public void OnInteract()
+    {
+        if (!isInteractable)
+        {
+            AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.FAIL_INTERACT);
+            return;
+        }
+        SendInteractionServerRpc();
+    }
+
+    /// <summary>
+    /// Renvoie le texte a afficher qd on peut interagir avec l'objet
+    /// </summary>
+    /// <returns>Le string qui correspond au texte d'interaction</returns>
+    public string GetInteractText()
+    {
+        return interactText;
+    }
+
     /// <summary>
     /// Gère l'interaction avec l'objet
     /// </summary>
-    public override void HandleInteraction()
+    public void HandleInteraction()
     {
         StopAllCoroutines();
         animator.Play(pressAnimationName);
@@ -76,7 +96,23 @@ public class Bouton : Interactable
         onReset.Invoke();
     }
 
+    /// <summary>
+    /// Si qqn interagit avec le bouton on envoie un message au serv pr lui dire
+    /// </summary>
+    [ServerRpc(RequireOwnership = false)]
+    private void SendInteractionServerRpc()
+    {
+        SendInteractionClientRpc();
+    }
 
+    /// <summary>
+    /// Le serveur envoie un message a tt le monde pr synchroniser l'interaction
+    /// </summary>
+    [ClientRpc]
+    private void SendInteractionClientRpc()
+    {
+        HandleInteraction();
+    }
 
 
 }
