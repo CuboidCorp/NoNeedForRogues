@@ -228,6 +228,7 @@ public class CowController : NetworkBehaviour
     public void UnCow()
     {
         Debug.Log("Return to human");
+        root.SetActive(true);
         root.GetComponent<MonPlayerController>().enabled = true;
         root.GetComponent<MonPlayerController>().Uncow();
         vivox.transform.parent = root.transform;

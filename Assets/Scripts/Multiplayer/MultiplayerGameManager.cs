@@ -682,16 +682,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void SyncRagdollStateServerRpc(ulong playerId, bool ragdollActive)
     {
-        SyncRagdoll(playerId, ragdollActive);
-    }
-
-    /// <summary>
-    /// Sync l'etat de la ragdoll d'un joueur aux autres
-    /// </summary>
-    /// <param name="playerId">L'id du joueur à ragdoll</param>
-    /// <param name="ragdollActive">L'etat de la ragdoll</param>
-    public void SyncRagdoll(ulong playerId, bool ragdollActive)
-    {
         SyncRagdollClientRpc(playerId, ragdollActive, SendRpcToPlayersExcept(playerId));
     }
 
@@ -797,7 +787,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     internal void SummonLightballServerRpc(Vector3 pos, float intensity, float time)
     {
-        Debug.Log("Summon light ball");
         GameObject lightBallGo = Instantiate(lightBall, pos, Quaternion.identity);
         lightBallGo.GetComponent<Light>().intensity = intensity;
         lightBallGo.AddComponent<Temporary>().StartCoroutine(nameof(Temporary.DestroyIn), time);
@@ -816,7 +805,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     internal void SummonFireBallServerRpc(Vector3 pos, Vector3 dir, float speed, float expRange, float expForce, float time)
     {
-        Debug.Log("Summon fire ball");
         GameObject fireBallGo = Instantiate(fireBall, pos, Quaternion.identity);
         fireBallGo.GetComponent<Rigidbody>().velocity = dir * speed;
         fireBallGo.GetComponent<FireBall>().SetupFireBall(expRange, expForce);

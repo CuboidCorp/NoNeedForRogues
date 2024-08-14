@@ -234,6 +234,15 @@ public class PlayerUIManager : MonoBehaviour
         });
 
         returnToPauseButton.clicked += HideOptionsMenu;
+
+        //Donc pr les controles on veut :
+        //les 4 bindings de move (haut bas gauche droite)
+        //Jump
+        //Run
+        //Long attack
+        //Interact
+        //Les emote de 1 a 10
+        //Crouch --> Le truc de fantome pr descendre
     }
 
     /// <summary>

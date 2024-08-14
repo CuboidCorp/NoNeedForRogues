@@ -185,10 +185,15 @@ public class MainMenuUI : MonoBehaviour
         DontDestroyOnLoad(playerInfoGameObject);
 
         await UnityServices.InitializeAsync();
+
+        if(!AuthenticationService.Instance.IsSignedIn)
+        {
 #if UNITY_EDITOR
         AuthenticationService.Instance.SwitchProfile(Profile);
 #endif
-        await AuthenticationService.Instance.SignInAnonymouslyAsync(); //TODO : Faire gaffe a pas etre deja connecté
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
+
         //On se deplace vers le TavernLobby
         SceneManager.LoadScene("TavernLobby");
     }

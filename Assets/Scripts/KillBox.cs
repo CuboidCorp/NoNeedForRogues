@@ -14,7 +14,7 @@ public class KillBox : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            other.gameObject.GetComponent<MonPlayerController>().Damage(1000);
+            other.gameObject.GetComponent<MonPlayerController>().Die();
         }
     }
 }

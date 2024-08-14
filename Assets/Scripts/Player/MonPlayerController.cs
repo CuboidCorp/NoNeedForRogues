@@ -486,7 +486,7 @@ public class MonPlayerController : Entity
     /// <summary>
     /// Gère la mort du joueur, soit on remplace le joueur par sa ragdoll
     /// </summary>
-    protected override void Die()
+    public override void Die()
     {
         SendDeathServerRpc(OwnerClientId);
         animator.SetTrigger("Died");
@@ -646,6 +646,7 @@ public class MonPlayerController : Entity
     /// </summary>
     public void EnableRagdoll()
     {
+        GetComponent<PickUpController>().DropObject();
         cameraPivot.SetActive(false);
         camTps.SetActive(true);
         animator.enabled = false;
@@ -871,7 +872,7 @@ public class MonPlayerController : Entity
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDist))
         {
             Debug.Log("Hit : " + hit.collider.name);
-            if (hit.collider.TryGetComponent(out Interactable interactable))
+            if (hit.collider.TryGetComponent(out IInteractable interactable))
             {
                 interactable.OnInteract();
             }
@@ -955,9 +956,9 @@ public class MonPlayerController : Entity
     }
 
     /// <summary>
-    /// Demande au serveur de spawn le ghost du joueur
+    /// Demande au serveur de spawn la vache du joueur
     /// </summary>
-    /// <param name="ownerId">L'id du joueur qui spawn son ghost</param>
+    /// <param name="ownerId">L'id du joueur qui spawn sa vache</param>
     [ServerRpc(RequireOwnership = false)]
     private void SpawnCowServerRpc(ulong ownerId)
     {
@@ -989,10 +990,12 @@ public class MonPlayerController : Entity
     /// </summary>
     private void OnCowSpawn()
     {
-        gameObject.GetComponent<PickUpController>().enabled = false;
-        gameObject.GetComponent<SpellRecognition>().enabled = false;
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
         EnableRagdoll();
+        gameObject.GetComponent<PickUpController>().enabled = false;
+        gameObject.GetComponent<SpellRecognition>().enabled = false;
+        
+        
         GameObject cow = GameObject.Find("Cow" + OwnerClientId);
         cow.GetComponent<CowController>().root = gameObject;
         cow.GetComponent<CowController>().vivox = vivox;
