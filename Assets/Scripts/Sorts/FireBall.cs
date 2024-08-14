@@ -13,7 +13,6 @@ public class FireBall : MonoBehaviour
         {
             return;
         }
-        Debug.Log("J'ai touché : " + other.gameObject.name);
         Explode(); //Ptet regarder ce qu'on touche avant d'exploser
     }
 

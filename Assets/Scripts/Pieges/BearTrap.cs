@@ -2,7 +2,7 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class BearTrap : Trap, IInteragissable
+public class BearTrap : Trap, IInteractable
 {
     private Animator anim;
 
@@ -51,13 +51,24 @@ public class BearTrap : Trap, IInteragissable
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && !isActivated)
+        if(!isActivated)
         {
-            isActivated = true;
-            other.GetComponent<MonPlayerController>().Damage(damage);
-            playerInside = other.gameObject;
-            enterPos = other.transform.position;
-            disableTrapCoroutine = StartCoroutine(DisableTrapIn(nbSecParalysed));
+            if(other.CompareTag("Player"))
+            {
+                isActivated = true;
+                other.GetComponent<MonPlayerController>().Damage(damage);
+                playerInside = other.gameObject;
+                enterPos = other.transform.position;
+                disableTrapCoroutine = StartCoroutine(DisableTrapIn(nbSecParalysed));
+            }
+            else if(other.CompareTag("Cow"))
+            {
+                isActivated = true;
+                other.GetComponent<CowController>().UnCow();
+                playerInside = other.GetComponent<CowController>().root;
+                enterPos = other.transform.position;
+                disableTrapCoroutine = StartCoroutine(DisableTrapIn(nbSecParalysed));
+            }
         }
     }
 

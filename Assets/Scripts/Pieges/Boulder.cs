@@ -60,9 +60,13 @@ public class Boulder : MonoBehaviour
         {
             collision.gameObject.GetComponent<MonPlayerController>().Damage(damage);
         }
-        if (collision.gameObject.CompareTag("Wall"))
+        else if(collision.gameObject.CompareTag("Cow"))
         {
-            //Debug.Log("Wall");
+            collision.gameObject.GetComponent<CowController>().UnCow();
+            Destroy(gameObject);
+        }
+        else if (collision.gameObject.CompareTag("Wall"))
+        {
             Destroy(gameObject);
         }
     }

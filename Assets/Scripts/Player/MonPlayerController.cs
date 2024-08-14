@@ -999,7 +999,7 @@ public class MonPlayerController : Entity
         GameObject cow = GameObject.Find("Cow" + OwnerClientId);
         cow.GetComponent<CowController>().root = gameObject;
         cow.GetComponent<CowController>().vivox = vivox;
-        StartCoroutine(cow.GetComponent<CowController>().TurnBackIn(60));
+        cow.GetComponent<CowController>().turnBackCoroutine = StartCoroutine(cow.GetComponent<CowController>().TurnBackIn(60));
         vivox.transform.parent = cow.transform;
         cow.transform.GetChild(0).gameObject.SetActive(true); //Le camera pivot du ghost
         cow.transform.GetChild(1).GetComponent<SkinnedMeshRenderer>().shadowCastingMode = ShadowCastingMode.ShadowsOnly; //On desactive le corps de la vache

@@ -27,11 +27,17 @@ public class SpellList : MonoBehaviour
             {
                 continue;
             }
+            if (objetTouche.CompareTag("Cow"))
+            {
+                objetTouche.GetComponent<CowController>().UnCow();
+                continue;
+            }
             //On inflige des dégats en fonction de la distance
             float distance = Vector3.Distance(target.position, objetTouche.transform.position);
             float degatsInfliges = degats * (1 - distance / radius);
             float forceExplosion = degatsInfliges * 1000;
 
+            
             if (objetTouche.CompareTag("Player"))
             {
                 objetTouche.GetComponent<MonPlayerController>().Damage(degatsInfliges);

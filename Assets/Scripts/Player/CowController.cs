@@ -24,6 +24,8 @@ public class CowController : NetworkBehaviour
     private Animator animator;
     private Rigidbody rb;
 
+    public Coroutine turnBackCoroutine;
+
     #region Movement Variables
 
     #region Moving
@@ -85,8 +87,6 @@ public class CowController : NetworkBehaviour
         playerActions.Run.canceled += ctx => StopRun();
 
         controls.Enable();
-
-        StartCoroutine(TurnBackIn(60));
     }
 
     #region Mouvement
@@ -227,8 +227,14 @@ public class CowController : NetworkBehaviour
     /// </summary>
     public void UnCow()
     {
+        if(turnBackCoroutine !=  null)
+        {
+            StopCoroutine(turnBackCoroutine);
+        }
+        turnBackCoroutine = null;
         Debug.Log("Return to human");
         root.SetActive(true);
+        root.transform.position = transform.position;
         root.GetComponent<MonPlayerController>().enabled = true;
         root.GetComponent<MonPlayerController>().Uncow();
         vivox.transform.parent = root.transform;

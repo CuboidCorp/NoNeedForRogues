@@ -6,9 +6,16 @@ public class DamageZone : MonoBehaviour
     [HideInInspector] public bool isActivated = false;
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && isActivated)
+        if(isActivated)
         {
-            other.GetComponent<MonPlayerController>().Damage(damage);
+            if(other.CompareTag("Player"))
+            {
+                other.GetComponent<MonPlayerController>().Damage(damage);
+            }
+            else if (other.CompareTag("Cow"))
+            {
+                other.GetComponent<CowController>().UnCow();
+            }
         }
     }
 }

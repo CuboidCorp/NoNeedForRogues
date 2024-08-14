@@ -28,7 +28,10 @@ public class SpikeTrap : Trap
         if (other.CompareTag("Player"))
         {
             other.GetComponent<MonPlayerController>().Damage(damage);
-            Debug.Log("Dégats : " + damage);
+        }
+        else if(other.CompareTag("Cow"))
+        {
+            other.GetComponent<CowController>().UnCow();
         }
     }
 }
