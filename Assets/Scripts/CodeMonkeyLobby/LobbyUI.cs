@@ -82,6 +82,7 @@ public class LobbyUI : MonoBehaviour
 
     private void GameStarted(object sender, System.EventArgs e)
     {
+
         Destroy(GameObject.Find("LobbyRelayManager"));
         Destroy(transform.parent.gameObject);
     }

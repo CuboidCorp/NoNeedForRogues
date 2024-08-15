@@ -14,7 +14,7 @@ public class Openable : NetworkBehaviour //TODO : Ptet plus opti de faire juste 
     /// <summary>
     /// Etat de l'objet
     /// </summary>
-    private NetworkVariable<bool> isOpen = new NetworkVariable<bool>();
+    private NetworkVariable<bool> isOpen = new();
 
     /// <summary>
     /// Valeur initiale de si l'objet est ouvert ou non

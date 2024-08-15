@@ -16,21 +16,13 @@ public class PotionObject : WeightedObject, IInteractable
 
     public void SetType(int typeId)
     {
-        switch (typeId)
+        type = typeId switch
         {
-            case 0:
-                type = PotionType.HEAL;
-                break;
-            case 1:
-                type = PotionType.MANA_REGEN;
-                break;
-            case 2:
-                type = PotionType.POISON;
-                break;
-            default:
-                type = PotionType.HEAL;
-                break;
-        }
+            0 => PotionType.HEAL,
+            1 => PotionType.MANA_REGEN,
+            2 => PotionType.POISON,
+            _ => PotionType.HEAL,
+        };
     }
 
     #region Interaction

@@ -28,13 +28,11 @@ public class MonPlayerController : Entity
 
     public GameObject playerUI;
 
-    public Transform grabZone; //TODO : L'assigner dans l'editeur
-
     #region Camera Variables
 
     [Header("Camera Movement Variables")]
     [HideInInspector] public Camera playerCamera;
-    [HideInInspector] public GameObject copyCam; //Le parent de la grabzone
+    [HideInInspector] public GameObject copyCam;
     [SerializeField] private GameObject cameraPivot; //Le gameObject de la camera
     [SerializeField] private GameObject camTps; //Le gameObject de la camera troisieme personne
 
@@ -147,7 +145,7 @@ public class MonPlayerController : Entity
     /// <summary>
     /// Quand le joueur spawn dans le jeu
     /// </summary>
-    public async override void OnNetworkSpawn()
+    public override void OnNetworkSpawn()
     {
         gameObject.GetComponent<PlayerRandomizer>().Randomize(seed);
         DisableRagdoll();
@@ -181,11 +179,6 @@ public class MonPlayerController : Entity
 
             ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
             transform.position = new Vector3(0, 1, 0);
-
-            await voiceConnexion.InitVivox();
-
-            string name = FindObjectOfType<DataHolder>() != null ? FindObjectOfType<DataHolder>().PlayerInfo.playerName : "ERREUR";
-            MultiplayerGameManager.Instance.SendPlayerInfoServerRpc(OwnerClientId, AuthenticationService.Instance.PlayerId, name);
 
         }
         else //Si on est pas le propriétaire du joueur, on desactive le script
@@ -257,6 +250,14 @@ public class MonPlayerController : Entity
     private void OnDisable()
     {
         controls.Disable();
+    }
+
+    /// <summary>
+    /// Lance la connexion au voice chat de Vivox
+    /// </summary>
+    public async void JoinVivox()
+    {
+        await voiceConnexion.InitVivox();
     }
 
     /// <summary>

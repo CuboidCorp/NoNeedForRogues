@@ -18,10 +18,10 @@ public abstract class Entity : NetworkBehaviour
     public float poids = 20f;
 
     [Header("PlayerUI")]
-    public Slider healthSlider;
-    public Slider manaSlider;
-    public TMP_Text healthText;
-    public TMP_Text manaText;
+    [HideInInspector] public Slider healthSlider;
+    [HideInInspector] public Slider manaSlider;
+    [HideInInspector] public TMP_Text healthText;
+    [HideInInspector] public TMP_Text manaText;
 
     public void IntiliazeUi()
     {

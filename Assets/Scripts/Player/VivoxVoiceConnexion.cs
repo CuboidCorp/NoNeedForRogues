@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Services.Authentication;
@@ -33,7 +32,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     [SerializeField] private float audioFadeIntensity = 1.0f;
 
-    [SerializeField] private float checkSpeakingInterval = 0.5f;
+    //[SerializeField] private float checkSpeakingInterval = 0.5f;
 
     public readonly List<VivoxParticipant> participants = new();
 
@@ -55,16 +54,8 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         servVivox.ParticipantAddedToChannel += ParticipantAdded;
         servVivox.ParticipantRemovedFromChannel += ParticipantRemoved;
         servVivox.LoggedOut += OnLoggedOut;
-        try
-        {
-            await servVivox.InitializeAsync();
-            await servVivox.LoginAsync();
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning(e);
-            enabled = false;
-        }
+        await servVivox.InitializeAsync();
+        await servVivox.LoginAsync();
     }
 
     /// <summary>
@@ -84,7 +75,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     private async void OnLoggedIn()
     {
-        Debug.Log("Logged in");
+        MultiplayerGameManager.Instance.SendAuthIdServerRpc(OwnerClientId, AuthenticationService.Instance.PlayerId);
         if (MultiplayerGameManager.Instance.soloMode)
         {
             await servVivox.JoinEchoChannelAsync(echoChannelName, ChatCapability.AudioOnly);
@@ -111,18 +102,18 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <param name="vivoxParticipant">Le participant ajouté</param>
     private void ParticipantAdded(VivoxParticipant vivoxParticipant)
     {
+        //TODO : Faut stocker les données des participants dans le dico
+        int playIndex = MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant);
         if (!vivoxParticipant.IsSelf)
         {
             Debug.Log("Player added" + vivoxParticipant.PlayerId);
-            vivoxParticipant.ParticipantSpeechDetected += () => OnSpeechDetected(gameObject.GetComponent<MonPlayerController>().playerUI.transform.GetChild(1).gameObject);
+            vivoxParticipant.ParticipantSpeechDetected += () => OnSpeechDetected(transform.parent.GetComponent<MonPlayerController>().playerUI.transform.GetChild(1).gameObject);
             participants.Add(vivoxParticipant);
-            //vivoxParticipant.SpeechDetected
             GameObject tap = vivoxParticipant.CreateVivoxParticipantTap("Tap " + vivoxParticipant.PlayerId);
-            MultiplayerGameManager.Instance.AddParamToParticipantAudioSource(vivoxParticipant.ParticipantTapAudioSource);
+            MultiplayerGameManager.Instance.AddParamToParticipantAudioSource(playIndex);
             Transform playerTransform = MultiplayerGameManager.Instance.GetPlayerTransformFromAuthId(vivoxParticipant.PlayerId);
             tap.transform.SetParent(playerTransform); //Pas de null check = Programmation de gros porc ici flemme
             tap.transform.localPosition = new Vector3(0, 1.6f, 0);
-            MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant, gameObject.GetComponent<MonPlayerController>().playerUI.transform.GetChild(1).gameObject);
         }
         else
         {
@@ -135,7 +126,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         if (isConnected)
         {
-            servVivox.Set3DPosition(gameObject, channelName);
+            servVivox.Set3DPosition(gameObject, channelName); //Nécessaire 
         }
     }
 
@@ -147,7 +138,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         if (!vivoxParticipant.IsSelf)
         {
-            participants.Remove(vivoxParticipant);
+            //On enleve le participant dans l'array de multiplayerGameManager
             vivoxParticipant.DestroyVivoxParticipantTap();
         }
     }

@@ -28,6 +28,14 @@ public class Escalier : NetworkBehaviour
         playersInside = new();
     }
 
+    public override void OnNetworkSpawn()
+    {
+        if (!IsServer)
+        {
+            GetComponent<Collider>().enabled = false;
+        }
+    }
+
     /// <summary>
     /// Renvoie les players dans l'escalier
     /// </summary>
@@ -40,22 +48,21 @@ public class Escalier : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         //Le joueur qui rentre est donc ready
-        if ((MultiplayerGameManager.Instance.gameCanStart || !IsHost) && other.gameObject.CompareTag("Player"))
+        if (MultiplayerGameManager.Instance.gameCanStart && other.gameObject.CompareTag("Player"))
         {
             ulong playerId = other.gameObject.GetComponent<NetworkObject>().OwnerClientId;
             playersInside.Add(playerId);
-            MultiplayerGameManager.Instance.SyncPlayerStateServerRpc(playerId, true, isUpStairs);
+            MultiplayerGameManager.Instance.SyncPlayerState(playerId, true, isUpStairs);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        Debug.Log("Player exited stairs");
         if (other.gameObject.CompareTag("Player"))
         {
             ulong playerId = other.gameObject.GetComponent<NetworkObject>().OwnerClientId;
             playersInside.Remove(playerId);
-            MultiplayerGameManager.Instance.SyncPlayerStateServerRpc(playerId, false);
+            MultiplayerGameManager.Instance.SyncPlayerState(playerId, false);
         }
     }
 

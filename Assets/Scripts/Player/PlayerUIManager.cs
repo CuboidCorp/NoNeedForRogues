@@ -173,7 +173,6 @@ public class PlayerUIManager : MonoBehaviour
     public void Disconnect()
     {
         Debug.Log("Disconnect");
-        UnSetupOptionsMenu();
         MonPlayerController.instanceLocale.gameObject.GetComponent<PickUpController>().DropObject();
         NetworkManager.Singleton.Shutdown();
         SceneManager.LoadScene("MenuPrincipal");

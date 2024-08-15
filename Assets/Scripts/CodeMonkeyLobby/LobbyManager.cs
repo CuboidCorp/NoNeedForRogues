@@ -29,6 +29,7 @@ public class LobbyManager : MonoBehaviour
     public event EventHandler<LobbyEventArgs> OnKickedFromLobby;
     public event EventHandler<LobbyEventArgs> OnLobbyGameModeChanged;
     public event EventHandler<EventArgs> OnGameStarted;
+
     public class LobbyEventArgs : EventArgs
     {
         public Lobby lobby;
@@ -89,7 +90,7 @@ public class LobbyManager : MonoBehaviour
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData("127.0.0.1", 7777);
         MultiplayerGameManager.Instance.soloMode = true;
         MultiplayerGameManager.Instance.SetDataSolo();
-        OnGameStarted?.Invoke(this, EventArgs.Empty);
+        OnGameStarted.Invoke(this, EventArgs.Empty);
         NetworkManager.Singleton.OnClientConnectedCallback += MultiplayerGameManager.Instance.OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += MultiplayerGameManager.Instance.OnClientDisconnected;
         NetworkManager.Singleton.StartHost();
@@ -173,14 +174,16 @@ public class LobbyManager : MonoBehaviour
                 }
                 else if (joinedLobby.Data[KEY_START_GAME].Value != "0")
                 {
+
                     if (!IsLobbyHost())
                     {
+                        //On setup avant de rejoindre le relay
+                        MultiplayerGameManager.Instance.SetNbPlayersLobby(joinedLobby.MaxPlayers, GetAllPlayerNames());
                         RelayManager.Instance.JoinRelay(joinedLobby.Data[KEY_START_GAME].Value);
                     }
 
                     joinedLobby = null;
-
-                    OnGameStarted?.Invoke(this, EventArgs.Empty);
+                    OnGameStarted.Invoke(this, EventArgs.Empty); //RECUP le nombre 
                 }
             }
         }
@@ -239,6 +242,15 @@ public class LobbyManager : MonoBehaviour
         });
     }
 
+    private string[] GetAllPlayerNames()
+    {
+        string[] playerNames = new string[joinedLobby.MaxPlayers];
+        for (int i = 0; i < joinedLobby.MaxPlayers; i++)
+        {
+            playerNames[i] = joinedLobby.Players[i].Data[KEY_PLAYER_NAME].Value;
+        }
+        return playerNames;
+    }
     #endregion
 
     /// <summary>
@@ -288,8 +300,6 @@ public class LobbyManager : MonoBehaviour
         joinedLobby = lobby;
 
         OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
-
-        Debug.Log("Created Lobby " + lobby.Name);
     }
 
     /// <summary>
@@ -499,15 +509,12 @@ public class LobbyManager : MonoBehaviour
             {
                 LobbyUI.Instance.enabled = false;
 
-                Debug.Log("Startgame");
-
                 if (nbPlayers == 1)
                 {
                     SoloMode();
                     return;
                 }
-
-                MultiplayerGameManager.Instance.SetNbPlayersLobby(nbPlayers);
+                MultiplayerGameManager.Instance.SetNbPlayersLobby(joinedLobby.MaxPlayers, GetAllPlayerNames());
 
                 string relayCode = await RelayManager.Instance.CreateRelay(nbPlayers);
 

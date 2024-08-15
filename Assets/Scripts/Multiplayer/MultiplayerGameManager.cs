@@ -9,6 +9,7 @@ using Unity.Services.Vivox.AudioTaps;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
+using static UnityEditor.Progress;
 
 /// <summary>
 /// Gère le mode multijoueur
@@ -32,6 +33,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     public GameObject TapHolder;
 
+    #region Données Joueurs
     /// <summary>
     /// Les ids des joueurs selon Netcode pr gameobject
     /// </summary>
@@ -40,17 +42,25 @@ public class MultiplayerGameManager : NetworkBehaviour
     private PlayerState[] playersStates;
 
     /// <summary>
-    /// Les ids des joueurs pr l'authentification (Utilisé pr vivox)
-    /// </summary>
-    public Dictionary<string, (VivoxParticipant, GameObject)> authServicePlayerIds;
-
-    /// <summary>
     /// Les gameobjects des joueurs
     /// </summary>
-    private GameObject[] players;
+    private GameObject[] playersGo;
 
-    private string[] playerNames;
+    private string[] playersNames;
 
+    /// <summary>
+    /// Les id Vivox des joueurs
+    /// </summary>
+    private string[] playersAuthId;
+
+    /// <summary>
+    /// Tous les vivox participants des joueurs
+    /// </summary>
+    private VivoxParticipant[] participants;
+
+    #endregion
+
+    #region Escaliers
     /// <summary>
     /// Liste de si les joueurs sont prets ou non pour la suite
     /// </summary>
@@ -68,6 +78,8 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private GameObject[] escaliersGo;
 
+    #endregion
+
     //Les audio mixers pr les voix
     private AudioMixer mainMixer;
 
@@ -77,7 +89,6 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     #region Prefabs
     private GameObject copyCamPrefab;
-    private GameObject grabZonePrefab;
     #endregion
 
     #region Sorts
@@ -100,7 +111,6 @@ public class MultiplayerGameManager : NetworkBehaviour
 
         DontDestroyOnLoad(this);
         LoadPrefabs();
-        authServicePlayerIds = new Dictionary<string, (VivoxParticipant, GameObject)>();
         conf = new();
     }
 
@@ -108,7 +118,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         mainMixer = Resources.Load<AudioMixer>("Audio/Main");
         copyCamPrefab = Resources.Load<GameObject>("Perso/CopyCam");
-        grabZonePrefab = Resources.Load<GameObject>("Perso/GrabZone");
         lightBall = Resources.Load<GameObject>("Sorts/LightBall");
         fireBall = Resources.Load<GameObject>("Sorts/FireBall");
         resurectio = Resources.Load<GameObject>("Sorts/ResurectioProjectile");
@@ -120,7 +129,6 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private void Start()
     {
-
         if (!soloMode) //Car le start de LobbyManager est appelé avant celui de MultiplayerGameManager
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
@@ -145,11 +153,19 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// Set le nombre de joueurs dans le lobby qui vont jouer
     /// </summary>
     /// <param name="nb">Le nombre de joueur</param>
-    public void SetNbPlayersLobby(int nb)
+    public void SetNbPlayersLobby(int nb, string[] playerNames) //TODO : L'envoyer a tt le monde
     {
         nbTotalPlayers = nb;
         playersIds = new ulong[nb];
-        playerNames = new string[nb];
+        for (int i = 0; i < nb; i++)
+        {
+            playersIds[i] = ulong.MaxValue;
+        }
+        playersNames = playerNames;
+        playersStates = new PlayerState[nb];
+        playersGo = new GameObject[nb];
+        playersAuthId = new string[nb];
+        participants = new VivoxParticipant[nb];
     }
 
     /// <summary>
@@ -160,75 +176,18 @@ public class MultiplayerGameManager : NetworkBehaviour
         playersIds = new ulong[1];
         playersStates = new PlayerState[1];
         playersStates[0] = PlayerState.Alive;
-        players = new GameObject[1];
-        playerNames = new string[1];
+        playersGo = new GameObject[1];
+        playersNames = new string[1];
         playersReady = new bool[1];
         playerGoingUp = new bool[1];
-        playerNames[0] = "SOLO";
+        playersNames[0] = "SOLO";
+        playersAuthId = new string[1];
+        participants = new VivoxParticipant[1];
+
         gameCanStart = true;
     }
 
-    /// <summary>
-    /// Send game info to all clients
-    /// </summary>
-    /// <param name="nbMaxPlayers">Le nb de joueurs</param>
-    /// <param name="allIds">Les id de tt les joueurs</param>
-    [ClientRpc]
-    private void SendGameInfoClientRpc(int nbMaxPlayers, ulong[] allIds, NetworkStringArray allNames)
-    {
-        nbTotalPlayers = nbMaxPlayers;
-        playersIds = allIds;
-        players = new GameObject[nbMaxPlayers];
-        playerNames = allNames.Array;
-        playersStates = new PlayerState[nbMaxPlayers];
-        playersReady = new bool[nbMaxPlayers];
-        playerGoingUp = new bool[nbMaxPlayers];
-        for (int i = 0; i < nbMaxPlayers; i++)
-        {
-            playersStates[i] = PlayerState.Alive;
-        }
-        int cpt = 0;
-        foreach (ulong id in allIds)
-        {
-            foreach (GameObject playerTemp in GameObject.FindGameObjectsWithTag("Temp"))
-            {
-                if (playerTemp.GetComponent<NetworkObject>().OwnerClientId == id)
-                {
-                    playerTemp.tag = "Player";
-                    playerTemp.name = "Player" + id;
-
-                    players[cpt] = playerTemp;
-                    playerTemp.GetComponent<MonPlayerController>().playerUI.GetComponentInChildren<TMP_Text>().text = playerNames[Array.IndexOf(allIds, id)];
-                    cpt++;
-                }
-            }
-        }
-
-    }
-
     #region Utilitaires
-
-    /// <summary>
-    /// Permet de changer le parent d'un networkObject en passant par le serveur
-    /// </summary>
-    /// <param name="pere">Le nouveau père du network objet (Doit être un network object)</param>
-    /// <param name="fils">Le network object a reparenter</param>
-    [ServerRpc(RequireOwnership = false)]
-    public void ChangeParentServerRpc(NetworkObjectReference pere, NetworkObjectReference fils)
-    {
-        ((GameObject)fils).transform.parent = ((GameObject)pere).transform;
-        ((GameObject)fils).transform.localPosition = Vector3.zero;
-    }
-
-    /// <summary>
-    /// Permet d'enlever un parent d'un networkObject en passant par le serveur
-    /// </summary>
-    /// <param name="fils">L'objet dont on veut enlever le parent</param>
-    [ServerRpc(RequireOwnership = false)]
-    public void RemoveParentServerRpc(NetworkObjectReference fils)
-    {
-        ((GameObject)fils).transform.parent = null;
-    }
 
     /// <summary>
     /// Renvoie le gameobject du joueur correspondant à l'id netcode
@@ -240,7 +199,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, playerId);
         if (playerIndex != -1)
         {
-            return players[playerIndex];
+            return playersGo[playerIndex];
         }
         return null;
     }
@@ -251,7 +210,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <returns>Un array de gameobject</returns>
     public GameObject[] GetAllPlayersGo()
     {
-        return players;
+        return playersGo;
     }
 
     /// <summary>
@@ -272,19 +231,47 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="id">Player id</param>
     public void OnClientConnected(ulong id)
     {
-        if (!IsHost) //Le reste du comportement est donc uniquement géré par le serveur
+        GameObject[] playersTemp = GameObject.FindGameObjectsWithTag("Temp");
+        if (nbConnectedPlayers < (int)id) //On recup les anciens joueurs et l'actuel
         {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
-            return;
+            foreach (GameObject playerTemp in playersTemp)
+            {
+                if (!playersIds.Contains(playerTemp.GetComponent<NetworkObject>().OwnerClientId))
+                {
+                    //Si on l'a pas encore enregistré on le fait
+                    ulong idTemp = playerTemp.GetComponent<NetworkObject>().OwnerClientId;
+                    playersIds[nbConnectedPlayers] = idTemp;
+                    playersStates[nbConnectedPlayers] = PlayerState.Alive;
+                    playersGo[nbConnectedPlayers] = playerTemp;
+                    playerTemp.tag = "Player";
+                    playerTemp.name = "Player" + idTemp;
+                    playerTemp.GetComponent<MonPlayerController>().playerUI.GetComponentInChildren<TextMeshProUGUI>().text = playersNames[nbConnectedPlayers];
+                    nbConnectedPlayers++;
+                }
+            }
         }
-        playersIds[nbConnectedPlayers] = id;
-
-        if (soloMode)
+        else
         {
-            players[0] = GameObject.FindWithTag("Player");
-        }
+            if (playersTemp.Length > 1)
+            {
+                Debug.LogWarning("Y a plusieurs persos la dedans ;("); //On est le client qui se connecte apres les autres
+            }
+            playersIds[nbConnectedPlayers] = id;
+            playersStates[nbConnectedPlayers] = PlayerState.Alive;
+            GameObject playerTemp = playersTemp[0];
+            playerTemp.tag = "Player";
+            playerTemp.name = "Player" + id;
 
+            playersGo[nbConnectedPlayers] = playerTemp;
+            playerTemp.GetComponent<MonPlayerController>().playerUI.GetComponentInChildren<TextMeshProUGUI>().text = playersNames[nbConnectedPlayers];
+            nbConnectedPlayers++;
+        }
+        if (nbConnectedPlayers == nbTotalPlayers)
+        {
+            //Le jeu peut commencer
+            gameCanStart = true;
+            MonPlayerController.instanceLocale.JoinVivox();
+        }
     }
 
     /// <summary>
@@ -316,63 +303,21 @@ public class MultiplayerGameManager : NetworkBehaviour
         //TODO : Despawn tt les objets et resize tous les array
     }
 
-    /// <summary>
-    /// Envoie les infos du joueur courant au serveur
-    /// </summary>
-    [ServerRpc(RequireOwnership = false)]
-    public void SendPlayerInfoServerRpc(ulong ownerId, string authId, string playerName)
-    {
-        AddAuthPlayerId(ownerId, authId);
-        AddPlayerName(ownerId, playerName);
-        nbConnectedPlayers++;
-        if (nbConnectedPlayers == nbTotalPlayers)
-        {
-            GameSetup();
-        }
-    }
-
-    /// <summary>
-    /// Setup du jeu une fois que tous les joueurs sont connectés
-    /// </summary>
-    private void GameSetup()
-    {
-        gameCanStart = true;
-        NetworkStringArray stringArray = new()
-        {
-            Array = playerNames
-        };
-        SendGameInfoClientRpc(nbTotalPlayers, playersIds, stringArray);
-    }
-
-    /// <summary>
-    /// Ajoute l'id du joueur authentifié
-    /// </summary>
-    /// <param name="playerId">L'id netcode</param>
-    /// <param name="authServiceId">L'id unity auth</param>
-    private void AddAuthPlayerId(ulong playerId, string authServiceId)
-    {
-        int playerIndex = Array.IndexOf(playersIds, playerId);
-        if (playerIndex != -1)
-        {
-            authServicePlayerIds.Add(authServiceId, (null, null));
-        }
-    }
-
-    /// <summary>
-    /// Ajoute un player name au serveur
-    /// </summary>
-    /// <param name="playerId"></param>
-    /// <param name="playerName"></param>
-    private void AddPlayerName(ulong playerId, string playerName)
-    {
-        int playerIndex = Array.IndexOf(playersIds, playerId);
-        if (playerIndex != -1)
-        {
-            playerNames[playerIndex] = playerName;
-        }
-    }
-
     #region Vivox Utils
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SendAuthIdServerRpc(ulong playerId, string authId)
+    {
+        SendAuthIdClientRpc(playerId, authId);
+    }
+
+    [ClientRpc]
+    private void SendAuthIdClientRpc(ulong playerId, string authId)
+    {
+        Debug.Log("AuthId received : " + playerId);
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        playersAuthId[playerIndex] = authId;
+    }
 
     /// <summary>
     /// Ajoute le participant tap d'un joueur au dictionnaire des participants
@@ -380,32 +325,13 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     /// <param name="authId">L'id du joueur connecté</param>
     /// <param name="vivox">Le participant associé au vivox particpant</param>
-    public void AddPlayerVivoxInfo(string authId, VivoxParticipant vivox, GameObject talkIcon)
+    /// <returns>L'index du joueur dans les arrays</returns>
+    public int AddPlayerVivoxInfo(string authId, VivoxParticipant vivox)
     {
-        Debug.Log("Adding player vivox info");
-        authServicePlayerIds[authId] = (vivox, talkIcon);
-
-        //On regarde l'index dans les keys du dictionnaire pour savoir quel joueur est concerné
-        int playerIndex = Array.IndexOf(authServicePlayerIds.Keys.ToArray(), authId);
-
-        if (playerIndex != -1)
-        {
-            AudioSource playerTap = authServicePlayerIds[authId].Item1.ParticipantTapAudioSource;
-            switch (playersStates[playerIndex])
-            {
-                case PlayerState.Dead:
-                    //On veut remplacer l'audio source de son particpant tap par celle avec le evil mixer group
-                    playerTap.outputAudioMixerGroup = mainMixer.FindMatchingGroups("DeadVoice")[0];
-                    break;
-                case PlayerState.Alive:
-                    //On veut remplacer l'audio source de son particpant tap par celle avec main mixer group
-                    playerTap.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
-                    break;
-                case PlayerState.Speedy:
-                    playerTap.outputAudioMixerGroup = mainMixer.FindMatchingGroups("SpeedyVoice")[0];
-                    break;
-            }
-        }
+        int playerIndex = Array.IndexOf(playersAuthId, authId);
+        Debug.Log(playerIndex);
+        participants[playerIndex] = vivox;
+        return playerIndex;
     }
 
     /// <summary>
@@ -415,38 +341,16 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <returns>Le transform du joueur ou null en cas d'erreur</returns>
     public Transform GetPlayerTransformFromAuthId(string authId)
     {
-        int playerIndex = Array.IndexOf(authServicePlayerIds.Keys.ToArray(), authId);
+        int playerIndex = Array.IndexOf(playersAuthId, authId);
         if (playerIndex != -1)
         {
-            if (playersStates[playerIndex] == PlayerState.Alive)
+            if (playersStates[playerIndex] == PlayerState.Alive || playersStates[playerIndex] == PlayerState.Speedy)
             {
-                return players[playerIndex].transform;
+                return playersGo[playerIndex].transform;
             }
             else
             {
                 return GetGhostTransformFromPlayerId(playersIds[playerIndex]);
-            }
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// Renvoie le go du joueur correspondant à l'id authentification (Ne marche que si le joueur est vivant)
-    /// </summary>
-    /// <param name="authId">L'id du joueur dont on veux le go</param>
-    /// <returns>Le gameObject du joueur ou null en cas d'erreur</returns>
-    public GameObject GetPlayerGameObjectFromAuthId(string authId)
-    {
-        int playerIndex = Array.IndexOf(authServicePlayerIds.Keys.ToArray(), authId);
-        if (playerIndex != -1)
-        {
-            if (playersStates[playerIndex] == PlayerState.Alive)
-            {
-                return players[playerIndex];
-            }
-            else
-            {
-                return GetGhostTransformFromPlayerId(playersIds[playerIndex]).gameObject;
             }
         }
         return null;
@@ -479,16 +383,11 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void MovePlayerTapToGhost(ulong playerId)
     {
         int playerIndex = Array.IndexOf(playersIds, playerId);
-        if (playerIndex != -1)
-        {
-            string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
-            authServicePlayerIds[deadPlayerAuthId].Item1.DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-            authServicePlayerIds[deadPlayerAuthId].Item1.CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetGhostTransformFromPlayerId(playerId));
-            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource);
-
-            //On veut remplacer l'audio source de son particpant tap par celle avec le evil mixer group
-            authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("DeadVoice")[0];
-        }
+        participants[playerIndex].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
+        GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
+        tap.transform.SetParent(GetGhostTransformFromPlayerId(playerId));
+        tap.transform.localPosition = new Vector3(0, 1.6f, 0);
+        AddParamToParticipantAudioSource(playerIndex);
     }
 
     /// <summary>
@@ -498,13 +397,21 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void MovePlayerTapToCow(ulong playerId)
     {
         int playerIndex = Array.IndexOf(playersIds, playerId);
-        if (playerIndex != -1)
-        {
-            string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
-            authServicePlayerIds[deadPlayerAuthId].Item1.DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-            authServicePlayerIds[deadPlayerAuthId].Item1.CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetCowTransformFromPlayerId(playerId));
-            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource);
-        }
+        participants[playerIndex].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
+        GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
+        tap.transform.SetParent(GetCowTransformFromPlayerId(playerId));
+        tap.transform.localPosition = new Vector3(0, 1.6f, 0);
+        AddParamToParticipantAudioSource(playerIndex);
+    }
+
+    public void MovePlayerTapToHuman(ulong playerId)
+    {
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        participants[playerIndex].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
+        GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
+        tap.transform.SetParent(GetPlayerTransformFromAuthId(playersAuthId[playerIndex]));
+        tap.transform.localPosition = new Vector3(0, 1.6f, 0);
+        AddParamToParticipantAudioSource(playerIndex);
     }
 
     /// <summary>
@@ -514,12 +421,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void SetSpeedyPlayerTap(ulong playerId)
     {
         int playerIndex = Array.IndexOf(playersIds, playerId);
-        if (playerIndex != -1)
-        {
-            string playerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
-            AudioMixerGroup temp = mainMixer.FindMatchingGroups("SpeedyVoice")[0];
-            authServicePlayerIds[playerAuthId].Item1.ParticipantTapAudioSource.outputAudioMixerGroup = temp;
-        }
+        participants[playerIndex].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("SpeedyVoice")[0];
     }
 
     /// <summary>
@@ -529,23 +431,34 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void ResetPlayerTap(ulong playerId)
     {
         int playerIndex = Array.IndexOf(playersIds, playerId);
-        if (playerIndex != -1)
-        {
-            string playerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
-            authServicePlayerIds[playerAuthId].Item1.ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
-        }
+        participants[playerIndex].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
     }
 
     /// <summary>
     /// Permet de parametrer l'audio source d'un participant tap pr avoir le son 3d dans la bonne distance
     /// </summary>
-    /// <param name="audioSource">L'audio source du participant tap</param>
-    public void AddParamToParticipantAudioSource(AudioSource audioSource)
+    /// <param name="playerIndex">L'index du joueur dans les arrays</param>
+    public void AddParamToParticipantAudioSource(int playerIndex)
     {
-        audioSource.maxDistance = VivoxVoiceConnexion.maxDistance;
-        audioSource.minDistance = VivoxVoiceConnexion.minAudibleDistance;
-        audioSource.rolloffMode = AudioRolloffMode.Linear;
-        audioSource.spatialBlend = 1;
+        AudioSource source = participants[playerIndex].ParticipantTapAudioSource;
+
+        source.maxDistance = VivoxVoiceConnexion.maxDistance;
+        source.minDistance = VivoxVoiceConnexion.minAudibleDistance;
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.spatialBlend = 1;
+
+        switch (playersStates[playerIndex])
+        {
+            case PlayerState.Dead:
+                source.outputAudioMixerGroup = mainMixer.FindMatchingGroups("DeadVoice")[0];
+                break;
+            case PlayerState.Alive:
+                source.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
+                break;
+            case PlayerState.Speedy:
+                source.outputAudioMixerGroup = mainMixer.FindMatchingGroups("SpeedyVoice")[0];
+                break;
+        }
     }
 
     public void SetNormalChannelTap()
@@ -619,7 +532,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, id);
         if (playerIndex != -1)
         {
-            players[playerIndex].GetComponent<MonPlayerController>().HandleDeath();
+            playersGo[playerIndex].GetComponent<MonPlayerController>().HandleDeath();
             playersStates[playerIndex] = PlayerState.Dead;
         }
     }
@@ -659,14 +572,9 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, id);
         if (playerIndex != -1)
         {
-            players[playerIndex].GetComponent<MonPlayerController>().HandleRespawn(); //Ca remet juste le tag a player
+            playersGo[playerIndex].GetComponent<MonPlayerController>().HandleRespawn(); //Ca remet juste le tag a player
             playersStates[playerIndex] = PlayerState.Alive;
-            string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
-            //On veut remplacer l'audio source de son particpant tap par celle avec main mixer group
-            authServicePlayerIds[deadPlayerAuthId].Item1.DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-            authServicePlayerIds[deadPlayerAuthId].Item1.CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetPlayerTransformFromAuthId(deadPlayerAuthId));
-            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource);
-            authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
+            MovePlayerTapToHuman(id);
         }
     }
 
@@ -709,11 +617,11 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             if (ragdollActive)
             {
-                players[playerIndex].GetComponent<MonPlayerController>().EnableRagdoll();
+                playersGo[playerIndex].GetComponent<MonPlayerController>().EnableRagdoll();
             }
             else
             {
-                players[playerIndex].GetComponent<MonPlayerController>().DisableRagdoll();
+                playersGo[playerIndex].GetComponent<MonPlayerController>().DisableRagdoll();
             }
 
         }
@@ -928,18 +836,14 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, id);
         if (playerIndex != -1)
         {
-            players[playerIndex].GetComponent<MonPlayerController>().HandleRespawn();
-            string deadPlayerAuthId = authServicePlayerIds.Keys.ElementAt(playerIndex);
-            //On veut remplacer l'audio source de son particpant tap par celle avec main mixer group
-            authServicePlayerIds[deadPlayerAuthId].Item1.DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-            authServicePlayerIds[deadPlayerAuthId].Item1.CreateVivoxParticipantTap("Tap " + deadPlayerAuthId).transform.SetParent(GetPlayerTransformFromAuthId(deadPlayerAuthId));
-            AddParamToParticipantAudioSource(authServicePlayerIds[deadPlayerAuthId].Item1.ParticipantTapAudioSource);
+            playersGo[playerIndex].GetComponent<MonPlayerController>().HandleRespawn();
+            MovePlayerTapToHuman(id);
         }
     }
 
     #endregion
 
-    #region GrabZone
+    #region Gestion Objets
     /// <summary>
     /// Demande au serv de dire a tt le monde de summon la copie d'un objet 
     /// </summary>
@@ -965,7 +869,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, playerId);
         if (playerIndex != -1)
         {
-            players[playerIndex].GetComponentInChildren<PickUpController>().CreeCopie(cheminObj);
+            playersGo[playerIndex].GetComponentInChildren<PickUpController>().CreeCopie(cheminObj);
         }
     }
 
@@ -992,7 +896,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         ((GameObject)obj).SetActive(true);
         if (playerIndex != -1)
         {
-            players[playerIndex].GetComponentInChildren<PickUpController>().SupprimerCopie();
+            playersGo[playerIndex].GetComponentInChildren<PickUpController>().SupprimerCopie();
         }
     }
     #endregion
@@ -1045,8 +949,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     /// <param name="playerId">L'id du player qui est pret</param>
     /// <param name="isReady">Si le joueur est ready ou non</param>
-    [ServerRpc(RequireOwnership = false)]
-    public void SyncPlayerStateServerRpc(ulong playerId, bool isReady, bool isStairUp = false)
+    public void SyncPlayerState(ulong playerId, bool isReady, bool isStairUp = false)
     {
         int index = Array.IndexOf(playersIds, playerId);
         if (index != -1)
