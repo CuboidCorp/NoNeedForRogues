@@ -621,7 +621,7 @@ MonoBehaviour:
   currentEtage: 1
   maxEtage: 5
   cellSize: 4.8
-  seed: 658989
+  seed: 354877
   typeEtage: 0
   minTailleEtage: {x: 20, y: 20}
   maxTailleEtage: {x: 30, y: 30}
@@ -631,9 +631,6 @@ MonoBehaviour:
   pathToRooms: Donjon/Type1/Rooms
   pathToHallways: Donjon/Type1/HallwaysDoubleHeight
   pathToStairs: Donjon/Type1/Stairs/
-  holderRooms: {fileID: 1387310563}
-  holderHallways: {fileID: 1308885061}
-  holderStairs: {fileID: 1095552237}
 --- !u!114 &1901875913
 MonoBehaviour:
   m_ObjectHideFlags: 0

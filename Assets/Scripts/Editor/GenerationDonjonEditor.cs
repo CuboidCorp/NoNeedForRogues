@@ -14,5 +14,15 @@ public class GenerationDonjonEditor : Editor
         {
             script.RandomizeSeed();
         }
+
+        if (GUILayout.Button("Set Seed"))
+        {
+            script.SetSeed();
+        }
+
+        if (GUILayout.Button("Generate"))
+        {
+            script.Generate(true, false);
+        }
     }
 }

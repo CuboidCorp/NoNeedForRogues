@@ -74,8 +74,14 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private bool isInLobby = true;
 
+    /// <summary>
+    /// Temporaire pr la repartition des joueurs dans les escaliers
+    /// </summary>
     private ulong[][] playerRepartitionByStairs;
 
+    /// <summary>
+    /// Temporaire pr les escaliers dans la meme direction que les joueurs
+    /// </summary>
     private GameObject[] escaliersGo;
 
     #endregion
@@ -166,6 +172,8 @@ public class MultiplayerGameManager : NetworkBehaviour
         playersGo = new GameObject[nb];
         playersAuthId = new string[nb];
         participants = new VivoxParticipant[nb];
+        playersReady = new bool[nb];
+        playerGoingUp = new bool[nb];
     }
 
     /// <summary>
@@ -314,7 +322,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ClientRpc]
     private void SendAuthIdClientRpc(ulong playerId, string authId)
     {
-        Debug.Log("AuthId received : " + playerId);
         int playerIndex = Array.IndexOf(playersIds, playerId);
         playersAuthId[playerIndex] = authId;
     }
@@ -329,7 +336,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     public int AddPlayerVivoxInfo(string authId, VivoxParticipant vivox)
     {
         int playerIndex = Array.IndexOf(playersAuthId, authId);
-        Debug.Log(playerIndex);
         participants[playerIndex] = vivox;
         return playerIndex;
     }
@@ -1139,6 +1145,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     private void DestroyStairs()
     {
+        escaliersGo = null;
         GameObject[] escaliersUp = GameObject.FindGameObjectsWithTag("UpStairs");
         GameObject[] escaliersDown = GameObject.FindGameObjectsWithTag("DownStairs");
         foreach (GameObject escalier in escaliersUp)

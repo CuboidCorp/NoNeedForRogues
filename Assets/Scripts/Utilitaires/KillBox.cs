@@ -14,6 +14,7 @@ public class KillBox : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
+            Debug.LogError("Player IN KILLBOX OOB" + other.gameObject.name);
             other.gameObject.GetComponent<MonPlayerController>().Die();
         }
     }

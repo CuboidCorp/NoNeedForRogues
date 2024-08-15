@@ -574,7 +574,7 @@ public class MonPlayerController : Entity
     /// Envoie l'information de la mort du joueur au serveur
     /// </summary>
     /// <param name="ownerId">L'id du joueur mort</param>
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void SendDeathServerRpc(ulong ownerId)
     {
         MultiplayerGameManager.Instance.SyncDeath(ownerId);

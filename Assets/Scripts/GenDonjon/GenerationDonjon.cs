@@ -113,6 +113,7 @@ public class GenerationDonjon : MonoBehaviour
             }
 
             seeds[currentEtage - 1] = seed;
+            SetSeed();
             maxEtageReached = currentEtage;
             Generate(true, estServeur);
         }
@@ -122,6 +123,7 @@ public class GenerationDonjon : MonoBehaviour
             SetSeed();
             Generate(false, estServeur);
         }
+
         GameObject cam = GameObject.Find("Main Camera");
         if (cam != null)
         {
@@ -130,7 +132,6 @@ public class GenerationDonjon : MonoBehaviour
 
         if (estServeur)
         {
-
             MultiplayerGameManager.Instance.SpawnPlayers();
         }
     }
@@ -151,7 +152,7 @@ public class GenerationDonjon : MonoBehaviour
         seeds = new int[maxEtage];
     }
 
-    private void Generate(bool isNewEtage, bool estServ)
+    public void Generate(bool isNewEtage, bool estServ)
     {
         switch (typeEtage)
         {
@@ -180,10 +181,9 @@ public class GenerationDonjon : MonoBehaviour
     public void RandomizeSeed()
     {
         seed = Random.Range(0, 1000000);
-        SetSeed();
     }
 
-    private void SetSeed()
+    public void SetSeed()
     {
         Random.InitState(seed);
     }

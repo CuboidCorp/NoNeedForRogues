@@ -285,9 +285,17 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 2482843695
       objectReference: {fileID: 0}
+    - target: {fileID: 2862553200082457728, guid: ab3b37f1d160e37498ee95ecc4e39624, type: 3}
+      propertyPath: m_text
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 3172510637912780368, guid: ab3b37f1d160e37498ee95ecc4e39624, type: 3}
       propertyPath: m_Name
       value: Leave
+      objectReference: {fileID: 0}
+    - target: {fileID: 3172510637912780368, guid: ab3b37f1d160e37498ee95ecc4e39624, type: 3}
+      propertyPath: m_TagString
+      value: DownStairs
       objectReference: {fileID: 0}
     - target: {fileID: 4345172297745288137, guid: ab3b37f1d160e37498ee95ecc4e39624, type: 3}
       propertyPath: m_LocalPosition.x
@@ -329,9 +337,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4523581474754360401, guid: ab3b37f1d160e37498ee95ecc4e39624, type: 3}
+      propertyPath: m_text
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5635220962665524759, guid: ab3b37f1d160e37498ee95ecc4e39624, type: 3}
       propertyPath: isUpStairs
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8714862699764728748, guid: ab3b37f1d160e37498ee95ecc4e39624, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
