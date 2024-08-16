@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class GoldObject : NetworkBehaviour, IInteractable
 {
-    [SerializeField] private int value = 1;
+    public int value = 1;
 
     public string interactText = "Prendre";
 

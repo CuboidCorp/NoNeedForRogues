@@ -229,7 +229,7 @@ public class PlayerUIManager : MonoBehaviour
 
         voiceVolumeSlider.RegisterValueChangedCallback(evt =>
         {
-            mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(evt.newValue) * 20);
+            mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(evt.newValue) * 20 + 10);
         });
 
         returnToPauseButton.clicked += HideOptionsMenu;
@@ -261,7 +261,7 @@ public class PlayerUIManager : MonoBehaviour
 
         voiceVolumeSlider.UnregisterValueChangedCallback(evt =>
         {
-            mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(evt.newValue) * 20);
+            mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(evt.newValue) * 20 + 10);
         });
 
         returnToPauseButton.clicked -= HideOptionsMenu;

@@ -42,10 +42,7 @@ public class Openable : NetworkBehaviour //TODO : Ptet plus opti de faire juste 
         {
             isOpen.Value = initialValueIsOpen;
         }
-        else
-        {
-            isOpen.OnValueChanged += OnOpenValueChanged;
-        }
+        isOpen.OnValueChanged += OnOpenValueChanged;
     }
 
     private void OnOpenValueChanged(bool previous, bool current)

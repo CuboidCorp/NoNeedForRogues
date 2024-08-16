@@ -1,10 +1,18 @@
 using System.Collections;
 using UnityEngine;
 
-public class FireBall : MonoBehaviour
+public class FireBall : NetworkBehaviour
 {
     private float explosionRange;
     private float explosionForce;
+
+    private override void OnNetworkSpawn() //TODO : Problème c'est que la physique sera ptet pas bien transmise
+    {
+        if (!IsServer)
+        {
+            GetComponent<Collider>().enabled = false;
+        }
+    }
 
     public void OnTriggerEnter(Collider other)
     {

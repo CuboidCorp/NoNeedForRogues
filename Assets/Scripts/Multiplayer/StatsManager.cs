@@ -67,7 +67,17 @@ public class StatsManager : NetworkBehaviour
     public void AddGold(int nbGold)
     {
         localPlayerStats.nbGoldCollected += nbGold;
-        totalGold.Value += nbGold;
+        AddGoldServerRpc(valueToAdd);
+    }
+
+    /// <summary>
+    /// Change la network variable du compteur de gold
+    /// </summary>
+    /// <param name="valueToAdd">Rajoute cette valeur au total de gold</param>
+    [ServerRpc(RequireOwnership = false)]
+    private void AddGoldServerRpc(int valueToAdd)
+    {
+        totalGold.Value += valueToAdd;
     }
 
     /// <summary>

@@ -23,7 +23,7 @@ public class GenEtaSalles : GenerationEtage
         throw new System.NotImplementedException();
     }
 
-    public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs)
+    public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs, string pathToPieces, string pathToObjets, string pathToPotions, string pathToChests, string pathToPieges)
     {
         throw new System.NotImplementedException();
     }

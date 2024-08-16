@@ -56,6 +56,21 @@ public class GenerationDonjon : MonoBehaviour
     [SerializeField]
     private string pathToStairs;
 
+    [SerializeField]
+    private string pathToPieces;
+
+    [SerializeField]
+    private string pathToObjets;
+
+    [SerializeField]
+    private string pathToPotions;
+
+    [SerializeField]
+    private string pathToChests;
+
+    [SerializeField]
+    private string pathToPieges;
+
     [Header("Transform holders")]
     private Transform holderRooms;
 
@@ -166,16 +181,15 @@ public class GenerationDonjon : MonoBehaviour
                 genEtage = GetComponent<GenEtaAbre>();
                 break;
         }
-        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, baseDifficulty, estServ);
-        genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs);
+        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, currentDifficulty, estServ);
+        genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs, pathToPieces, pathToObjets, pathToPotions, pathToChests, pathToPieges);
         genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs);
         genEtage.GenerateEtage();
         if (isNewEtage)
         {
             genEtage.GenerateItems();
         }
-
-
+        genEtage.GeneratePieges();
     }
 
     public void RandomizeSeed()

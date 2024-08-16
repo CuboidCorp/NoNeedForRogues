@@ -42,8 +42,22 @@ public class GenEtaLaby : GenerationEtage
 
     private WallState[,] etage;
 
-    #region Traps
+    #region Objets
+    private GameObject[] prefabsPieces;
+    private GameObject[] prefabsObjets;
+    private GameObject[] prefabsPotions;
+    private GameObject[] prefabsCoffres;
+    #endregion
 
+    #region Traps
+    private GameObject prefabPiegePique;
+    private GameObject prefabPiegeScie;
+    private GameObject prefabPiegeOurs;
+    private GameObject prefabArrowWall;
+    private GameObject prefabPiegeHache;
+    private GameObject prefabPiegeCaillou;
+    private GameObject prefabMurCompresseur;
+    private GameObject prefabPorteMalefique;
     #endregion
 
     public override void GenerateEtage()
@@ -52,15 +66,26 @@ public class GenEtaLaby : GenerationEtage
         GenerationTheorique();
         GenerationEscaliers();
         RenderingLabyrinthe();
-        GeneratePieges();
     }
 
-    public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs)
+    public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs, string pathToPieces, string pathToObjets, string pathToPotions, string pathToChests, string pathToPieges)
     {
         couloirsPrefabs = Resources.LoadAll<GameObject>(pathToHallways);
         upStairPrefab = Resources.Load<GameObject>(pathToStairs + "UpStairs");
         downStairPrefab = Resources.Load<GameObject>(pathToStairs + "DownStairs");
         leavePrefab = Resources.Load<GameObject>("Donjon/Leave");
+        prefabsPieces = Resources.LoadAll<GameObject>(pathToPieces);
+        prefabsObjets = Resources.LoadAll<GameObject>(pathToObjets);
+        prefabsPotions = Resources.LoadAll<GameObject>(pathToPotions);
+        prefabsCoffres = Resources.LoadAll<GameObject>(pathToChests);
+        prefabPiegePique = Resources.Load<GameObject>(pathToPieges + "/PiegePique");
+        prefabPiegeScie = Resources.Load<GameObject>(pathToPieges + "/PiegeScie");
+        prefabPiegeOurs = Resources.Load<GameObject>(pathToPieges + "/PiegePique");
+        prefabArrowWall = Resources.Load<GameObject>(pathToPieges + "/PiegeFleches");
+        prefabPiegeCaillou = Resources.Load<GameObject>(pathToPieges + "/PiegeCaillou");
+        prefabMurCompresseur = Resources.Load<GameObject>(pathToPieges + "/PiegeMurCompresseur");
+        prefabPorteMalefique = Resources.Load<GameObject>(pathToPieges + "/PiegePorteMalefique");
+
     }
 
     public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs)
@@ -72,15 +97,18 @@ public class GenEtaLaby : GenerationEtage
     private void InitEtage()
     {
         etage = new WallState[tailleEtage.x, tailleEtage.y];
-        for (int i = 0; i < tailleEtage.x; i++)
+        for (int i = 0 ; i < tailleEtage.x ; i++)
         {
-            for (int j = 0; j < tailleEtage.y; j++)
+            for (int j = 0 ; j < tailleEtage.y ; j++)
             {
                 etage[i, j] = WallState.LEFT | WallState.RIGHT | WallState.UP | WallState.DOWN;
             }
         }
     }
 
+    /// <summary>
+    /// Genere les escaliers 
+    /// </summary>
     private void GenerationEscaliers()
     {
         stairsPos = new Vector2Int[nbStairs * 2];
@@ -123,7 +151,7 @@ public class GenEtaLaby : GenerationEtage
                 stairs.transform.eulerAngles = new Vector3(0, 90 - (side * 90), 0);
                 if (estServ)
                 {
-                    GameObject leave = Instantiate(leavePrefab, new Vector3(stairPos.x, 0, stairPos.y) * cellSize + new Vector3(0, 6, -6.5f), Quaternion.Euler(0, 180 - (side * 90), 0));
+                    GameObject leave = Instantiate(leavePrefab, new Vector3(stairPos.x, 0, stairPos.y) * cellSize, Quaternion.Euler(0, 180 - (side * 90), 0));
                     leave.name = "LeaveUP" + stairPos.x + "_" + stairPos.y;
                     leave.GetComponent<Escalier>().spawnPoint = stairs.transform.GetChild(5);
                     leave.GetComponent<Escalier>().isUpStairs = true;
@@ -190,7 +218,7 @@ public class GenEtaLaby : GenerationEtage
                 stairs.transform.eulerAngles = new Vector3(0, 270 - (side * 90), 0);
                 if (estServ)
                 {
-                    GameObject leave = Instantiate(leavePrefab, new Vector3(stairPos.x, 0, stairPos.y) * cellSize + new Vector3(0, 3, 1.3f), Quaternion.Euler(0, 180 - (side * 90), 0));
+                    GameObject leave = Instantiate(leavePrefab, new Vector3(stairPos.x, 0, stairPos.y) * cellSize, Quaternion.Euler(0, 180 - (side * 90), 0));
                     leave.name = "LeaveDown" + stairPos.x + "_" + stairPos.y;
                     leave.GetComponent<Escalier>().spawnPoint = stairs.transform.GetChild(5);
                     leave.GetComponent<Escalier>().isUpStairs = false;
@@ -263,9 +291,9 @@ public class GenEtaLaby : GenerationEtage
 
     private void RenderingLabyrinthe()
     {
-        for (int i = 0; i < tailleEtage.x; i++)
+        for (int i = 0 ; i < tailleEtage.x ; i++)
         {
-            for (int j = 0; j < tailleEtage.y; j++)
+            for (int j = 0 ; j < tailleEtage.y ; j++)
             {
                 GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], new Vector3(i, 0, j) * cellSize, Quaternion.identity);
                 go.transform.parent = hallwaysHolder;
@@ -333,14 +361,107 @@ public class GenEtaLaby : GenerationEtage
     {
         foreach (Vector2Int deadEnd in deadEnds)
         {
-            Debug.DrawRay(new Vector3(deadEnd.x, 0, deadEnd.y) * cellSize, Vector3.up, Color.yellow, 100f);
+            Vector3 position = new Vector3(deadEnd.x, 0, deadEnd.y) * cellSize;
+            int typeTresor = Random.Range(0, 4);
+            int valeur = 10 + Random.Range(2 * difficulty, 4 * difficulty); //Valeur de l'or
+            int force = Random.Range(5, Mathf.Clamp(5 + difficulty / 2, 5, 20));//Force de la potion ou du piege
+            switch (typeTresor)
+            {
+                case 0: //Sac de piece
+                    GeneratePieces(prefabsPieces[Random.Range(0, prefabsPieces.Length)], position, valeur);
+                    break;
+                case 1: //Objet précieux a ramasser
+                    //TODO : Faudrait voir les cas ou y a des pieges en dessous des tresors
+                    GenerateTresor(prefabsObjets[Random.Range(0, prefabsObjets.Length)], position, (int)(valeur * 1.2f))
+                    break;
+                case 2: //Potions
+                    GeneratePotion(prefabsPotions[Random.Range(0, prefabsPotions.Length)], position, force);
+                    break;
+                case 3: //Coffres
+                    GenerateChest(prefabsCoffres[Random.Range(0, prefabsCoffres.Length)],position,valeur,force)
+                    break;
+            }
+            Debug.DrawRay(position, Vector3.up, Color.yellow, 100f);
+        }
+    }
+
+    /// <summary>
+    /// Genere un objet pieces/sac de pieces a un endroit donné à une valeur donnée
+    /// </summary>
+    /// <param name="objet">Les pieces/sac de pieces a instantier</param>
+    /// <param name="position">La position ou on veut mettre l'objet</param>
+    /// <param name="valeur">La valeur des pièces</param>
+    private void GeneratePieces(GameObject objet, Vector3 position, int valeur)
+    {
+        GameObject instance = Instantiate(objet, position, Quaternion.identity);
+        instance.GetComponent<GoldObject>().value = valeur;
+        instance.GetComponent<NetworkObject>().Spawn();
+    }
+
+    /// <summary>
+    /// Genere un objet tresor a ramasser et recolter a un endroit donné à une valeur donnée
+    /// </summary>
+    /// <param name="objet">Le trésor a spawn</param>
+    /// <param name="positon">La position de l'objet</param>
+    /// <param name="valeur">La valeur de l'objet</param>
+    private void GenerateTresor(GameObject objet, Vector3 positon, int valeur)
+    {
+        GameObject instance = Instantiate(objet, position, Quaternion.identity);
+        instance.GetComponent<TreasureObject>().value = valeur;
+        instance.GetComponent<NetworkObject>().Spawn();
+    }
+
+    /// <summary>
+    /// Genere une potion a un endroit donnée avec une force donné
+    /// </summary>
+    /// <param name="objet">La prefab de la potion a spawn</param>
+    /// <param name="position">La position de la potion</param>
+    /// <param name="force">La force de la potion</param>
+    private void GeneratePotion(GameObject objet, Vector3 position, int force)
+    {
+        GameObject instance = Instantiate(objet, position, Quaternion.identity);
+        instance.GetComponent<PotionObject>().power = force;
+        instance.GetComponent<PotionObject>().SetType(Random.Range(0, 3));
+        instance.GetComponent<NetworkObject>().Spawn();
+    }
+
+    private void GenerateChest(GameObject chest, Vector3 position, int valeur, int force)
+    {
+        GameObject instance = Instantiate(chest, position, Quaternion.identity);
+        int typeCoffre = Random.Range(0, 2);
+        Chest coffreScript = instance.GetComponent<Chest>();
+        instance.GetComponent<NetworkObject>().Spawn();
+        if (typeCoffre == 0)
+        {
+            //TRESOR
+            //Summon un des objets d'au dessus avec plus de puissance
+            int typeTresor = Random.Range(0, 3);
+            switch(typeTresor)
+            {
+                case 0:
+                    coffreScript.onOpen.AddListener(() => GeneratePieces(prefabsPieces[Random.Range(0, prefabsPieces.Length)], coffreScript.posObjetInterne.position, (int)(valeur*1.5f)));
+                    break;
+                case 1:
+                    coffreScript.onOpen.AddListener(() => GeneratePieces(prefabsObjets[Random.Range(0, prefabsObjets.Length)], coffreScript.posObjetInterne.position, (int)(valeur * 1.5f)));
+                    break;
+                case 2:
+                    coffreScript.onOpen.AddListener(() => GeneratePotion(prefabsPotions[Random.Range(0, prefabsPotions.Length)], coffreScript.posObjetInterne.position, (int)(force * 1.5f)));
+                    break;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Pas de pieges dans les coffres encore");
+            //PIEGE
+            //Pr piege l'action est de summon 
+            //Summon fleches, summon fleches poison, summon "gaz" qui empoisonne, summon bombes, summon fake bombes (Rien juste un troll)
         }
     }
 
     #endregion
 
     #region Generation Pieges
-    private void GeneratePieges()
+    public override void GeneratePieges()
     {
         //On genere les pieges en fonction de la diffculté --> Pr le moment pas de lien entre les items et tt
         //Donc n'importe quel pos mais pas dans les deadends pr certains

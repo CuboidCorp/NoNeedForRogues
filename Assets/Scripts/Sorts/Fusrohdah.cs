@@ -2,10 +2,18 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Fusrohdah : MonoBehaviour
+public class Fusrohdah : NetworkBehaviour
 {
     private float explosionRange;
     private float explosionForce;
+
+    private override void OnNetworkSpawn() //TODO : Problème c'est que la physique sera ptet pas bien transmise
+    {
+        if(!IsServer)
+        {
+            GetComponent<Collider>().enabled = false;
+        }
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -42,8 +50,6 @@ public class Fusrohdah : MonoBehaviour
             }
         }
     }
-
-
 
     public void SetupFusRohDah(float expRange, float expForce)
     {

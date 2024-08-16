@@ -8,6 +8,4 @@ public class CameraThirdPersonController : MonoBehaviour
     {
         transform.LookAt(transform.parent);
     }
-
-
 }

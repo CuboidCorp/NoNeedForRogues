@@ -148,7 +148,7 @@ public class MonPlayerController : Entity
     public override void OnNetworkSpawn()
     {
         gameObject.GetComponent<PlayerRandomizer>().Randomize(seed);
-        DisableRagdoll();
+        DisableRagdoll(false);
         if (!IsHost)
         {
             //Si on est pas un hote on desactive le configDonjonUI
@@ -502,7 +502,7 @@ public class MonPlayerController : Entity
         ChangerRenderCorps(ShadowCastingMode.On);
 
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
-        EnableRagdoll();
+        EnableRagdoll(false);
 
         controls.Disable();
         SpawnGhostPlayerServerRpc(OwnerClientId);
@@ -594,7 +594,7 @@ public class MonPlayerController : Entity
         FullHeal();
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, false);
-        DisableRagdoll();
+        DisableRagdoll(false);
         gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;
         cameraPivot.SetActive(true);
@@ -623,10 +623,13 @@ public class MonPlayerController : Entity
     /// <summary>
     /// Desactive la ragdoll du joueur
     /// </summary>
-    public void DisableRagdoll()
+    public void DisableRagdoll(bool changeCam)
     {
-        cameraPivot.SetActive(true);
-        camTps.SetActive(false);
+        if(changeCam)
+        {
+            cameraPivot.SetActive(true);
+            camTps.SetActive(false);
+        }
         animator.enabled = true;
         gameObject.GetComponent<CapsuleCollider>().enabled = true;
         gameObject.GetComponent<Rigidbody>().isKinematic = false;
@@ -645,11 +648,14 @@ public class MonPlayerController : Entity
     /// <summary>
     /// Active la ragdoll du joueur
     /// </summary>
-    public void EnableRagdoll()
+    public void EnableRagdoll(bool changeCam)
     {
         GetComponent<PickUpController>().DropObject();
-        cameraPivot.SetActive(false);
-        camTps.SetActive(true);
+        if(changeCam)
+        {
+            cameraPivot.SetActive(false);
+            camTps.SetActive(true);
+        }
         animator.enabled = false;
         gameObject.GetComponent<CapsuleCollider>().enabled = false;
         gameObject.GetComponent<Rigidbody>().isKinematic = true;
@@ -683,11 +689,11 @@ public class MonPlayerController : Entity
         controls.Disable();
         ChangerRenderCorps(ShadowCastingMode.On);
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
-        EnableRagdoll();
+        EnableRagdoll(true);
         yield return new WaitForSeconds(time);
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, false);
-        DisableRagdoll();
+        DisableRagdoll(true);
         controls.Enable();
     }
 
@@ -992,7 +998,7 @@ public class MonPlayerController : Entity
     private void OnCowSpawn()
     {
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
-        EnableRagdoll();
+        EnableRagdoll(false);
         gameObject.GetComponent<PickUpController>().enabled = false;
         gameObject.GetComponent<SpellRecognition>().enabled = false;
 
@@ -1015,7 +1021,7 @@ public class MonPlayerController : Entity
     public void Uncow()
     {
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, false);
-        DisableRagdoll();
+        DisableRagdoll(false);
         gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;
         cameraPivot.SetActive(true);

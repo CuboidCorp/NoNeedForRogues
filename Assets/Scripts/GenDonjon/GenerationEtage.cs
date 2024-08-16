@@ -40,12 +40,22 @@ public abstract class GenerationEtage : MonoBehaviour
     public abstract void GenerateItems();
 
     /// <summary>
+    /// Genere les pieges de l'étage
+    /// </summary>
+    public abstract void GeneratePieges();
+
+    /// <summary>
     /// Charge les prefabs pour les salles, les corridors et les escaliers
     /// </summary>
     /// <param name="pathToRooms">Le chemin dans les resources pr charger des salles</param>
     /// <param name="pathToHallways">Le chemin dans les resources pr charger des couloirs</param>
     /// <param name="pathToStairs">Le chemin dans les resources pr charger des escaliers</param>
-    public abstract void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs);
+    /// <param name="pathToPieces">Le chemin dans les resources pr charger les pieces/sac de pieces</param>
+    /// <param name="pathToObjets">Le chemin dans les resources pr charger les objets trésor</param>
+    /// <param name="pathToPotions">Le chemin dans les resources pr charger les potions</param>
+    /// <param name="pathToChests">Le chemin dans les resources pr charger les coffres</param>
+    /// <param name="pathToPieges">Le chemin dans les resources du dossier des pieges</param>
+    public abstract void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs, string pathToPieces, string pathToObjets, string pathToPotions, string pathToChests, string pathToPieges);
 
     /// <summary>
     /// Charge les holders pour les salles, les corridors et les escaliers

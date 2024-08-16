@@ -5,7 +5,7 @@ using UnityEngine;
 /// </summary>
 public class TreasureObject : WeightedObject
 {
-    [SerializeField] private int value = 1;
+    public int value = 1;
 
     public int TransformToGold()
     {

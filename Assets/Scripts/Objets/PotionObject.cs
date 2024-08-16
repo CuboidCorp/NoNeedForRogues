@@ -6,13 +6,13 @@ using UnityEngine;
 /// </summary>
 public class PotionObject : WeightedObject, IInteractable
 {
-    [SerializeField] private string interactText = "BOIRE";
+    [SerializeField] private string interactText = "Boire";
 
-    [SerializeField] private float power = 1;
+    public float power = 1;
 
     private PotionType type;
 
-    [SerializeField] private int nbSecPoison;
+    [SerializeField] private int nbSecPoison = 1;
 
     public void SetType(int typeId)
     {
