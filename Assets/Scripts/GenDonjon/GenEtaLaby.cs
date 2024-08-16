@@ -33,6 +33,7 @@ public class GenEtaLaby : GenerationEtage
 
     private Transform stairHolder;
     private Transform hallwaysHolder;
+    private Transform itemHolder;
 
     private List<Vector2Int> deadEnds;
     private Vector2Int[] stairsPos;
@@ -88,10 +89,11 @@ public class GenEtaLaby : GenerationEtage
 
     }
 
-    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs)
+    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems)
     {
         stairHolder = holderStairs;
         hallwaysHolder = holderHallways;
+        itemHolder = holderItems;
     }
 
     private void InitEtage()
@@ -361,7 +363,7 @@ public class GenEtaLaby : GenerationEtage
     {
         foreach (Vector2Int deadEnd in deadEnds)
         {
-            Vector3 position = new Vector3(deadEnd.x, 0, deadEnd.y) * cellSize;
+            Vector3 position = new Vector3(deadEnd.x, 0, deadEnd.y) * cellSize + new Vector3(0, 0.4f, 0);
             int typeTresor = Random.Range(0, 4);
             int valeur = 10 + Random.Range(2 * difficulty, 4 * difficulty); //Valeur de l'or
             int force = Random.Range(5, Mathf.Clamp(5 + difficulty / 2, 5, 20));//Force de la potion ou du piege
@@ -393,7 +395,8 @@ public class GenEtaLaby : GenerationEtage
     /// <param name="valeur">La valeur des pièces</param>
     private void GeneratePieces(GameObject objet, Vector3 position, int valeur)
     {
-        GameObject instance = Instantiate(objet, position, Quaternion.identity);
+        GameObject instance = Instantiate(objet, itemHolder);
+        instance.transform.position = position;
         instance.GetComponent<GoldObject>().value = valeur;
         instance.GetComponent<NetworkObject>().Spawn();
     }
@@ -406,7 +409,8 @@ public class GenEtaLaby : GenerationEtage
     /// <param name="valeur">La valeur de l'objet</param>
     private void GenerateTresor(GameObject objet, Vector3 position, int valeur)
     {
-        GameObject instance = Instantiate(objet, position, Quaternion.identity);
+        GameObject instance = Instantiate(objet, itemHolder);
+        instance.transform.position = position;
         instance.GetComponent<TreasureObject>().value = valeur;
         instance.GetComponent<NetworkObject>().Spawn();
     }
@@ -419,7 +423,8 @@ public class GenEtaLaby : GenerationEtage
     /// <param name="force">La force de la potion</param>
     private void GeneratePotion(GameObject objet, Vector3 position, int force)
     {
-        GameObject instance = Instantiate(objet, position, Quaternion.identity);
+        GameObject instance = Instantiate(objet, itemHolder);
+        instance.transform.position = position;
         instance.GetComponent<PotionObject>().power = force;
         instance.GetComponent<PotionObject>().SetType(Random.Range(0, 3));
         instance.GetComponent<NetworkObject>().Spawn();
@@ -427,7 +432,8 @@ public class GenEtaLaby : GenerationEtage
 
     private void GenerateChest(GameObject chest, Vector3 position, int valeur, int force)
     {
-        GameObject instance = Instantiate(chest, position, Quaternion.identity);
+        GameObject instance = Instantiate(chest, itemHolder);
+        instance.transform.position = position;
         int typeCoffre = Random.Range(0, 2);
         Chest coffreScript = instance.GetComponent<Chest>();
         instance.GetComponent<NetworkObject>().Spawn();

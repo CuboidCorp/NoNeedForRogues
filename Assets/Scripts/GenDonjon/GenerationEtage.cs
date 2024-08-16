@@ -63,5 +63,5 @@ public abstract class GenerationEtage : MonoBehaviour
     /// <param name="holderRooms">Le transform qui contient tt les salles</param>
     /// <param name="holderHallways">Le transform qui contient tt les hallways</param>
     /// <param name="holderStairs">Le transform qui contien tt les stairs</param>
-    public abstract void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs);
+    public abstract void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems);
 }

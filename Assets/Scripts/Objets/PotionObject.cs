@@ -11,7 +11,7 @@ public class PotionObject : WeightedObject, IInteractable
 
     public float power = 1;
 
-    private PotionType type;
+    [SerializeField] private PotionType type;
 
     [SerializeField] private int nbSecPoison = 1;
 
@@ -53,12 +53,15 @@ public class PotionObject : WeightedObject, IInteractable
         switch (type)
         {
             case PotionType.HEAL:
+                Debug.Log("Potion Heal");
                 MonPlayerController.instanceLocale.Heal(power);
                 break;
             case PotionType.MANA_REGEN:
+                Debug.Log("Mana regen");
                 MonPlayerController.instanceLocale.GainMana(power);
                 break;
             case PotionType.POISON:
+                Debug.Log("Poison");
                 MonPlayerController.instanceLocale.StartPoison(power, nbSecPoison);
                 break;
         }

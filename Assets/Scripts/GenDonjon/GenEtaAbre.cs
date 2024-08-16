@@ -34,7 +34,7 @@ public class GenEtaAbre : GenerationEtage
         throw new System.NotImplementedException();
     }
 
-    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs)
+    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems)
     {
         throw new System.NotImplementedException();
     }

@@ -78,6 +78,8 @@ public class GenerationDonjon : MonoBehaviour
 
     private Transform holderStairs;
 
+    private Transform holderItems;
+
     private GenerationEtage genEtage;
 
     public static GenerationDonjon instance;
@@ -110,6 +112,7 @@ public class GenerationDonjon : MonoBehaviour
         holderStairs = holder.transform.GetChild(0);
         holderHallways = holder.transform.GetChild(1);
         holderRooms = holder.transform.GetChild(2);
+        holderItems = holder.transform.GetChild(3);
 
         estServeur = MultiplayerGameManager.Instance.IsServer;
 
@@ -183,7 +186,7 @@ public class GenerationDonjon : MonoBehaviour
         }
         genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, currentDifficulty, estServ);
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs, pathToPieces, pathToObjets, pathToPotions, pathToChests, pathToPieges);
-        genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs);
+        genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs, holderItems);
         genEtage.GenerateEtage();
         if (isNewEtage)
         {
