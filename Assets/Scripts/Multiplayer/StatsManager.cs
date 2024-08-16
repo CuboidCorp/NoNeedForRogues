@@ -67,7 +67,7 @@ public class StatsManager : NetworkBehaviour
     public void AddGold(int nbGold)
     {
         localPlayerStats.nbGoldCollected += nbGold;
-        AddGoldServerRpc(valueToAdd);
+        AddGoldServerRpc(nbGold);
     }
 
     /// <summary>

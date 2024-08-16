@@ -72,7 +72,6 @@ public class CowController : NetworkBehaviour
 
     private void Awake()
     {
-        Debug.Log("CowController Awake");
         controls = new PlayerControls();
         playerActions = controls.Player;
 
@@ -211,12 +210,21 @@ public class CowController : NetworkBehaviour
         CheckGround();
     }
 
+    public void StartTurnBack(float time)
+    {
+        if (turnBackCoroutine != null)
+        {
+            StopCoroutine(turnBackCoroutine);
+        }
+        turnBackCoroutine = StartCoroutine(TurnBackIn(time));
+    }
+
     /// <summary>
     /// Redeviens un humain au bout de time s
     /// </summary>
     /// <param name="time">Le temps avant de redevenir humain</param>
     /// <returns></returns>
-    public IEnumerator TurnBackIn(float time)
+    private IEnumerator TurnBackIn(float time)
     {
         yield return new WaitForSeconds(time);
         UnCow();
@@ -227,12 +235,12 @@ public class CowController : NetworkBehaviour
     /// </summary>
     public void UnCow()
     {
-        if(turnBackCoroutine !=  null)
+        controls.Disable();
+        if (turnBackCoroutine != null)
         {
             StopCoroutine(turnBackCoroutine);
         }
         turnBackCoroutine = null;
-        Debug.Log("Return to human");
         root.SetActive(true);
         root.transform.position = transform.position;
         root.GetComponent<MonPlayerController>().enabled = true;
@@ -241,4 +249,34 @@ public class CowController : NetworkBehaviour
 
         MultiplayerGameManager.Instance.SyncUncowServerRpc(gameObject, OwnerClientId);
     }
+
+    /// <summary>
+    /// Reçoit un speed boost et lance une coroutine pour le finir
+    /// </summary>
+    /// <param name="buffDuration">Durée du buff</param>
+    public void ReceiveSpeedBoost(float buffDuration)
+    {
+        boostBonusSpeed += boostMaxBonusSpeed;
+        StartCoroutine(EndSpeedBoost(buffDuration));
+    }
+
+    /// <summary>
+    /// Supprime un speed boost au bout d'un certain temps
+    /// </summary>
+    /// <param name="time">Le temps au bout du quel le speed boost est fini</param>
+    /// <returns></returns>
+    private IEnumerator EndSpeedBoost(float time)
+    {
+        yield return new WaitForSeconds(time);
+        boostBonusSpeed -= boostMaxBonusSpeed;
+        if (isRunning)
+        {
+            moveSpeed = runSpeed + boostBonusSpeed;
+        }
+        else
+        {
+            moveSpeed = walkSpeed + boostBonusSpeed;
+        }
+    }
+
 }

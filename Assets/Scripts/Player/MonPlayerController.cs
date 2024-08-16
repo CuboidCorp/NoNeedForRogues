@@ -156,10 +156,6 @@ public class MonPlayerController : Entity
         }
         if (IsOwner) //Quand on est le proprietaire on passe en mode premiere personne et on desactive toutes les parties du corps sauf les mains
         {
-            if (MultiplayerGameManager.Instance.soloMode)
-            {
-                gameObject.tag = "Player";
-            }
 
             GameObject mainCam = GameObject.Find("UiCamera");
             if (mainCam != null)
@@ -625,7 +621,7 @@ public class MonPlayerController : Entity
     /// </summary>
     public void DisableRagdoll(bool changeCam)
     {
-        if(changeCam)
+        if (changeCam)
         {
             cameraPivot.SetActive(true);
             camTps.SetActive(false);
@@ -651,7 +647,7 @@ public class MonPlayerController : Entity
     public void EnableRagdoll(bool changeCam)
     {
         GetComponent<PickUpController>().DropObject();
-        if(changeCam)
+        if (changeCam)
         {
             cameraPivot.SetActive(false);
             camTps.SetActive(true);
@@ -1006,7 +1002,7 @@ public class MonPlayerController : Entity
         GameObject cow = GameObject.Find("Cow" + OwnerClientId);
         cow.GetComponent<CowController>().root = gameObject;
         cow.GetComponent<CowController>().vivox = vivox;
-        cow.GetComponent<CowController>().turnBackCoroutine = StartCoroutine(cow.GetComponent<CowController>().TurnBackIn(60));
+        cow.GetComponent<CowController>().StartTurnBack(5);
         vivox.transform.parent = cow.transform;
         cow.transform.GetChild(0).gameObject.SetActive(true); //Le camera pivot du ghost
         cow.transform.GetChild(1).GetComponent<SkinnedMeshRenderer>().shadowCastingMode = ShadowCastingMode.ShadowsOnly; //On desactive le corps de la vache

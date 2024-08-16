@@ -1,9 +1,10 @@
 using UnityEngine;
-using Unity.Netcode;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// Classe pour les coffres, avec lesquels on peut interagir pr les ouvrir ou utiliser un sort
 /// </summary>
+[RequireComponent(typeof(Collider))]
 public class Chest : Openable, IInteractable
 {
     /// <summary>
@@ -27,13 +28,13 @@ public class Chest : Openable, IInteractable
     [SerializeField]
     public FunctionAction onOpen = new();
 
-    private override void OnOpenValueChanged(bool previous, bool current)
+    protected override void OnOpenValueChanged(bool previous, bool current)
     {
         if (current) //Donc ouverture
         {
             anim.Play(openingAnimationName);
             interactText = "Fermer";
-            if(hasNeverBeenOpened)
+            if (hasNeverBeenOpened)
             {
                 hasNeverBeenOpened = false;
                 onOpen.Invoke();
@@ -45,7 +46,7 @@ public class Chest : Openable, IInteractable
             interactText = "Ouvrir";
         }
     }
-    
+
     /// <summary>
     /// Quand on interagit avec l'objet
     /// </summary>

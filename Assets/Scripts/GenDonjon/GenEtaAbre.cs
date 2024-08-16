@@ -38,4 +38,9 @@ public class GenEtaAbre : GenerationEtage
     {
         throw new System.NotImplementedException();
     }
+
+    public override void GeneratePieges()
+    {
+        throw new System.NotImplementedException();
+    }
 }

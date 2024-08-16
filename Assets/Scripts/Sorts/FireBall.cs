@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 public class FireBall : NetworkBehaviour
@@ -6,7 +7,7 @@ public class FireBall : NetworkBehaviour
     private float explosionRange;
     private float explosionForce;
 
-    private override void OnNetworkSpawn() //TODO : Problème c'est que la physique sera ptet pas bien transmise
+    public override void OnNetworkSpawn() //TODO : Problème c'est que la physique sera ptet pas bien transmise
     {
         if (!IsServer)
         {

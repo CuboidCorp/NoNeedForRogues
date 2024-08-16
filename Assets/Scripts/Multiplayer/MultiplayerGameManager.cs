@@ -181,6 +181,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     public void SetDataSolo()
     {
+        nbTotalPlayers = 1;
         playersIds = new ulong[1];
         playersStates = new PlayerState[1];
         playersStates[0] = PlayerState.Alive;
@@ -191,8 +192,6 @@ public class MultiplayerGameManager : NetworkBehaviour
         playersNames[0] = "SOLO";
         playersAuthId = new string[1];
         participants = new VivoxParticipant[1];
-
-        gameCanStart = true;
     }
 
     #region Utilitaires
@@ -623,11 +622,11 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             if (ragdollActive)
             {
-                playersGo[playerIndex].GetComponent<MonPlayerController>().EnableRagdoll();
+                playersGo[playerIndex].GetComponent<MonPlayerController>().EnableRagdoll(false);
             }
             else
             {
-                playersGo[playerIndex].GetComponent<MonPlayerController>().DisableRagdoll();
+                playersGo[playerIndex].GetComponent<MonPlayerController>().DisableRagdoll(false);
             }
 
         }

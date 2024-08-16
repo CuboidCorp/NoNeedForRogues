@@ -4,32 +4,33 @@ using Unity.Netcode;
 /// <summary>
 /// A rajouter aux objets qui peuvent être ouverts (Portes, coffres, etc.)
 /// </summary>
+[RequireComponent(typeof(Animator))]
 public class Openable : NetworkBehaviour //TODO : Ptet plus opti de faire juste un network animator et de rajouter des triggers
 {
     /// <summary>
     /// L'animator de l'objet
     /// </summary>
-    private Animator anim;
+    protected Animator anim;
 
     /// <summary>
     /// Etat de l'objet
     /// </summary>
-    private NetworkVariable<bool> isOpen = new();
+    protected NetworkVariable<bool> isOpen = new();
 
     /// <summary>
     /// Valeur initiale de si l'objet est ouvert ou non
     /// </summary>
-    [SerializeField] private bool initialValueIsOpen = false;
+    [SerializeField] protected bool initialValueIsOpen = false;
 
     /// <summary>
     /// Le nom de l'animation d'ouverture
     /// </summary>
-    [SerializeField] private string openingAnimationName = "Opening";
+    [SerializeField] protected string openingAnimationName = "Opening";
 
     /// <summary>
     /// Le nom de l'animation de fermeture
     /// </summary>
-    [SerializeField] private string closingAnimationName = "Closing";
+    [SerializeField] protected string closingAnimationName = "Closing";
 
     private void Awake()
     {
@@ -45,7 +46,7 @@ public class Openable : NetworkBehaviour //TODO : Ptet plus opti de faire juste 
         isOpen.OnValueChanged += OnOpenValueChanged;
     }
 
-    private void OnOpenValueChanged(bool previous, bool current)
+    protected virtual void OnOpenValueChanged(bool previous, bool current)
     {
         if (current)
         {

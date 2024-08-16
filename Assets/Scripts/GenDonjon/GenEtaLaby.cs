@@ -97,9 +97,9 @@ public class GenEtaLaby : GenerationEtage
     private void InitEtage()
     {
         etage = new WallState[tailleEtage.x, tailleEtage.y];
-        for (int i = 0 ; i < tailleEtage.x ; i++)
+        for (int i = 0; i < tailleEtage.x; i++)
         {
-            for (int j = 0 ; j < tailleEtage.y ; j++)
+            for (int j = 0; j < tailleEtage.y; j++)
             {
                 etage[i, j] = WallState.LEFT | WallState.RIGHT | WallState.UP | WallState.DOWN;
             }
@@ -291,9 +291,9 @@ public class GenEtaLaby : GenerationEtage
 
     private void RenderingLabyrinthe()
     {
-        for (int i = 0 ; i < tailleEtage.x ; i++)
+        for (int i = 0; i < tailleEtage.x; i++)
         {
-            for (int j = 0 ; j < tailleEtage.y ; j++)
+            for (int j = 0; j < tailleEtage.y; j++)
             {
                 GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], new Vector3(i, 0, j) * cellSize, Quaternion.identity);
                 go.transform.parent = hallwaysHolder;
@@ -372,13 +372,13 @@ public class GenEtaLaby : GenerationEtage
                     break;
                 case 1: //Objet précieux a ramasser
                     //TODO : Faudrait voir les cas ou y a des pieges en dessous des tresors
-                    GenerateTresor(prefabsObjets[Random.Range(0, prefabsObjets.Length)], position, (int)(valeur * 1.2f))
+                    GenerateTresor(prefabsObjets[Random.Range(0, prefabsObjets.Length)], position, (int)(valeur * 1.2f));
                     break;
                 case 2: //Potions
                     GeneratePotion(prefabsPotions[Random.Range(0, prefabsPotions.Length)], position, force);
                     break;
                 case 3: //Coffres
-                    GenerateChest(prefabsCoffres[Random.Range(0, prefabsCoffres.Length)],position,valeur,force)
+                    GenerateChest(prefabsCoffres[Random.Range(0, prefabsCoffres.Length)], position, valeur, force);
                     break;
             }
             Debug.DrawRay(position, Vector3.up, Color.yellow, 100f);
@@ -404,7 +404,7 @@ public class GenEtaLaby : GenerationEtage
     /// <param name="objet">Le trésor a spawn</param>
     /// <param name="positon">La position de l'objet</param>
     /// <param name="valeur">La valeur de l'objet</param>
-    private void GenerateTresor(GameObject objet, Vector3 positon, int valeur)
+    private void GenerateTresor(GameObject objet, Vector3 position, int valeur)
     {
         GameObject instance = Instantiate(objet, position, Quaternion.identity);
         instance.GetComponent<TreasureObject>().value = valeur;
@@ -436,10 +436,10 @@ public class GenEtaLaby : GenerationEtage
             //TRESOR
             //Summon un des objets d'au dessus avec plus de puissance
             int typeTresor = Random.Range(0, 3);
-            switch(typeTresor)
+            switch (typeTresor)
             {
                 case 0:
-                    coffreScript.onOpen.AddListener(() => GeneratePieces(prefabsPieces[Random.Range(0, prefabsPieces.Length)], coffreScript.posObjetInterne.position, (int)(valeur*1.5f)));
+                    coffreScript.onOpen.AddListener(() => GeneratePieces(prefabsPieces[Random.Range(0, prefabsPieces.Length)], coffreScript.posObjetInterne.position, (int)(valeur * 1.5f)));
                     break;
                 case 1:
                     coffreScript.onOpen.AddListener(() => GeneratePieces(prefabsObjets[Random.Range(0, prefabsObjets.Length)], coffreScript.posObjetInterne.position, (int)(valeur * 1.5f)));

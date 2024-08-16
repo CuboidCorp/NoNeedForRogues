@@ -117,7 +117,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
             tap.transform.SetParent(playerTransform); //Pas de null check = Programmation de gros porc ici flemme
             tap.transform.localPosition = new Vector3(0, 1.6f, 0);
         }
-        else
+        else if (!MultiplayerGameManager.Instance.soloMode)
         {
             isConnected = true;
         }
