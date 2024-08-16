@@ -1,5 +1,3 @@
-using Unity.Netcode;
-
 /// <summary>
 /// Interface des p qui répresente un objet avec un poids (Qui peut être tenu par le joueur)
 /// </summary>

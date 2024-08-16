@@ -4,6 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Classe qui répresente les sacs d'or/ pièces avec lesquels on peut intéragir pour recuperer de l'or
 /// </summary>
+[RequireComponent(typeof(Collider))]
 public class GoldObject : NetworkBehaviour, IInteractable
 {
     public int value = 1;

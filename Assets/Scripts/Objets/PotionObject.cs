@@ -4,6 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Classe qui répresente les potions avec lesquels on peut intéragir pour recuperer certains effets (recup HP, recup mana, poison
 /// </summary>
+[RequireComponent(typeof(Collider))]
 public class PotionObject : WeightedObject, IInteractable
 {
     [SerializeField] private string interactText = "Boire";
