@@ -632,6 +632,17 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Met le jouer du client en parametre en ragdoll pour un temps donné
+    /// </summary>
+    /// <param name="time">Le temps pendant lequel le joueur est en ragdoll</param>
+    /// <param name="client">Le client a ragdoll</param>
+    [ClientRpc]
+    public void SetRagdollTempClientRpc(float time, ClientRpcParams client)
+    {
+        StartCoroutine(MonPlayerController.instanceLocale.SetRagdollTemp(time));
+    }
+
     #endregion
 
     #region ClientRpcParams
@@ -651,6 +662,8 @@ public class MultiplayerGameManager : NetworkBehaviour
                 TargetClientIds = otherPlayerIds
             }
         };
+
+
     }
 
     /// <summary>
@@ -1127,7 +1140,7 @@ public class MultiplayerGameManager : NetworkBehaviour
             GameObject playerGo = GetPlayerById(playersAPunir[i]);
             //Comment punir le joueur -> Ragdoll
             playerGo.GetComponent<Rigidbody>().AddExplosionForce(100, stairPlayerPos[i], 10, 1, ForceMode.Impulse);
-            StartCoroutine(playerGo.GetComponent<MonPlayerController>().SetRagdollTemp(5));
+            SetRagdollTempClientRpc(5, new ClientRpcParams() { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { playersAPunir[i] } } });
             AudioManager.instance.PlayOneShotClipServerRpc(playerGo.transform.position, AudioManager.SoundEffectOneShot.NUHUH);
             Rigidbody[] ragdollElems = playerGo.GetComponent<MonPlayerController>().GetRagdollRigidbodies();
 
@@ -1189,6 +1202,8 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
         return true;
     }
+
+
 
     #endregion
 

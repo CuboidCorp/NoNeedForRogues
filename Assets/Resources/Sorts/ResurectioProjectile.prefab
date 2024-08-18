@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 5520696880206019630}
   - component: {fileID: 5122465967000742013}
   - component: {fileID: 1622882713804412360}
-  - component: {fileID: 2789631470342512417}
   - component: {fileID: 3739564050371224304}
+  - component: {fileID: 2789631470342512417}
   - component: {fileID: -1033787984879168205}
   - component: {fileID: -3926540311088676092}
   m_Layer: 0
@@ -111,18 +111,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &2789631470342512417
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6103000604216686781}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a8016824e6dfe6448500a9a331faace, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &3739564050371224304
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,6 +131,18 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+--- !u!114 &2789631470342512417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6103000604216686781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a8016824e6dfe6448500a9a331faace, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &-1033787984879168205
 MonoBehaviour:
   m_ObjectHideFlags: 0

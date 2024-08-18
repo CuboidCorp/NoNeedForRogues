@@ -1,8 +1,18 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
-public class ResurrectionSpell : MonoBehaviour
+public class ResurrectionSpell : NetworkBehaviour
 {
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsServer)
+        {
+            GetComponent<Collider>().enabled = false;
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("PlayerGhost"))

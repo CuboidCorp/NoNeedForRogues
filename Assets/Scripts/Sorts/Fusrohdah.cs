@@ -7,7 +7,7 @@ public class Fusrohdah : NetworkBehaviour
     private float explosionRange;
     private float explosionForce;
 
-    public override void OnNetworkSpawn() //TODO : Problème c'est que la physique sera ptet pas bien transmise
+    public override void OnNetworkSpawn()
     {
         if (!IsServer)
         {
@@ -26,7 +26,6 @@ public class Fusrohdah : NetworkBehaviour
 
         if (objetTouche.TryGetComponent(out Rigidbody rb))
         {
-            Debug.Log("J'ai touché : " + objetTouche.name);
             float distance = Vector3.Distance(transform.position, objetTouche.transform.position);
             float degatsInfliges = explosionForce * (1 - distance / explosionRange);
             float forceExplosion = degatsInfliges * 1000;
@@ -34,8 +33,13 @@ public class Fusrohdah : NetworkBehaviour
             if (objetTouche.CompareTag("Player"))
             {
                 //On ragdoll le joueur
-                MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(objetTouche.GetComponent<NetworkObject>().OwnerClientId, true);
-
+                MultiplayerGameManager.Instance.SetRagdollTempClientRpc(2, new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { objetTouche.GetComponent<NetworkObject>().OwnerClientId }
+                    }
+                });
                 Rigidbody[] ragdollElems = objetTouche.GetComponent<MonPlayerController>().GetRagdollRigidbodies();
 
                 foreach (Rigidbody ragdoll in ragdollElems)
@@ -45,7 +49,6 @@ public class Fusrohdah : NetworkBehaviour
             }
             else
             {
-                //TODO : Surement faut que le serveur fasse ça
                 rb.AddExplosionForce(forceExplosion, transform.position, explosionRange);
             }
         }

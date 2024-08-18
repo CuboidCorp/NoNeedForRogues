@@ -14,8 +14,7 @@ public class SpellList : MonoBehaviour
     public static void Explosion(Transform target, float radius, float degats)
     {
         AudioManager.instance.PlayOneShotClipServerRpc(target.position, AudioManager.SoundEffectOneShot.EXPLOSION);
-        GameObject explosionGo = Instantiate(Resources.Load<GameObject>("Sorts/Explosion"), target.position, Quaternion.identity); //Explosion
-        explosionGo.transform.localScale = new Vector3(radius, radius, radius);
+        MultiplayerGameManager.Instance.SummonExplosionServerRpc(target.position, radius, 1);
 
 #pragma warning disable UNT0028 // Use non-allocating physics APIs -> C'est un warning pr l'optimisation, mais on s'en fout
         Collider[] hitColliders = Physics.OverlapSphere(target.position, radius);
@@ -37,7 +36,7 @@ public class SpellList : MonoBehaviour
             float degatsInfliges = degats * (1 - distance / radius);
             float forceExplosion = degatsInfliges * 1000;
 
-            
+
             if (objetTouche.CompareTag("Player"))
             {
                 objetTouche.GetComponent<MonPlayerController>().Damage(degatsInfliges);
@@ -55,7 +54,6 @@ public class SpellList : MonoBehaviour
                 rb.AddExplosionForce(forceExplosion, target.position, radius);
             }
         }
-        Destroy(explosionGo, 1);
 
     }
 

@@ -153,7 +153,7 @@ public class GenEtaLaby : GenerationEtage
                 stairs.transform.eulerAngles = new Vector3(0, 90 - (side * 90), 0);
                 if (estServ)
                 {
-                    GameObject leave = Instantiate(leavePrefab, new Vector3(stairPos.x, 0, stairPos.y) * cellSize, Quaternion.Euler(0, 180 - (side * 90), 0));
+                    GameObject leave = Instantiate(leavePrefab, stairs.transform.GetChild(6).position, Quaternion.Euler(0, 180 - (side * 90), 0));
                     leave.name = "LeaveUP" + stairPos.x + "_" + stairPos.y;
                     leave.GetComponent<Escalier>().spawnPoint = stairs.transform.GetChild(5);
                     leave.GetComponent<Escalier>().isUpStairs = true;
@@ -220,7 +220,7 @@ public class GenEtaLaby : GenerationEtage
                 stairs.transform.eulerAngles = new Vector3(0, 270 - (side * 90), 0);
                 if (estServ)
                 {
-                    GameObject leave = Instantiate(leavePrefab, new Vector3(stairPos.x, 0, stairPos.y) * cellSize, Quaternion.Euler(0, 180 - (side * 90), 0));
+                    GameObject leave = Instantiate(leavePrefab, stairs.transform.GetChild(6).position, Quaternion.Euler(0, 180 - (side * 90), 0));
                     leave.name = "LeaveDown" + stairPos.x + "_" + stairPos.y;
                     leave.GetComponent<Escalier>().spawnPoint = stairs.transform.GetChild(5);
                     leave.GetComponent<Escalier>().isUpStairs = false;
@@ -448,7 +448,7 @@ public class GenEtaLaby : GenerationEtage
                     coffreScript.onOpen.AddListener(() => GeneratePieces(prefabsPieces[Random.Range(0, prefabsPieces.Length)], coffreScript.posObjetInterne.position, (int)(valeur * 1.5f)));
                     break;
                 case 1:
-                    coffreScript.onOpen.AddListener(() => GeneratePieces(prefabsObjets[Random.Range(0, prefabsObjets.Length)], coffreScript.posObjetInterne.position, (int)(valeur * 1.5f)));
+                    coffreScript.onOpen.AddListener(() => GenerateTresor(prefabsObjets[Random.Range(0, prefabsObjets.Length)], coffreScript.posObjetInterne.position, (int)(valeur * 1.5f)));
                     break;
                 case 2:
                     coffreScript.onOpen.AddListener(() => GeneratePotion(prefabsPotions[Random.Range(0, prefabsPotions.Length)], coffreScript.posObjetInterne.position, (int)(force * 1.5f)));
@@ -457,6 +457,7 @@ public class GenEtaLaby : GenerationEtage
         }
         else
         {
+            coffreScript.onOpen.AddListener(() => Debug.Log("PIEGE MEC"));
             Debug.LogWarning("Pas de pieges dans les coffres encore");
             //PIEGE
             //Pr piege l'action est de summon 
