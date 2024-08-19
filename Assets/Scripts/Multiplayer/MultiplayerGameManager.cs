@@ -865,7 +865,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="duree">Durée du buff</param>
     /// <param name="clientRpcParams">L'id du client a sauvegardé</param>
     [ClientRpc]
-    public void SendSpeedBoost(float duree, ClientRpcParams clientRpcParams)
+    public void SendSpeedBoostClientRpc(float duree, ClientRpcParams clientRpcParams)
     {
         MonPlayerController.instanceLocale.ReceiveSpeedBoost(duree);
     }

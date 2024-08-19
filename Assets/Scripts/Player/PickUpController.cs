@@ -10,7 +10,7 @@ public class PickUpController : NetworkBehaviour
     private GameObject copieObj;
     private Rigidbody copieRb;
     public bool isRotating = false;
-    [SerializeField] private float rotationSensitivity;
+    [SerializeField] private float rotationSensitivity = 2;
 
 
     [Header("Physics Settings")]
@@ -131,7 +131,7 @@ public class PickUpController : NetworkBehaviour
             return;
         }
         //On le drop
-        if(isRotating)
+        if (isRotating)
         {
             MonPlayerController.instanceLocale.StopRotation();
         }
@@ -151,7 +151,7 @@ public class PickUpController : NetworkBehaviour
         {
             return;
         }
-        if(isRotating)
+        if (isRotating)
         {
             MonPlayerController.instanceLocale.StopRotation();
         }
@@ -191,8 +191,9 @@ public class PickUpController : NetworkBehaviour
     /// <param name="direction"></param>
     public void RotateObject(Vector2 direction)
     {
-        if(copieObj != null)
+        if (copieObj != null)
         {
+            Debug.Log("Rotating");
             isRotating = true;
             //Fait tourner l'objet sur lui meme
             float XaxisRotation = direction.x * rotationSensitivity;

@@ -19,7 +19,7 @@ public class AccelProjectile : NetworkBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            MultiplayerGameManager.Instance.SendSpeedBoost(buffDuration, new ClientRpcParams() { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { other.GetComponent<NetworkObject>().OwnerClientId } } });
+            MultiplayerGameManager.Instance.SendSpeedBoostClientRpc(buffDuration, new ClientRpcParams() { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { other.GetComponent<NetworkObject>().OwnerClientId } } });
             Destroy(gameObject);
         }
     }

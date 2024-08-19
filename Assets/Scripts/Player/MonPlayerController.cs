@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Unity.Netcode;
 using Unity.Services.Authentication;
@@ -95,7 +96,9 @@ public class MonPlayerController : Entity
         controls = new PlayerControls();
         playerActions = controls.Player;
 
-        playerActions.Move.performed += ctx => OnMove(ctx);
+        Action<InputAction.CallbackContext> action = ctx => Jump(); //A faire partout
+
+        playerActions.Move.performed += OnMove;
         playerActions.Move.canceled += _ => moveInput = Vector2.zero;
         playerActions.Jump.performed += _ => Jump();
         playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
@@ -823,6 +826,7 @@ public class MonPlayerController : Entity
     /// <param name="direction">La direction ou on regarde</param>
     private void Look(Vector2 direction)
     {
+        Debug.Log("Look");
         if (invertCamera)
         {
             direction.y *= -1;
@@ -838,8 +842,10 @@ public class MonPlayerController : Entity
 
     private void StartRotation()
     {
-        if(GetComponent<PickUpController>().IsHoldingObject())
+        Debug.Log("Start rotation");
+        if (GetComponent<PickUpController>().IsHoldingObject())
         {
+            Debug.Log("R start");
             playerActions.Look.performed -= ctx => Look(ctx.ReadValue<Vector2>());
             playerActions.Look.performed += ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());
         }
@@ -847,8 +853,10 @@ public class MonPlayerController : Entity
 
     public void StopRotation()
     {
+        Debug.Log("Stop rotation");
         if (GetComponent<PickUpController>().IsHoldingObject())
         {
+            Debug.Log("R end");
             GetComponent<PickUpController>().isRotating = false;
             playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
             playerActions.Look.performed -= ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
@@ -77,14 +78,22 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         MultiplayerGameManager.Instance.SendAuthIdServerRpc(OwnerClientId, AuthenticationService.Instance.PlayerId);
         if (MultiplayerGameManager.Instance.soloMode)
         {
-            await servVivox.JoinEchoChannelAsync(echoChannelName, ChatCapability.AudioOnly);
-            GameObject channelTap = new("ChannelTap")
+            try
             {
-                tag = "ChannelTap" //Pour les retrouver plus tard
-            };
-            DontDestroyOnLoad(channelTap);
-            channelTap.AddComponent<AudioSource>();
-            channelTap.AddComponent<VivoxChannelAudioTap>().ChannelName = echoChannelName;
+                await servVivox.JoinEchoChannelAsync(echoChannelName, ChatCapability.AudioOnly);
+                GameObject channelTap = new("ChannelTap")
+                {
+                    tag = "ChannelTap" //Pour les retrouver plus tard
+                };
+                DontDestroyOnLoad(channelTap);
+                channelTap.AddComponent<AudioSource>();
+                channelTap.AddComponent<VivoxChannelAudioTap>().ChannelName = echoChannelName;
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e.Message);
+            }
+
         }
         else
         {
