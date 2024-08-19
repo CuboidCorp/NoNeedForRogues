@@ -72,7 +72,7 @@ public class SpellRecognition : MonoBehaviour
                 MultiplayerGameManager.Instance.SummonLightballServerRpc(posProj, lightIntensity, lightTime);
                 break;
             case "Mortuus":
-                gameObject.GetComponent<MonPlayerController>().Damage(1000);
+                gameObject.GetComponent<MonPlayerController>().Die();
                 break;
             case "Ragdoll":
                 StartCoroutine(gameObject.GetComponent<MonPlayerController>().SetRagdollTemp(ragdollTime));

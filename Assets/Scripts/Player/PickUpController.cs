@@ -9,7 +9,7 @@ public class PickUpController : NetworkBehaviour
     private GameObject heldObj;
     private GameObject copieObj;
     private Rigidbody copieRb;
-    private bool isRotating;
+    public bool isRotating = false;
     [SerializeField] private float rotationSensitivity;
 
 
@@ -18,6 +18,15 @@ public class PickUpController : NetworkBehaviour
     [SerializeField] private float pickupForce = 100.0f;
 
     [SerializeField] private float throwForce = 10f; //Quand on lance l'objet
+
+    /// <summary>
+    /// Si le joueur tient l'objet ou non
+    /// </summary>
+    /// <returns>True si il tient qqch, false sinon</returns>
+    public bool IsHoldingObject()
+    {
+        return heldObj != null;
+    }
 
     /// <summary>
     /// Essaye d'attraper un objet à portée
@@ -54,6 +63,8 @@ public class PickUpController : NetworkBehaviour
         heldObj.GetComponent<WeightedObject>().ChangeStateServerRpc(true);
         SubstituteRealForCopy();
     }
+
+    #region Systeme Copie
 
     /// <summary>
     /// Cache le vrai objet et renvoie la copie créée
@@ -99,6 +110,9 @@ public class PickUpController : NetworkBehaviour
         SetObjectDataServerRpc(heldObj, posCopie, force);
     }
 
+    #endregion
+
+
     [ServerRpc(RequireOwnership = false)]
     private void SetObjectDataServerRpc(NetworkObjectReference obj, Vector3 newPosition, Vector3 force)
     {
@@ -117,6 +131,11 @@ public class PickUpController : NetworkBehaviour
             return;
         }
         //On le drop
+        if(isRotating)
+        {
+            MonPlayerController.instanceLocale.StopRotation();
+        }
+        isRotating = false;
         SubstituteCopyForReal(Vector3.zero);
         StopClipping();
         heldObj.GetComponent<WeightedObject>().ChangeStateServerRpc(false);
@@ -132,6 +151,11 @@ public class PickUpController : NetworkBehaviour
         {
             return;
         }
+        if(isRotating)
+        {
+            MonPlayerController.instanceLocale.StopRotation();
+        }
+        isRotating = false;
         SubstituteCopyForReal(playerCam.transform.forward * throwForce);
         heldObj.GetComponent<WeightedObject>().ChangeStateServerRpc(false);
         StopClipping();
@@ -155,37 +179,29 @@ public class PickUpController : NetworkBehaviour
         if (copieObj != null)
         {
             MoveObject();
-            if (isRotating)
-            {
-                RotateObject();
-            }
         }
 
     }
 
     #region Rotation
-    public void StartRotating()
+
+    /// <summary>
+    /// Tourne l'objet tenu
+    /// </summary>
+    /// <param name="direction"></param>
+    public void RotateObject(Vector2 direction)
     {
-        //Desactivation de la rotation de la cam du joueur
-
+        if(copieObj != null)
+        {
+            isRotating = true;
+            //Fait tourner l'objet sur lui meme
+            float XaxisRotation = direction.x * rotationSensitivity;
+            float YaxisRotation = direction.y * rotationSensitivity;
+            //rotate the object depending on mouse X-Y Axis
+            copieObj.transform.Rotate(Vector3.down, XaxisRotation);
+            copieObj.transform.Rotate(Vector3.right, YaxisRotation);
+        }
     }
-
-    public void StopRotating()
-    {
-        //Reactivation de la rotation de la cam
-    }
-
-    private void RotateObject()
-    {
-        //Fait tourner l'objet sur lui meme
-        float XaxisRotation = Input.GetAxis("Mouse X") * rotationSensitivity;
-        float YaxisRotation = Input.GetAxis("Mouse Y") * rotationSensitivity;
-        //rotate the object depending on mouse X-Y Axis
-        heldObj.transform.Rotate(Vector3.down, XaxisRotation);
-        heldObj.transform.Rotate(Vector3.right, YaxisRotation);
-
-    }
-
     #endregion
 
     /// <summary>

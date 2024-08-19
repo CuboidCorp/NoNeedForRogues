@@ -32,7 +32,6 @@ public class MonPlayerController : Entity
 
     [Header("Camera Movement Variables")]
     [HideInInspector] public Camera playerCamera;
-    [HideInInspector] public GameObject copyCam;
     [SerializeField] private GameObject cameraPivot; //Le gameObject de la camera
     [SerializeField] private GameObject camTps; //Le gameObject de la camera troisieme personne
 
@@ -105,6 +104,9 @@ public class MonPlayerController : Entity
         playerActions.LongAttack.started += _ => StartLongAttack();
         playerActions.LongAttack.performed += _ => StopLongAttack();
         playerActions.LongAttack.canceled += _ => StopLongAttack();
+
+        playerActions.Rotation.started += _ => StartRotation(); //Rajouter un grand hold sur les controles
+        playerActions.Rotation.canceled += _ => StopRotation();
 
         playerActions.Interact.performed += _ => Interact();
 
@@ -831,13 +833,26 @@ public class MonPlayerController : Entity
         pitch = Mathf.Clamp(pitch, -minLookAngle, minLookAngle);
 
         playerCamera.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
-        if (copyCam != null)
-        {
-            copyCam.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
-        }
-
-
         transform.eulerAngles = new Vector3(0.0f, yaw, 0.0f);
+    }
+
+    private void StartRotation()
+    {
+        if(GetComponent<PickUpController>().IsHoldingObject())
+        {
+            playerActions.Look.performed -= ctx => Look(ctx.ReadValue<Vector2>());
+            playerActions.Look.performed += ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());
+        }
+    }
+
+    public void StopRotation()
+    {
+        if (GetComponent<PickUpController>().IsHoldingObject())
+        {
+            GetComponent<PickUpController>().isRotating = false;
+            playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
+            playerActions.Look.performed -= ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());
+        }
     }
 
     #endregion

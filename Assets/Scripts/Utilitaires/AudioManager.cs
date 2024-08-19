@@ -81,7 +81,6 @@ public class AudioManager : NetworkBehaviour
 
     #endregion
 
-
     #region Sound Effects
     /// <summary>
     /// Appele le serveur pour faire spawn un sound effect temporaire sur tous les clients

@@ -56,7 +56,7 @@ public class ConfigDonjonUI : MonoBehaviour
         doc.panelSettings.SetScreenToPanelSpaceFunction((Vector2 screenPosition) =>
         {
             Vector2 invalidPos = new(float.NaN, float.NaN);
-            Ray cameraRay = Camera.main.ScreenPointToRay(Input.mousePosition); //Utiliser l'input de l'autre systeme d'input
+            Ray cameraRay = Camera.main.ScreenPointToRay(Input.mousePosition);
             Debug.DrawRay(cameraRay.origin, cameraRay.direction * interactDistance, Color.magenta);
 
             if (!Physics.Raycast(cameraRay, out RaycastHit hit, interactDistance, LayerMask.GetMask("UI")))
