@@ -1,16 +1,25 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
-public class AccelProjectile : MonoBehaviour
+public class AccelProjectile : NetworkBehaviour
 {
     private float buffDuration;
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsServer)
+        {
+            GetComponent<Collider>().enabled = false;
+        }
+    }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            other.GetComponent<MonPlayerController>().ReceiveSpeedBoost(buffDuration);
+            MultiplayerGameManager.Instance.SendSpeedBoost(buffDuration, new ClientRpcParams() { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { other.GetComponent<NetworkObject>().OwnerClientId } } });
             Destroy(gameObject);
         }
     }

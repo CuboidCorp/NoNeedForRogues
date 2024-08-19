@@ -485,6 +485,7 @@ public class MonPlayerController : Entity
     /// </summary>
     public override void Die()
     {
+        StopAllCoroutines(); //Pr faire gaffe au poison
         SendDeathServerRpc(OwnerClientId);
         animator.SetTrigger("Died");
         gameObject.GetComponent<SpellRecognition>().enabled = false;

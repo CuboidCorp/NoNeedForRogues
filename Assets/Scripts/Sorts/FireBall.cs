@@ -7,7 +7,7 @@ public class FireBall : NetworkBehaviour
     private float explosionRange;
     private float explosionForce;
 
-    public override void OnNetworkSpawn() //TODO : Problème c'est que la physique sera ptet pas bien transmise
+    public override void OnNetworkSpawn()
     {
         if (!IsServer)
         {

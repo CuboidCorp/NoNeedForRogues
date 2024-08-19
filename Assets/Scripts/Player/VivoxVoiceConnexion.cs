@@ -6,6 +6,7 @@ using Unity.Services.Core;
 using Unity.Services.Vivox;
 using Unity.Services.Vivox.AudioTaps;
 using UnityEngine;
+
 public class VivoxVoiceConnexion : NetworkBehaviour
 {
 
@@ -54,11 +55,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         servVivox.ParticipantRemovedFromChannel += ParticipantRemoved;
         servVivox.LoggedOut += OnLoggedOut;
         await servVivox.InitializeAsync();
-        LoginOptions log = new()
-        {
-            ParticipantUpdateFrequency = ParticipantPropertyUpdateFrequency.OnePerSecond //FAIT CHIER Mais le state change qui est mieux ne marche pas
-        };
-        await servVivox.LoginAsync(log);
+        await servVivox.LoginAsync();
     }
 
     /// <summary>
@@ -107,9 +104,6 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         int playIndex = MultiplayerGameManager.Instance.AddPlayerVivoxInfo(vivoxParticipant.PlayerId, vivoxParticipant);
         if (!vivoxParticipant.IsSelf)
         {
-            Debug.Log("Player added" + vivoxParticipant.PlayerId);
-            vivoxParticipant.ParticipantSpeechDetected += DebugSpeech;
-            vivoxParticipant.ParticipantAudioEnergyChanged += DebugActionEnergy;
             participants.Add(vivoxParticipant);
             GameObject tap = vivoxParticipant.CreateVivoxParticipantTap("Tap " + vivoxParticipant.PlayerId);
             MultiplayerGameManager.Instance.AddParamToParticipantAudioSource(playIndex);
@@ -128,14 +122,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     {
         if (isConnected)
         {
-            servVivox.Set3DPosition(gameObject, channelName); //Nécessaire ?
-            //if (Input.GetKeyDown(KeyCode.Space))
-            //{
-            //    foreach (VivoxParticipant vivoxParticipant in participants)
-            //    {
-            //        Debug.Log(vivoxParticipant.DisplayName + "\n" + vivoxParticipant.PlayerId + "\n" + vivoxParticipant.AudioEnergy + "\n" + vivoxParticipant.SpeechDetected);
-            //    }
-            //}
+            servVivox.Set3DPosition(gameObject, channelName); //Check si ça marche sans avec les participants taps
         }
     }
 
@@ -162,25 +149,5 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         await servVivox.LogoutAsync();
         AuthenticationService.Instance.SignOut();
         StopAllCoroutines();
-    }
-
-    private void DebugSpeech() //NE MARCHEPAS VIVOX NUL ;(
-    {
-        Debug.Log("SpeechDetected");
-    }
-
-    private void DebugActionEnergy()
-    {
-        Debug.Log("EnergyChanged");
-    }
-
-    /// <summary>
-    /// Quand on detecte du speech de la part d'un participant
-    /// </summary>
-    /// <param name="obj">L'objet a activer pr le speech detected</param>
-    private void OnSpeechDetected(GameObject obj)
-    {
-        Debug.Log("Speech detected");
-        obj.SetActive(true);
     }
 }

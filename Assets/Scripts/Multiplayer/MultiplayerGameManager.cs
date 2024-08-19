@@ -859,6 +859,17 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Envoie les infos au joueur qu'il a reçu un speed boost
+    /// </summary>
+    /// <param name="duree">Durée du buff</param>
+    /// <param name="clientRpcParams">L'id du client a sauvegardé</param>
+    [ClientRpc]
+    public void SendSpeedBoost(float duree, ClientRpcParams clientRpcParams)
+    {
+        MonPlayerController.instanceLocale.ReceiveSpeedBoost(duree);
+    }
+
     #endregion
 
     #region Gestion Objets
@@ -1053,12 +1064,11 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private void ChangeLevel()
     {
-        Debug.Log("Change Level");
         bool direction = playerGoingUp[0];
 
         if (!isInLobby)
         {
-            Debug.Log("Change level going " + (direction ? "up" : "down") + "Current etage : " + GenerationDonjon.instance.currentEtage);
+            Debug.Log("Change level going " + (direction ? "up" : "down") + " : Current etage : " + GenerationDonjon.instance.currentEtage);
             playerRepartitionByStairs = new ulong[escaliersGo.Length][];
             for (int i = 0; i < escaliersGo.Length; i++)
             {
