@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using Unity.Netcode;
-using Unity.Services.Authentication;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
@@ -48,8 +47,8 @@ public class MonPlayerController : Entity
     private float yaw = 0.0f;
     private float pitch = 0.0f;
 
-    private Action<InputAction.CallbackContext> actLook = ctx => Look(ctx.ReadValue<Vector2>());
-    private Action<InputAction.CallbackContext> actRotation = ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());
+    private Action<InputAction.CallbackContext> actLook;
+    private Action<InputAction.CallbackContext> actRotation;
 
     #endregion
 
@@ -98,6 +97,8 @@ public class MonPlayerController : Entity
     {
         controls = new PlayerControls();
         playerActions = controls.Player;
+        actLook = ctx => Look(ctx.ReadValue<Vector2>());
+        actRotation = ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());
 
         playerActions.Move.performed += OnMove;
         playerActions.Move.canceled += _ => moveInput = Vector2.zero;
@@ -144,7 +145,7 @@ public class MonPlayerController : Entity
         //On randomize le joueur
         if (seed == 0)
         {
-            seed = Random.Range(0, 100000);
+            seed = UnityEngine.Random.Range(0, 100000);
         }
     }
 
@@ -827,7 +828,6 @@ public class MonPlayerController : Entity
     /// <param name="direction">La direction ou on regarde</param>
     private void Look(Vector2 direction)
     {
-        Debug.Log("Look");
         if (invertCamera)
         {
             direction.y *= -1;
@@ -843,7 +843,6 @@ public class MonPlayerController : Entity
 
     private void StartRotation()
     {
-        Debug.Log("Start rotation");
         if (GetComponent<PickUpController>().IsHoldingObject())
         {
             playerActions.Look.performed -= actLook;
@@ -853,10 +852,8 @@ public class MonPlayerController : Entity
 
     public void StopRotation()
     {
-        Debug.Log("Stop rotation");
         if (GetComponent<PickUpController>().IsHoldingObject())
         {
-            Debug.Log("R end");
             GetComponent<PickUpController>().isRotating = false;
             playerActions.Look.performed += actLook;
             playerActions.Look.performed -= actRotation;

@@ -7658,7 +7658,7 @@ MonoBehaviour:
   holdArea: {fileID: 4356789553203676868}
   playerCam: {fileID: 567784544684724839}
   isRotating: 0
-  rotationSensitivity: 10
+  rotationSensitivity: 1
   pickupRange: 5
   pickupForce: 150
   throwForce: 10

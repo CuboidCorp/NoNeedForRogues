@@ -106,17 +106,19 @@ public class PickUpController : NetworkBehaviour
     private void SubstituteCopyForReal(Vector3 force)
     {
         Vector3 posCopie = copieObj.transform.position;
+        Vector3 rotCopie = copieObj.transform.rotation.eulerAngles;
         MultiplayerGameManager.Instance.DestroyCopieServerRpc(heldObj, OwnerClientId);
-        SetObjectDataServerRpc(heldObj, posCopie, force);
+        SetObjectDataServerRpc(heldObj, posCopie, rotCopie, force);
     }
 
     #endregion
 
 
     [ServerRpc(RequireOwnership = false)]
-    private void SetObjectDataServerRpc(NetworkObjectReference obj, Vector3 newPosition, Vector3 force)
+    private void SetObjectDataServerRpc(NetworkObjectReference obj, Vector3 newPosition, Vector3 rotation, Vector3 force)
     {
         ((GameObject)obj).transform.position = newPosition;
+        ((GameObject)obj).transform.rotation = Quaternion.Euler(rotation);
         ((GameObject)obj).GetComponent<Rigidbody>().AddForce(force, ForceMode.Impulse);
 
     }
@@ -193,7 +195,6 @@ public class PickUpController : NetworkBehaviour
     {
         if (copieObj != null)
         {
-            Debug.Log("Rotating");
             isRotating = true;
             //Fait tourner l'objet sur lui meme
             float XaxisRotation = direction.x * rotationSensitivity;

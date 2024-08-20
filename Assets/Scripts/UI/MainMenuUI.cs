@@ -58,13 +58,10 @@ public class MainMenuUI : MonoBehaviour
             Destroy(errorHandler);
         }
 
-        DontDestroy dontDestroyObj = Object.FindObjectOfType<DontDestroy>();
-        while (dontDestroyObj != null)
-        {
-            Destroy(dontDestroyObj.gameObject);
-            dontDestroyObj = Object.FindObjectOfType<DontDestroy>();
-        }
-        
+        Scene dontDestroyScene = SceneManager.GetSceneByName("DontDestroyOnLoad");
+        Debug.Log(dontDestroyScene.isLoaded);
+        //TODO : Suppr les dont destroy on load
+
     }
 
     /// <summary>
@@ -194,10 +191,10 @@ public class MainMenuUI : MonoBehaviour
 
         await UnityServices.InitializeAsync();
 
-        if(!AuthenticationService.Instance.IsSignedIn)
+        if (!AuthenticationService.Instance.IsSignedIn)
         {
 #if UNITY_EDITOR
-        AuthenticationService.Instance.SwitchProfile(Profile);
+            AuthenticationService.Instance.SwitchProfile(Profile);
 #endif
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
         }
