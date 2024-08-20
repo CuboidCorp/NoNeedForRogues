@@ -57,6 +57,14 @@ public class MainMenuUI : MonoBehaviour
             ShowError(errorHandler.GetComponent<ErrorHandler>().message);
             Destroy(errorHandler);
         }
+
+        DontDestroy dontDestroyObj = Object.FindObjectOfType<DontDestroy>();
+        while (dontDestroyObj != null)
+        {
+            Destroy(dontDestroyObj.gameObject);
+            dontDestroyObj = Object.FindObjectOfType<DontDestroy>();
+        }
+        
     }
 
     /// <summary>
