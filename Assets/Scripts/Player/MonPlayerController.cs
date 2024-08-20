@@ -48,6 +48,9 @@ public class MonPlayerController : Entity
     private float yaw = 0.0f;
     private float pitch = 0.0f;
 
+    private Action<InputAction.CallbackContext> actLook = ctx => Look(ctx.ReadValue<Vector2>());
+    private Action<InputAction.CallbackContext> actRotation = ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());
+
     #endregion
 
     #region Movement Variables
@@ -96,12 +99,10 @@ public class MonPlayerController : Entity
         controls = new PlayerControls();
         playerActions = controls.Player;
 
-        Action<InputAction.CallbackContext> action = ctx => Jump(); //A faire partout
-
         playerActions.Move.performed += OnMove;
         playerActions.Move.canceled += _ => moveInput = Vector2.zero;
         playerActions.Jump.performed += _ => Jump();
-        playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
+        playerActions.Look.performed += actLook;
         playerActions.Run.started += _ => StartRun();
         playerActions.Run.canceled += _ => StopRun();
         playerActions.LongAttack.started += _ => StartLongAttack();
@@ -845,9 +846,8 @@ public class MonPlayerController : Entity
         Debug.Log("Start rotation");
         if (GetComponent<PickUpController>().IsHoldingObject())
         {
-            Debug.Log("R start");
-            playerActions.Look.performed -= ctx => Look(ctx.ReadValue<Vector2>());
-            playerActions.Look.performed += ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());
+            playerActions.Look.performed -= actLook;
+            playerActions.Look.performed += actRotation;
         }
     }
 
@@ -858,8 +858,8 @@ public class MonPlayerController : Entity
         {
             Debug.Log("R end");
             GetComponent<PickUpController>().isRotating = false;
-            playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
-            playerActions.Look.performed -= ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());
+            playerActions.Look.performed += actLook;
+            playerActions.Look.performed -= actRotation;
         }
     }
 
