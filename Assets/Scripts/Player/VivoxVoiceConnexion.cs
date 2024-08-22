@@ -77,6 +77,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         ChatCapability chat = ChatCapability.AudioOnly;
         Channel3DProperties channel3DProperties = new(maxDistance, minAudibleDistance, audioFadeIntensity, AudioFadeModel.InverseByDistance);
         await servVivox.JoinPositionalChannelAsync(channelName, chat, channel3DProperties);
+        Debug.Log("Pos Channel joined");
     }
 
     /// <summary>
@@ -90,6 +91,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
             try
             {
                 await servVivox.JoinEchoChannelAsync(echoChannelName, ChatCapability.AudioOnly);
+                Debug.Log("Echo Channel joined");
                 GameObject channelTap = new("ChannelTap")
                 {
                     tag = "ChannelTap" //Pour les retrouver plus tard

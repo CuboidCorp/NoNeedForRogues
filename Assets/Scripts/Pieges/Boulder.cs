@@ -6,7 +6,7 @@ using UnityEngine;
 public class Boulder : MonoBehaviour
 {
     public float speed = 5f;
-    public float damage = 1000f;
+    public float damage = 30f;
     public int direction = -1; // -1 = random, 0 = x+, 1 = x-, 2 = z+, 3 = z-
 
     private Vector3 moveDirection;
