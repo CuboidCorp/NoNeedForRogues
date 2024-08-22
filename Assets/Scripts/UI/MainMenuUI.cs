@@ -58,10 +58,6 @@ public class MainMenuUI : MonoBehaviour
             Destroy(errorHandler);
         }
 
-        Scene dontDestroyScene = SceneManager.GetSceneByName("DontDestroyOnLoad");
-        Debug.Log(dontDestroyScene.isLoaded);
-        //TODO : Suppr les dont destroy on load
-
     }
 
     /// <summary>
@@ -183,11 +179,15 @@ public class MainMenuUI : MonoBehaviour
     /// </summary>
     private async void CreationPlayerInfoGameObject(PlayerInfo playerInfo)
     {
-        GameObject playerInfoGameObject = new("PlayerInfo");
-        playerInfoGameObject.AddComponent<DataHolder>();
-        playerInfoGameObject.GetComponent<DataHolder>().PlayerInfo = playerInfo;
+        if(FindObjectOfType<DataHolder>() == null) //Si le data holder existe déjà on ne le recree pas
+        {
+            GameObject playerInfoGameObject = new("PlayerInfo");
+            playerInfoGameObject.AddComponent<DataHolder>();
+            playerInfoGameObject.GetComponent<DataHolder>().PlayerInfo = playerInfo;
 
-        DontDestroyOnLoad(playerInfoGameObject);
+            DontDestroyOnLoad(playerInfoGameObject);
+        }
+        
 
         await UnityServices.InitializeAsync();
 

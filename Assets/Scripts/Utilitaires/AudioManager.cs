@@ -47,9 +47,9 @@ public class AudioManager : NetworkBehaviour
     #endregion
 
 
-    private void Awake()
+    private void Awake() //On detruit pas l'audiomanager car il est sensé être partout
     {
-        if (instance != null && instance != this)
+        if (instance != null)
         {
             Destroy(gameObject);
         }

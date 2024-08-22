@@ -33,8 +33,6 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// </summary>
     [SerializeField] private float audioFadeIntensity = 1.0f;
 
-    //[SerializeField] private float checkSpeakingInterval = 0.5f;
-
     public readonly List<VivoxParticipant> participants = new();
 
     #endregion
@@ -54,9 +52,20 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         servVivox.LoggedIn += OnLoggedIn;
         servVivox.ParticipantAddedToChannel += ParticipantAdded;
         servVivox.ParticipantRemovedFromChannel += ParticipantRemoved;
-        servVivox.LoggedOut += OnLoggedOut;
         await servVivox.InitializeAsync();
         await servVivox.LoginAsync();
+    }
+
+    /// <summary>
+    /// Deconnexion de vivox
+    /// </summary>
+    /// <returns>Quand la deconnexion est terminée</returns>
+    public async Task LeaveVivox()
+    {
+        isConnected = false;
+        await servVivox.LeaveAllChannelsAsync();
+        await servVivox.LogoutAsync();
+        AuthenticationService.Instance.SignOut();
     }
 
     /// <summary>
@@ -146,17 +155,5 @@ public class VivoxVoiceConnexion : NetworkBehaviour
             //On enleve le participant dans l'array de multiplayerGameManager
             vivoxParticipant.DestroyVivoxParticipantTap();
         }
-    }
-
-    /// <summary>
-    /// Quand on se deconnecte de Vivox on quitte tous les channels
-    /// </summary>
-    private async void OnLoggedOut()
-    {
-        isConnected = false;
-        await servVivox.LeaveAllChannelsAsync();
-        await servVivox.LogoutAsync();
-        AuthenticationService.Instance.SignOut();
-        StopAllCoroutines();
     }
 }

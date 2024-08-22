@@ -264,6 +264,14 @@ public class MonPlayerController : Entity
     }
 
     /// <summary>
+    /// Quitte le voice chat vivox
+    /// </summary>
+    public async void LeaveVivox()
+    {
+        await voiceConnexion.LeaveVivox();
+    }
+
+    /// <summary>
     /// Update meilleur pr les checks car appelé à chaque frame
     /// </summary>
     private void FixedUpdate()
@@ -1065,6 +1073,17 @@ public class MonPlayerController : Entity
     }
 
     #endregion
+
+    public void Deconnexion()
+    {
+        LeaveVivox();
+        GetComponent<PickUpController>().DropObject();
+        Destroy(MultiplayerGameManager.instance.gameObject);
+        if(GenerationDonjon.instance != null)
+        {
+            Destroy(GenerationDonjon.instance.gameObject);
+        }
+    }
 
     /// <summary>
     /// On gère si qqn quitte le jeu

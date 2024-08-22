@@ -172,10 +172,10 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void Disconnect()
     {
-        Debug.Log("Disconnect");
-        MonPlayerController.instanceLocale.gameObject.GetComponent<PickUpController>().DropObject();
+        MonPlayerController.instanceLocale.gameObject.Deconnexion();
         NetworkManager.Singleton.Shutdown();
         SceneManager.LoadScene("MenuPrincipal");
+        Destroy(gameObject);
     }
 
     #endregion
