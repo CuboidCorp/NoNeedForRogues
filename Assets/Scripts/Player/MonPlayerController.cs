@@ -494,7 +494,6 @@ public class MonPlayerController : Entity
         Heal(healAmount);
     }
 
-
     /// <summary>
     /// Gère la mort du joueur, soit on remplace le joueur par sa ragdoll
     /// </summary>

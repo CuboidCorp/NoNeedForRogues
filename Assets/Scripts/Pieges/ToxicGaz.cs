@@ -1,9 +1,11 @@
 using UnityEngine;
 
-public class ToxicGaz : Network
+public class ToxicGaz : MonoBehaviour
 {
     public float expansionSpeed = .5f;
-    public float damage = 1f;
+    public float poisonDamage = 1f;
+    public int poisonDuration = 1;
+    public float damageInterval = 1.5f;
 
     private Vector3 maxSize = new(100, 100, 100);
     private List<MonPlayerController> listPlayersInside;
@@ -13,8 +15,13 @@ public class ToxicGaz : Network
     {
         listPlayersInside = [];
         StartCoroutine(Expansion());
+        StartCoroutine(DamageAllPlayers());
     }
 
+    /// <summary>
+    /// Gère l'expansion du gaz (qui passe a travers les murs lol)
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator Expansion()
     {
         while(true)
@@ -24,9 +31,26 @@ public class ToxicGaz : Network
         }
     }
 
-    //TODO : Rajouter coroutine pr damage ts les players inside
+    /// <summary>
+    /// Fait des degats tous les damageInterval secondes aux joueurs dans le gaz sous forme de degats de poison
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator DamageAllPlayers()
+    {
+        while(true)
+        {
+            foreach(MonPlayerController player in listPlayersInside)
+            {
+                player.StartPoison(poisonDamage, poisonDuration);
+            }
+            yield return new WaitForSeconds(damageInterval);
+        }
+    }
 
-
+    /// <summary>
+    /// Quand un joueur rentre dans le gaz on le rajoute dans la liste des joueur a empoisonner
+    /// </summary>
+    /// <param name="other">Le collider qui entre dans le gaz</param>
     private void OnTriggerEnter(Collision other)
     {
         if (other.gameObject.CompareTag("Player"))
@@ -35,7 +59,10 @@ public class ToxicGaz : Network
         }
     }
 
-
+    /// <summary>
+    /// Quand un joueur sort du gaz on le rajoute dans la liste des joueur a empoisonner
+    /// </summary>
+    /// <param name="other">Le collider qui sort du gaz</param>
     private void OnTriggerExit(Collision other)
     {
         if (other.gameObject.CompareTag("Player"))

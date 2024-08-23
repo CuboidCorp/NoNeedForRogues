@@ -44,6 +44,17 @@ public class AudioManager : NetworkBehaviour
         SPIKE_UP
     }
 
+    /// <summary>
+    /// Les sound effect qui font du bruit jusqu'à ce qu'on les arrete
+    /// </summary>
+    [SerializeField] private AudioClip[] loopingClips; //TODO : Ptet mieux de les gerer dans leur trucs respectifs
+
+    public enum SoundEffectLoop
+    {
+        CASTING,
+        MOVING
+    }
+
     #endregion
 
 

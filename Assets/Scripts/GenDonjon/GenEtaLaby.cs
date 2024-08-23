@@ -457,11 +457,31 @@ public class GenEtaLaby : GenerationEtage
         }
         else
         {
-            coffreScript.onOpen.AddListener(() => Debug.Log("PIEGE MEC"));
-            Debug.LogWarning("Pas de pieges dans les coffres encore");
-            //PIEGE
-            //Pr piege l'action est de summon 
-            //Summon fleches, summon fleches poison, summon "gaz" qui empoisonne, summon bombes, summon fake bombes (Rien juste un troll)
+            int typePiege = Random.Range(0, 6);
+            switch(typePiege)
+            {
+                case 0: //Fleches normales
+                    coffreScript.onOpen.AddListener(() => Debug.Log("Fleche"));
+                    break;
+                case 1: //Fleches empoisonnées
+                    coffreScript.onOpen.AddListener(() => Debug.Log("FLECHES EMPOISONNEES"));
+                    break;
+                case 2: //Gaz poison
+                    //Le son du gaz devrait être constant tant qu'il y a du gaz
+                    coffreScript.onOpen.AddListener(() => Debug.Log("Gaz toxique"));
+                    break;
+                case 3: //Gaz dodo
+                    //Le son du gaz devrait être constant tant qu'il y a du gaz
+                    coffreScript.onOpen.AddListener(() => Debug.Log("GAZ DODO"));
+                    break;
+                case 4: //Bombes
+                    coffreScript.onOpen.AddListener(() => Debug.Log("IM BOUT TO BLOW"));
+                    break;
+                case 5: //Fake bombs
+                    coffreScript.onOpen.AddListener(() => Debug.Log("TROLLED"));
+                    break;
+
+            }
         }
     }
 
