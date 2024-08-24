@@ -70,6 +70,10 @@ public class AudioManager : NetworkBehaviour
 
     #region Musique
 
+    /// <summary>
+    /// Change la musique à jouer
+    /// </summary>
+    /// <param name="musicToPlay">La nouvelle musique à jouer</param>
     public void SetMusic(Musique musicToPlay)
     {
         AudioClip music = musiques[(int)musicToPlay];
@@ -80,11 +84,17 @@ public class AudioManager : NetworkBehaviour
         GetComponent<AudioSource>().clip = music;
     }
 
+    /// <summary>
+    /// Active la musique en cours
+    /// </summary>
     public void ActivateMusic()
     {
         GetComponent<AudioSource>().Play();
     }
 
+    /// <summary>
+    /// Arrete la musique en cours
+    /// </summary>
     public void StopMusic()
     {
         GetComponent<AudioSource>().Stop();

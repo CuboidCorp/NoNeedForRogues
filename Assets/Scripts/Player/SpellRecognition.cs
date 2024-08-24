@@ -2,6 +2,7 @@ using UnityEngine.Windows.Speech;
 using UnityEngine;
 using System.Text;
 using System;
+using Unity.Netcode;
 
 public class SpellRecognition : MonoBehaviour
 {
@@ -134,6 +135,9 @@ public class SpellRecognition : MonoBehaviour
             case "Offendas":
                 Vector3 lookDir = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward;
                 gameObject.GetComponent<MonPlayerController>().Dash(lookDir, dashForce);
+                break;
+            case "TPALL":
+                MultiplayerGameManager.Instance.TeleportAllServerRpc(gameObject.GetComponent<NetworkObject>().OwnerClientId);
                 break;
         }
     }

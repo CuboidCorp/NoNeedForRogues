@@ -59,6 +59,8 @@ public class GenEtaLaby : GenerationEtage
     private GameObject prefabPiegeCaillou;
     private GameObject prefabMurCompresseur;
     private GameObject prefabPorteMalefique;
+    private GameObject prefabToxicGaz;
+    private GameObject prefabSleepingGaz;
     #endregion
 
     public override void GenerateEtage()
@@ -83,9 +85,12 @@ public class GenEtaLaby : GenerationEtage
         prefabPiegeScie = Resources.Load<GameObject>(pathToPieges + "/PiegeScie");
         prefabPiegeOurs = Resources.Load<GameObject>(pathToPieges + "/PiegePique");
         prefabArrowWall = Resources.Load<GameObject>(pathToPieges + "/PiegeFleches");
+        prefabPiegeHache = Resources.Load<GameObject>(pathToPieges + "/PiegeHache");
         prefabPiegeCaillou = Resources.Load<GameObject>(pathToPieges + "/PiegeCaillou");
         prefabMurCompresseur = Resources.Load<GameObject>(pathToPieges + "/PiegeMurCompresseur");
         prefabPorteMalefique = Resources.Load<GameObject>(pathToPieges + "/PiegePorteMalefique");
+        prefabToxicGaz = Resources.Load<GameObject>(pathToPieges + "/ToxicGaz");
+        prefabSleepingGaz = Resources.Load<GameObject>(pathToPieges + "/SleepingGaz");
 
     }
 
@@ -458,7 +463,7 @@ public class GenEtaLaby : GenerationEtage
         else
         {
             int typePiege = Random.Range(0, 6);
-            switch(typePiege)
+            switch (typePiege)
             {
                 case 0: //Fleches normales
                     coffreScript.onOpen.AddListener(() => Debug.Log("Fleche"));
@@ -468,11 +473,11 @@ public class GenEtaLaby : GenerationEtage
                     break;
                 case 2: //Gaz poison
                     //Le son du gaz devrait être constant tant qu'il y a du gaz
-                    coffreScript.onOpen.AddListener(() => Debug.Log("Gaz toxique"));
+                    coffreScript.onOpen.AddListener(() => SummonToxicGaz(coffreScript.posObjetInterne.position, 1, 0.5f, 5));
                     break;
                 case 3: //Gaz dodo
                     //Le son du gaz devrait être constant tant qu'il y a du gaz
-                    coffreScript.onOpen.AddListener(() => Debug.Log("GAZ DODO"));
+                    coffreScript.onOpen.AddListener(() => SummonSleepingGaz(coffreScript.posObjetInterne.position, 5, .5f, 5));
                     break;
                 case 4: //Bombes
                     coffreScript.onOpen.AddListener(() => Debug.Log("IM BOUT TO BLOW"));
@@ -485,6 +490,8 @@ public class GenEtaLaby : GenerationEtage
         }
     }
 
+
+
     #endregion
 
     #region Generation Pieges
@@ -492,6 +499,40 @@ public class GenEtaLaby : GenerationEtage
     {
         //On genere les pieges en fonction de la diffculté --> Pr le moment pas de lien entre les items et tt
         //Donc n'importe quel pos mais pas dans les deadends pr certains
+    }
+
+    /// <summary>
+    /// Summon du gaz toxique avec certains parametres
+    /// </summary>
+    /// <param name="position">La position du gaz</param>
+    /// <param name="damage">Les degats de poison </param>
+    /// <param name="expansionSpeed">Expansion du gaz</param>
+    /// <param name="gazDuration">Durée avant la destruction du gaz</param>
+    private void SummonToxicGaz(Vector3 position, float damage, float expansionSpeed, float gazDuration)
+    {
+        GameObject toxicGaz = Instantiate(prefabToxicGaz, position, Quaternion.identity);
+        toxicGaz.GetComponent<NetworkObject>().Spawn();
+        toxicGaz.GetComponent<ToxicGaz>().poisonDamage = damage;
+        toxicGaz.GetComponent<ToxicGaz>().expansionSpeed = expansionSpeed;
+
+        Destroy(toxicGaz, gazDuration);
+    }
+
+    /// <summary>
+    /// Summon du gaz qui fait dormir avec certains parametres
+    /// </summary>
+    /// <param name="position">La position du gaz</param>
+    /// <param name="sleepDuration">Les degats de poison </param>
+    /// <param name="expansionSpeed">Expansion du gaz</param>
+    /// <param name="gazDuration">Durée avant la destruction du gaz</param>
+    private void SummonSleepingGaz(Vector3 position, float sleepDuration, float expansionSpeed, float gazDuration)
+    {
+        GameObject sleepingGaz = Instantiate(prefabSleepingGaz, position, Quaternion.identity);
+        sleepingGaz.GetComponent<NetworkObject>().Spawn();
+        sleepingGaz.GetComponent<SleepingGaz>().sleepingTime = sleepDuration;
+        sleepingGaz.GetComponent<ToxicGaz>().expansionSpeed = expansionSpeed;
+
+        Destroy(sleepingGaz, gazDuration);
     }
     #endregion
 

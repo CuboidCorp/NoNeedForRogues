@@ -8,7 +8,7 @@ public class PressurePlate : NetworkBehaviour
     /// <summary>
     /// Le poids total sur la plaque (Quand 0, la plaque est reset)
     /// </summary>
-    private float totalWeight = 0;
+    [SerializeField] private float totalWeight = 0;
 
     /// <summary>
     /// Le poids minimum pour presser la plaque
@@ -64,7 +64,7 @@ public class PressurePlate : NetworkBehaviour
         {
             SendEnterServerRpc(other.GetComponent<Entity>().poids);
         }
-        if (other.CompareTag("PickUp"))
+        else if (other.CompareTag("PickUp"))
         {
             SendEnterServerRpc(other.GetComponent<WeightedObject>().weight);
         }
@@ -76,7 +76,7 @@ public class PressurePlate : NetworkBehaviour
         {
             SendExitServerRpc(other.GetComponent<Entity>().poids);
         }
-        if (other.CompareTag("PickUp"))
+        else if (other.CompareTag("PickUp"))
         {
             SendExitServerRpc(other.GetComponent<WeightedObject>().weight);
         }
@@ -92,6 +92,7 @@ public class PressurePlate : NetworkBehaviour
         totalWeight += weight;
         if (totalWeight >= minWeightToPress)
         {
+            Debug.Log("Press");
             animator.Play(pressAnimationName);
             StartCoroutine(WaitForEndPress());
         }
@@ -127,6 +128,7 @@ public class PressurePlate : NetworkBehaviour
         totalWeight -= weight;
         if (totalWeight < minWeightToPress)
         {
+            Debug.Log("Reset");
             StopAllCoroutines();
             animator.Play(resetAnimationName);
             if (onReset != null)

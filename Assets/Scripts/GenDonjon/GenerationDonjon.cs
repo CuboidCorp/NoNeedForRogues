@@ -188,7 +188,7 @@ public class GenerationDonjon : MonoBehaviour
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs, pathToPieces, pathToObjets, pathToPotions, pathToChests, pathToPieges);
         genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs, holderItems);
         genEtage.GenerateEtage();
-        if (isNewEtage)
+        if (isNewEtage && estServ)
         {
             genEtage.GenerateItems();
         }

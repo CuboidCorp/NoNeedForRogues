@@ -6,7 +6,8 @@ using UnityEngine;
 /// </summary>
 public class SpellList : MonoBehaviour
 {
-    public static string[] spells = { "Crepitus", "Lux", "Mortuus", "Ragdoll", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "François François François", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas" };
+    //TODO : Cleanup des sorts temps
+    public static string[] spells = { "Crepitus", "Lux", "Mortuus", "Ragdoll", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "François François François", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "TPALL" }; //TPALL est TEMPORAIRE A SUPPR
 
     /// <summary>
     /// Crée une explosion à l'endroit souhaité

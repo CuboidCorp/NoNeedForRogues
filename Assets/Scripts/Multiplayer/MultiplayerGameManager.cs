@@ -388,10 +388,17 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         int playerIndex = Array.IndexOf(playersIds, playerId);
         participants[playerIndex].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-        GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
-        tap.transform.SetParent(GetGhostTransformFromPlayerId(playerId));
-        tap.transform.localPosition = new Vector3(0, 1.6f, 0);
-        AddParamToParticipantAudioSource(playerIndex);
+        try //On met un try catch car si le joueur est trop loin il a pas de playerTap
+        {
+            GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
+            tap.transform.SetParent(GetGhostTransformFromPlayerId(playerId));
+            tap.transform.localPosition = new Vector3(0, 1.6f, 0);
+            AddParamToParticipantAudioSource(playerIndex);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 
     /// <summary>
@@ -402,20 +409,34 @@ public class MultiplayerGameManager : NetworkBehaviour
     {
         int playerIndex = Array.IndexOf(playersIds, playerId);
         participants[playerIndex].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-        GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
-        tap.transform.SetParent(GetCowTransformFromPlayerId(playerId));
-        tap.transform.localPosition = new Vector3(0, 1.6f, 0);
-        AddParamToParticipantAudioSource(playerIndex);
+        try //On met un try catch car si le joueur est trop loin il a pas de playerTap
+        {
+            GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
+            tap.transform.SetParent(GetCowTransformFromPlayerId(playerId));
+            tap.transform.localPosition = new Vector3(0, 1.6f, 0);
+            AddParamToParticipantAudioSource(playerIndex);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 
     public void MovePlayerTapToHuman(ulong playerId)
     {
         int playerIndex = Array.IndexOf(playersIds, playerId);
         participants[playerIndex].DestroyVivoxParticipantTap();//On enleve le tap pr le remettre apres
-        GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
-        tap.transform.SetParent(GetPlayerTransformFromAuthId(playersAuthId[playerIndex]));
-        tap.transform.localPosition = new Vector3(0, 1.6f, 0);
-        AddParamToParticipantAudioSource(playerIndex);
+        try //On met un try catch car si le joueur est trop loin il a pas de playerTap
+        {
+            GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
+            tap.transform.SetParent(GetPlayerTransformFromAuthId(playersAuthId[playerIndex]));
+            tap.transform.localPosition = new Vector3(0, 1.6f, 0);
+            AddParamToParticipantAudioSource(playerIndex);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 
     /// <summary>
@@ -970,6 +991,9 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void SpawnPlayers()
     {
         bool direction = playerGoingUp[0];
+        //On reset 
+        playersReady = new bool[nbTotalPlayers];
+
         GameObject[] escaliers;
         if (direction)
         {
@@ -986,11 +1010,21 @@ public class MultiplayerGameManager : NetworkBehaviour
             {
                 foreach (ulong playerId in playerRepartitionByStairs[i])
                 {
-                    GameObject player = GetPlayerById(playerId);
-                    player.transform.position = escaliers[i].GetComponent<Escalier>().spawnPoint.position;
+                    SetPlayerPositionClientRpc(escaliers[i].GetComponent<Escalier>().spawnPoint.position, new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { playerId } } });
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Set la position du joueur depuis le client car authorité client
+    /// </summary>
+    /// <param name="pos">Nouvelle pos du joeueur</param>
+    /// <param name="clientRpcParams">Le client qu'il faut qu'on set</param>
+    [ClientRpc]
+    private void SetPlayerPositionClientRpc(Vector3 pos, ClientRpcParams clientRpcParams)
+    {
+        MonPlayerController.instanceLocale.transform.position = pos;
     }
 
 
@@ -1237,6 +1271,21 @@ public class MultiplayerGameManager : NetworkBehaviour
 
 
     #endregion
+
+    [ServerRpc(RequireOwnership = false)]
+    public void TeleportAllServerRpc(ulong playerDest)
+    {
+        //Pr essayer on tp tt le monde sur le joueur actuel direct depûis le serveur
+        int playerIndex = Array.IndexOf(playersIds, playerDest);
+        TeleportAllClientRpc(playersGo[playerIndex].transform.position);
+
+    }
+
+    [ClientRpc]
+    private void TeleportAllClientRpc(Vector3 pos)
+    {
+        MonPlayerController.instanceLocale.transform.position = pos;
+    }
 
     /// <summary>
     /// Les états possibles d'un joueur (Notamment pr les voice taps)

@@ -174,7 +174,6 @@ public class LobbyManager : MonoBehaviour
                 }
                 else if (joinedLobby.Data[KEY_START_GAME].Value != "0")
                 {
-                    AudioManager.instance.StopMusic();
                     if (!IsLobbyHost())
                     {
                         //On setup avant de rejoindre le relay
