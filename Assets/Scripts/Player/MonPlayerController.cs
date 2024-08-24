@@ -945,7 +945,7 @@ public class MonPlayerController : Entity
         }
         else
         {
-            MultiplayerGameManager.Instance.SetSpeedyPlayerTap(OwnerClientId);
+            MultiplayerGameManager.Instance.SetSpeedyPlayerTapServerRpc(OwnerClientId);
         }
         StartCoroutine(EndSpeedBoost(buffDuration));
     }
@@ -975,7 +975,7 @@ public class MonPlayerController : Entity
             }
             else
             {
-                MultiplayerGameManager.Instance.ResetPlayerTap(OwnerClientId);
+                MultiplayerGameManager.Instance.ResetPlayerTapServerRpc(OwnerClientId);
             }
         }
     }

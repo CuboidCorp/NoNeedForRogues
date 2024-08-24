@@ -61,7 +61,6 @@ public class SpellRecognition : MonoBehaviour
             Debug.Log(args.text);
         Vector3 posProj = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
 
-        AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.SPELL_CAST);
         StatsManager.Instance.AddSpellCast();
 
         switch (args.text)

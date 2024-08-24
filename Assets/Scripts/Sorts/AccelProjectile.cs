@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -20,7 +19,7 @@ public class AccelProjectile : NetworkBehaviour
         if (other.CompareTag("Player"))
         {
             MultiplayerGameManager.Instance.SendSpeedBoostClientRpc(buffDuration, new ClientRpcParams() { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { other.GetComponent<NetworkObject>().OwnerClientId } } });
-            Destroy(gameObject);
+            GetComponent<NetworkObject>().Despawn(true);
         }
     }
     public void SetBuffDuration(float duration)
@@ -31,7 +30,7 @@ public class AccelProjectile : NetworkBehaviour
     public IEnumerator DestroyAfterTime(float time)
     {
         yield return new WaitForSeconds(time);
-        Destroy(gameObject);
+        GetComponent<NetworkObject>().Despawn(true);
     }
 
 }

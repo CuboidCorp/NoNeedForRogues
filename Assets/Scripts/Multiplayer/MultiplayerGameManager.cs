@@ -422,17 +422,39 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// Transforme le joueur en speedy(pr la voix)
     /// </summary>
     /// <param name="playerId">Le player concerné</param>
-    public void SetSpeedyPlayerTap(ulong playerId)
+    [ServerRpc(RequireOwnership = false)]
+    public void SetSpeedyPlayerTapServerRpc(ulong playerId)
+    {
+        SetSpeedyPlayerTapClientRpc(playerId, SendRpcToPlayersExcept(playerId));
+    }
+
+    /// <summary>
+    /// Envoie a tous les clients sauf le client actuel l'info qu'il faut changer le tap
+    /// </summary>
+    /// <param name="cRpcParams">Les client rpc qui précisent tous les clients sauf celui qui a le boost</param>
+    [ClientRpc]
+    private void SetSpeedyPlayerTapClientRpc(ulong playerId, ClientRpcParams cRpcParams)
     {
         int playerIndex = Array.IndexOf(playersIds, playerId);
         participants[playerIndex].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("SpeedyVoice")[0];
     }
 
     /// <summary>
+    /// Demande au serv de dire aux clients de reset le tap d'un joueur pour remettre la voix normale
+    /// </summary>
+    /// <param name="playerId">Le joueur dont on doit reset le tap</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void ResetPlayerTapServerRpc(ulong playerId)
+    {
+        ResetPlayerTapClientRpc(playerId, SendRpcToPlayersExcept(playerId));
+    }
+
+    /// <summary>
     /// Reset le player tap d'un joueur pour remettre la voix normale
     /// </summary>
     /// <param name="playerId">Le player concerné</param>
-    public void ResetPlayerTap(ulong playerId)
+    [ClientRpc]
+    private void ResetPlayerTapClientRpc(ulong playerId, ClientRpcParams cRpcParams)
     {
         int playerIndex = Array.IndexOf(playersIds, playerId);
         participants[playerIndex].ParticipantTapAudioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("NormalVoice")[0];
