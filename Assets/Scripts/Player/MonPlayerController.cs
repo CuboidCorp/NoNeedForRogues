@@ -1077,8 +1077,8 @@ public class MonPlayerController : Entity
     {
         LeaveVivox();
         GetComponent<PickUpController>().DropObject();
-        Destroy(MultiplayerGameManager.instance.gameObject);
-        if(GenerationDonjon.instance != null)
+        Destroy(MultiplayerGameManager.Instance.gameObject);
+        if (GenerationDonjon.instance != null)
         {
             Destroy(GenerationDonjon.instance.gameObject);
         }

@@ -1,3 +1,5 @@
+using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 /// <summary>
@@ -13,7 +15,6 @@ public class SleepingGaz : MonoBehaviour
 
     private void Awake()
     {
-        listPlayersInside = [];
         StartCoroutine(Expansion());
     }
 
@@ -23,7 +24,7 @@ public class SleepingGaz : MonoBehaviour
     /// <returns></returns>
     private IEnumerator Expansion()
     {
-        while(true)
+        while (true)
         {
             transform.localScale = Vector3.Lerp(transform.localScale, maxSize, expansionSpeed * Time.deltaTime);
             yield return null;
@@ -34,7 +35,7 @@ public class SleepingGaz : MonoBehaviour
     /// Quand un joueur rentre dans le gaz on l'endort
     /// </summary>
     /// <param name="other">Le collider qui entre dans le gaz</param>
-    private void OnTriggerEnter(Collision other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {

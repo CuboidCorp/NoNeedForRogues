@@ -1,9 +1,10 @@
+using Unity.Netcode;
 using UnityEngine;
 
 /// <summary>
 /// Gère la boule de roche
 /// </summary>
-public class Boulder : MonoBehaviour
+public class Boulder : NetworkBehaviour
 {
     public float speed = 5f;
     public float damage = 30f;
@@ -13,6 +14,15 @@ public class Boulder : MonoBehaviour
     private Animator animator;
     private Rigidbody rb;
     //Le principe c'est que la boule prend une direction random parmi les 4 directions cardinales et se déplace dans cette direction (Sauf si on la change depuis un autre script)
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsServer)
+        {
+            GetComponent<Collider>().enabled = false;
+            Destroy(this);
+        }
+    }
 
     private void RandomizeDirection()
     {
@@ -60,15 +70,23 @@ public class Boulder : MonoBehaviour
         {
             collision.gameObject.GetComponent<MonPlayerController>().Damage(damage);
         }
-        else if(collision.gameObject.CompareTag("Cow"))
+        else if (collision.gameObject.CompareTag("Cow"))
         {
             collision.gameObject.GetComponent<CowController>().UnCow();
-            Destroy(gameObject);
+            Despawn();
         }
         else if (collision.gameObject.CompareTag("Wall"))
         {
-            Destroy(gameObject);
+            Despawn();
         }
+    }
+
+    /// <summary>
+    /// Despawn la boule
+    /// </summary>
+    private void Despawn()
+    {
+        GetComponent<NetworkObject>().Despawn(true);
     }
 
     private void Update()

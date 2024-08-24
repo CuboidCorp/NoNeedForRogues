@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ToxicGaz : MonoBehaviour
@@ -13,7 +15,7 @@ public class ToxicGaz : MonoBehaviour
 
     private void Awake()
     {
-        listPlayersInside = [];
+        listPlayersInside = new();
         StartCoroutine(Expansion());
         StartCoroutine(DamageAllPlayers());
     }
@@ -24,7 +26,7 @@ public class ToxicGaz : MonoBehaviour
     /// <returns></returns>
     private IEnumerator Expansion()
     {
-        while(true)
+        while (true)
         {
             transform.localScale = Vector3.Lerp(transform.localScale, maxSize, expansionSpeed * Time.deltaTime);
             yield return null;
@@ -37,9 +39,9 @@ public class ToxicGaz : MonoBehaviour
     /// <returns></returns>
     private IEnumerator DamageAllPlayers()
     {
-        while(true)
+        while (true)
         {
-            foreach(MonPlayerController player in listPlayersInside)
+            foreach (MonPlayerController player in listPlayersInside)
             {
                 player.StartPoison(poisonDamage, poisonDuration);
             }
@@ -51,7 +53,7 @@ public class ToxicGaz : MonoBehaviour
     /// Quand un joueur rentre dans le gaz on le rajoute dans la liste des joueur a empoisonner
     /// </summary>
     /// <param name="other">Le collider qui entre dans le gaz</param>
-    private void OnTriggerEnter(Collision other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
@@ -63,7 +65,7 @@ public class ToxicGaz : MonoBehaviour
     /// Quand un joueur sort du gaz on le rajoute dans la liste des joueur a empoisonner
     /// </summary>
     /// <param name="other">Le collider qui sort du gaz</param>
-    private void OnTriggerExit(Collision other)
+    private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
