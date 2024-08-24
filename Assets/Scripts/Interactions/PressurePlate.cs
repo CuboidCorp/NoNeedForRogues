@@ -64,7 +64,7 @@ public class PressurePlate : NetworkBehaviour
         {
             SendEnterServerRpc(other.GetComponent<Entity>().poids);
         }
-        if(other.CompareTag("PickUp"))
+        if (other.CompareTag("PickUp"))
         {
             SendEnterServerRpc(other.GetComponent<WeightedObject>().weight);
         }
@@ -90,7 +90,7 @@ public class PressurePlate : NetworkBehaviour
     private void HandleEntering(float weight)
     {
         totalWeight += weight;
-        if(totalWeight >= minWeightToPress)
+        if (totalWeight >= minWeightToPress)
         {
             animator.Play(pressAnimationName);
             StartCoroutine(WaitForEndPress());
@@ -102,15 +102,6 @@ public class PressurePlate : NetworkBehaviour
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
     private void SendEnterServerRpc(float weight)
-    {
-        SendEnterClientRpc(weight);
-    }
-
-    /// <summary>
-    /// Le serveur envoie un message à tout le monde pour dire qu'on est sur la plaque
-    /// </summary>
-    [ClientRpc]
-    private void SendEnterClientRpc(float weight)
     {
         HandleEntering(weight);
     }
@@ -138,8 +129,8 @@ public class PressurePlate : NetworkBehaviour
         {
             StopAllCoroutines();
             animator.Play(resetAnimationName);
-            if(onReset!= null)
-                StartCoroutine(WaitForEndReset());  
+            if (onReset != null)
+                StartCoroutine(WaitForEndReset());
         }
     }
 
@@ -148,15 +139,6 @@ public class PressurePlate : NetworkBehaviour
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
     private void SendExitServerRpc(float weight)
-    {
-        SendExitClientRpc(weight);
-    }
-
-    /// <summary>
-    /// Le serveur envoie un message à tout le monde pour dire qu'on est plus sur la plaque
-    /// </summary>
-    [ClientRpc]
-    private void SendExitClientRpc(float weight)
     {
         HandleExiting(weight);
     }

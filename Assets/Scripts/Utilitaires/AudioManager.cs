@@ -11,9 +11,9 @@ public class AudioManager : NetworkBehaviour
     public enum Musique
     {
         TAVERNE,
+        MAIN,
         DONJON,
         END,
-        MAIN
     }
 
     #region Sound Effects
@@ -123,5 +123,7 @@ public class AudioManager : NetworkBehaviour
         Destroy(audioSource.gameObject, clip.length);
 
     }
+
+
     #endregion
 }

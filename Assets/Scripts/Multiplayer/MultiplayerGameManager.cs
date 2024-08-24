@@ -9,7 +9,6 @@ using Unity.Services.Vivox.AudioTaps;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
-using static UnityEditor.Progress;
 
 /// <summary>
 /// Gère le mode multijoueur
@@ -128,7 +127,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         fireBall = Resources.Load<GameObject>("Sorts/FireBall");
         resurectio = Resources.Load<GameObject>("Sorts/ResurectioProjectile");
         healProj = Resources.Load<GameObject>("Sorts/HealProjectile");
-        speedProj = Resources.Load<GameObject>("Sorts/SpeedProjectile");
+        speedProj = Resources.Load<GameObject>("Sorts/AccelProjectile");
         fusrohdahProj = Resources.Load<GameObject>("Sorts/FusRoDahProjectile");
         explosionPrefab = Resources.Load<GameObject>("Sorts/Explosion");
     }

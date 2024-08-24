@@ -32,6 +32,7 @@ public class BoulderTrap : Trap
     {
         if (!activated)
         {
+            activated = true;
             SummonBoulderServerRpc();
         }
 
@@ -43,7 +44,6 @@ public class BoulderTrap : Trap
         GameObject boulder = Instantiate(boulderPrefab, transform.position, Quaternion.identity);
         boulder.GetComponent<Boulder>().direction = direction;
         boulder.GetComponent<NetworkObject>().Spawn();
-        activated = true;
     }
 
     public override void DeactivateTrap()

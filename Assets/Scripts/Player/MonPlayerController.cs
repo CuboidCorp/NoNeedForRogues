@@ -446,6 +446,7 @@ public class MonPlayerController : Entity
             HandleDamageClientRpc(damage, clientParams);
             return;
         }
+        AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.PLAYER_DAMAGED);
         StatsManager.Instance.AddDamageTaken(damage);
         StopEmotes();
         animator.SetTrigger("GotHurt");
@@ -499,6 +500,7 @@ public class MonPlayerController : Entity
     /// </summary>
     public override void Die()
     {
+        AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.PLAYER_DEAD);
         StopAllCoroutines(); //Pr faire gaffe au poison
         SendDeathServerRpc(OwnerClientId);
         animator.SetTrigger("Died");

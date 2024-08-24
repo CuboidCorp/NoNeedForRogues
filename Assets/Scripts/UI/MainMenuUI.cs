@@ -44,6 +44,8 @@ public class MainMenuUI : MonoBehaviour
 
     private void Start()
     {
+        AudioManager.instance.SetMusic(AudioManager.Musique.MAIN);
+        AudioManager.instance.ActivateMusic();
 #if UNITY_EDITOR
         if (ClonesManager.IsClone())
         {
@@ -179,7 +181,7 @@ public class MainMenuUI : MonoBehaviour
     /// </summary>
     private async void CreationPlayerInfoGameObject(PlayerInfo playerInfo)
     {
-        if(FindObjectOfType<DataHolder>() == null) //Si le data holder existe déjà on ne le recree pas
+        if (FindObjectOfType<DataHolder>() == null) //Si le data holder existe déjà on ne le recree pas
         {
             GameObject playerInfoGameObject = new("PlayerInfo");
             playerInfoGameObject.AddComponent<DataHolder>();
@@ -187,7 +189,7 @@ public class MainMenuUI : MonoBehaviour
 
             DontDestroyOnLoad(playerInfoGameObject);
         }
-        
+
 
         await UnityServices.InitializeAsync();
 
@@ -198,7 +200,6 @@ public class MainMenuUI : MonoBehaviour
 #endif
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
         }
-
         //On se deplace vers le TavernLobby
         SceneManager.LoadScene("TavernLobby");
     }
