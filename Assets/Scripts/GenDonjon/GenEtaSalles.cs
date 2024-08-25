@@ -28,6 +28,11 @@ public class GenEtaSalles : GenerationEtage
         throw new System.NotImplementedException();
     }
 
+    public override void DespawnItems()
+    {
+        throw new System.NotImplementedException();
+    }
+
     public override void GenerateEtage()
     {
         throw new System.NotImplementedException();

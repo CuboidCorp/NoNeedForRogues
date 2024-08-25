@@ -85,6 +85,7 @@ public class MainMenuUI : MonoBehaviour
 
                 if (IsPlayerInfoValid(playerInfo.playerName))
                 {
+                    enabled = false;
                     CreationPlayerInfoGameObject(playerInfo);
                 }
                 else

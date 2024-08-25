@@ -154,6 +154,13 @@ public class GenerationDonjon : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Despawn tous les items de l'étage
+    /// </summary>
+    public void DespawnItems()
+    {
+        genEtage.DespawnItems();
+    }
 
     private void Configure(ConfigDonjon conf)
     {

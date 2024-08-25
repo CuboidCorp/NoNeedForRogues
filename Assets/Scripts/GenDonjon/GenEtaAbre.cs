@@ -43,4 +43,9 @@ public class GenEtaAbre : GenerationEtage
     {
         throw new System.NotImplementedException();
     }
+
+    public override void DespawnItems()
+    {
+        throw new System.NotImplementedException();
+    }
 }

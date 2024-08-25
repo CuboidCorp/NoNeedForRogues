@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 7236041670266367625}
   - component: {fileID: 8472716074779056878}
   m_Layer: 0
-  m_Name: SleepGaz
+  m_Name: SleepingGaz
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

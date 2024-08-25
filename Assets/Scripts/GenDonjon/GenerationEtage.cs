@@ -40,6 +40,11 @@ public abstract class GenerationEtage : MonoBehaviour
     public abstract void GenerateItems();
 
     /// <summary>
+    /// Despawn les items de l'étage
+    /// </summary>
+    public abstract void DespawnItems();
+
+    /// <summary>
     /// Genere les pieges de l'étage
     /// </summary>
     public abstract void GeneratePieges();

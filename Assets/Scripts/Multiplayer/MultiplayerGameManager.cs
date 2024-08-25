@@ -38,7 +38,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     private ulong[] playersIds;
 
-    private PlayerState[] playersStates;
+    [SerializeField] private PlayerState[] playersStates;
 
     /// <summary>
     /// Les gameobjects des joueurs
@@ -59,7 +59,7 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     #endregion
 
-    #region Escaliers
+    #region Escaliers 
     /// <summary>
     /// Liste de si les joueurs sont prets ou non pour la suite
     /// </summary>
@@ -993,7 +993,6 @@ public class MultiplayerGameManager : NetworkBehaviour
         bool direction = playerGoingUp[0];
         //On reset 
         playersReady = new bool[nbTotalPlayers];
-
         GameObject[] escaliers;
         if (direction)
         {
@@ -1041,7 +1040,6 @@ public class MultiplayerGameManager : NetworkBehaviour
             playersReady[index] = isReady;
             if (!isReady)
             {
-                playerGoingUp[index] = false;
                 ResetCountDown();
                 return;
             }
@@ -1051,6 +1049,9 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Verifie si tous les joueurs sont prêts et vont dans le même sens
+    /// </summary>
     private void CheckGameCanStart()
     {
         if (PlayersAreReady() && PlayersAreGoingSameWay())
@@ -1123,6 +1124,7 @@ public class MultiplayerGameManager : NetworkBehaviour
 
         if (!isInLobby)
         {
+            GenerationDonjon.instance.DespawnItems();
             Debug.Log("Change level going " + (direction ? "up" : "down") + " : Current etage : " + GenerationDonjon.instance.currentEtage);
             playerRepartitionByStairs = new ulong[escaliersGo.Length][];
             for (int i = 0; i < escaliersGo.Length; i++)
@@ -1222,7 +1224,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     private void DestroyStairs()
     {
-        escaliersGo = null;
+        ResetEscaliersGoClientRpc();
         GameObject[] escaliersUp = GameObject.FindGameObjectsWithTag("UpStairs");
         GameObject[] escaliersDown = GameObject.FindGameObjectsWithTag("DownStairs");
         foreach (GameObject escalier in escaliersUp)
@@ -1233,6 +1235,15 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             escalier.GetComponent<NetworkObject>().Despawn();
         }
+    }
+
+    /// <summary>
+    /// Reset les escaliers pour les clients
+    /// </summary>
+    [ClientRpc]
+    private void ResetEscaliersGoClientRpc()
+    {
+        escaliersGo = null;
     }
 
     /// <summary>
