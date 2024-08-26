@@ -32,6 +32,11 @@ public class GenerationDonjon : NetworkBehaviour
 
     public int nbStairs = 1;
 
+    /// <summary>
+    /// Nombre de chaudrons d'alchimie
+    /// </summary>
+    private int nbCauldrons = 1;
+
     public int baseDifficulty = 1;
     public int difficultyScaling = 1;
     private int currentDifficulty;
