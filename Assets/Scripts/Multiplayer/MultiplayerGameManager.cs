@@ -1009,7 +1009,7 @@ public class MultiplayerGameManager : NetworkBehaviour
             {
                 foreach (ulong playerId in playerRepartitionByStairs[i])
                 {
-                    SetPlayerPositionClientRpc(escaliers[i].GetComponent<Escalier>().spawnPoint.position, new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { playerId } } });
+                    SetSpawnPositionClientRpc(escaliers[i].GetComponent<Escalier>().spawnPoint.position, new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { playerId } } });
                 }
             }
         }
@@ -1021,9 +1021,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="pos">Nouvelle pos du joeueur</param>
     /// <param name="clientRpcParams">Le client qu'il faut qu'on set</param>
     [ClientRpc]
-    private void SetPlayerPositionClientRpc(Vector3 pos, ClientRpcParams clientRpcParams)
+    private void SetSpawnPositionClientRpc(Vector3 pos, ClientRpcParams clientRpcParams)
     {
         MonPlayerController.instanceLocale.transform.position = pos;
+        MonPlayerController.instanceLocale.SetRespawnPoint(pos);
     }
 
 
@@ -1157,7 +1158,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
         else
         {
-            LeaveLobby();
+            LeaveLobbyClientRpc();
         }
         //On sauvegarde par escalier là ou sont les gens
         DestroyStairs();
@@ -1165,7 +1166,11 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     }
 
-    private void LeaveLobby()
+    /// <summary>
+    /// Prepare les clients a quitter le lobby
+    /// </summary>
+    [ClientRpc]
+    private void LeaveLobbyClientRpc()
     {
         AudioManager.instance.StopMusic();
         AudioManager.instance.SetMusic(AudioManager.Musique.DONJON);
@@ -1176,13 +1181,11 @@ public class MultiplayerGameManager : NetworkBehaviour
         //On recup les settings du donjon
         isInLobby = false;
 
-        //On suppose que tous les clients font ces lignes
         MonPlayerController.instanceLocale.FullHeal();
         MonPlayerController.instanceLocale.FullMana();
 
         StatsManager.Instance.dateDebutGame = DateTime.Now;
         StatsManager.Instance.InitializeGame(MonPlayerController.instanceLocale.OwnerClientId);
-
     }
 
     private void TrollCowardPlayer()

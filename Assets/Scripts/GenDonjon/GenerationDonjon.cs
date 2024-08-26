@@ -1,14 +1,10 @@
 using UnityEngine;
 using Donnees;
 
-public class GenerationDonjon : MonoBehaviour
+public class GenerationDonjon : NetworkBehaviour
 {
-
+    #region Params Donjon
     [Header("Params Donjon")]
-    /// <summary>
-    /// Etage actuel va de 1 a maxEtage
-    /// </summary>
-    public int currentEtage = 1;
     /// <summary>
     /// Le nombre d'etage du donjon
     /// </summary>
@@ -21,11 +17,10 @@ public class GenerationDonjon : MonoBehaviour
 
     [SerializeField]
     private float cellSize = 1;
-    [SerializeField]
-    private int seed;
 
-    private bool estServeur = false;
+    #endregion
 
+    #region Params Etage
     [Header("Params Etage")]
     [SerializeField]
     private TypeEtage typeEtage;
@@ -40,12 +35,26 @@ public class GenerationDonjon : MonoBehaviour
     public int baseDifficulty = 1;
     public int difficultyScaling = 1;
     private int currentDifficulty;
+    #endregion
+
+    #region Info Deplacement
+
+    /// <summary>
+    /// Etage actuel va de 1 a maxEtage
+    /// </summary>
+    public int currentEtage = 1;
 
     /// <summary>
     /// Liste des seeds des etages déjà visité
     /// </summary>
     private int[] seeds;
 
+    [SerializeField]
+    private NetworkVariable<int> seed = new NetworkVariable<int>();
+
+    #endregion
+
+    #region PrefabsPaths
     [Header("Prefabs")]
     [SerializeField]
     private string pathToRooms;
@@ -71,6 +80,10 @@ public class GenerationDonjon : MonoBehaviour
     [SerializeField]
     private string pathToPieges;
 
+    #endregion
+
+    #region Holders
+
     [Header("Transform holders")]
     private Transform holderRooms;
 
@@ -81,6 +94,8 @@ public class GenerationDonjon : MonoBehaviour
     private Transform holderItems;
 
     private GenerationEtage genEtage;
+
+    #endregion
 
     public static GenerationDonjon instance;
 
@@ -94,6 +109,7 @@ public class GenerationDonjon : MonoBehaviour
         else
         {
             instance = this;
+            seed.OnValueChanged += OnSeedValueChanged;
             DontDestroyOnLoad(this);
         }
     }
@@ -112,9 +128,7 @@ public class GenerationDonjon : MonoBehaviour
         holderStairs = holder.transform.GetChild(0);
         holderHallways = holder.transform.GetChild(1);
         holderRooms = holder.transform.GetChild(2);
-        holderItems = holder.transform.GetChild(3);
-
-        estServeur = MultiplayerGameManager.Instance.IsServer;
+        holderItems = holder.transform.GetChild(3)
 
         currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
 
@@ -130,16 +144,14 @@ public class GenerationDonjon : MonoBehaviour
                 RandomizeSeed();
             }
 
-            seeds[currentEtage - 1] = seed;
-            SetSeed();
+            seeds[currentEtage - 1] = seed.Value;
             maxEtageReached = currentEtage;
-            Generate(true, estServeur);
+            Generate(true);
         }
         else
         {
-            seed = seeds[currentEtage - 1];
-            SetSeed();
-            Generate(false, estServeur);
+            seed.Value = seeds[currentEtage - 1];
+            Generate(false);
         }
 
         GameObject cam = GameObject.Find("Main Camera");
@@ -148,10 +160,18 @@ public class GenerationDonjon : MonoBehaviour
             Destroy(cam);
         }
 
-        if (estServeur)
+        if (IsServer)
         {
             MultiplayerGameManager.Instance.SpawnPlayers();
         }
+    }
+
+    /// <summary>
+    /// Quand la valeur du seed change on reseed le random pour toujours avoir les mêmes niveaux   
+    /// </summary>
+    private void OnSeedValueChanged()
+    {
+        Random.InitState(seed.Value);
     }
 
     /// <summary>
@@ -162,10 +182,17 @@ public class GenerationDonjon : MonoBehaviour
         genEtage.DespawnItems();
     }
 
+    /// <summary>
+    /// Configure le dojon en se basant sur une config de donjon
+    /// </summary>
+    /// <param name="conf">La config de donjon qui parametre le donjon</param>
     private void Configure(ConfigDonjon conf)
     {
         maxEtage = conf.nbEtages;
-        seed = conf.seed;
+        if(IsServer)
+        {
+            seed.Value = conf.seed;
+        }
         minTailleEtage = conf.minTailleEtage;
         maxTailleEtage = conf.maxTailleEtage;
         nbStairs = conf.nbStairs;
@@ -177,7 +204,11 @@ public class GenerationDonjon : MonoBehaviour
         seeds = new int[maxEtage];
     }
 
-    public void Generate(bool isNewEtage, bool estServ)
+    /// <summary>
+    /// Genere un etage, si il est nouveau et qu'on est sur le serveur on genere les items
+    /// </summary>
+    /// <param name="isNewEtage">Si l'étage est nouveau ou non</param>
+    public void Generate(bool isNewEtage)
     {
         switch (typeEtage)
         {
@@ -191,24 +222,22 @@ public class GenerationDonjon : MonoBehaviour
                 genEtage = GetComponent<GenEtaAbre>();
                 break;
         }
-        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, currentDifficulty, estServ);
+        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, currentDifficulty, IsServer);
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs, pathToPieces, pathToObjets, pathToPotions, pathToChests, pathToPieges);
         genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs, holderItems);
         genEtage.GenerateEtage();
-        if (isNewEtage && estServ)
+        if (isNewEtage && IsServer)
         {
             genEtage.GenerateItems();
         }
         genEtage.GeneratePieges();
     }
 
+    /// <summary>
+    /// Randomize le seed
+    /// </summary>
     public void RandomizeSeed()
     {
-        seed = Random.Range(0, 1000000);
-    }
-
-    public void SetSeed()
-    {
-        Random.InitState(seed);
+        seed.Value = Random.Range(0, 1000000);
     }
 }
