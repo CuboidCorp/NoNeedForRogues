@@ -1,5 +1,6 @@
 using UnityEngine;
 using Donnees;
+using Unity.Netcode;
 
 public class GenerationDonjon : NetworkBehaviour
 {
@@ -133,7 +134,7 @@ public class GenerationDonjon : NetworkBehaviour
         holderStairs = holder.transform.GetChild(0);
         holderHallways = holder.transform.GetChild(1);
         holderRooms = holder.transform.GetChild(2);
-        holderItems = holder.transform.GetChild(3)
+        holderItems = holder.transform.GetChild(3);
 
         currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
 
@@ -174,9 +175,9 @@ public class GenerationDonjon : NetworkBehaviour
     /// <summary>
     /// Quand la valeur du seed change on reseed le random pour toujours avoir les mêmes niveaux   
     /// </summary>
-    private void OnSeedValueChanged()
+    private void OnSeedValueChanged(int previous, int current)
     {
-        Random.InitState(seed.Value);
+        Random.InitState(current);
     }
 
     /// <summary>
@@ -194,7 +195,7 @@ public class GenerationDonjon : NetworkBehaviour
     private void Configure(ConfigDonjon conf)
     {
         maxEtage = conf.nbEtages;
-        if(IsServer)
+        if (IsServer)
         {
             seed.Value = conf.seed;
         }

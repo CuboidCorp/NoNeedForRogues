@@ -1,15 +1,11 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LobbyCreateUI : MonoBehaviour {
-
-
+public class LobbyCreateUI : MonoBehaviour
+{
     public static LobbyCreateUI Instance { get; private set; }
-
 
     [SerializeField] private Button createButton;
     [SerializeField] private Button cancelButton;
@@ -28,10 +24,12 @@ public class LobbyCreateUI : MonoBehaviour {
     private int maxPlayers;
     private LobbyManager.GameMode gameMode;
 
-    private void Awake() {
+    private void Awake()
+    {
         Instance = this;
 
-        createButton.onClick.AddListener(() => {
+        createButton.onClick.AddListener(() =>
+        {
             lobbyName = lobbyNameText.text;
             try
             {
@@ -58,13 +56,15 @@ public class LobbyCreateUI : MonoBehaviour {
             Hide();
         });
 
-        publicPrivateButton.onClick.AddListener(() => {
+        publicPrivateButton.onClick.AddListener(() =>
+        {
             isPrivate = !isPrivate;
             UpdateText();
         });
 
 
-        gameModeButton.onClick.AddListener(() => {
+        gameModeButton.onClick.AddListener(() =>
+        {
             //Code original pour changer de gameMode quand on clicke, pas besoin pour le moment
             //Finalement je met juste des trucs random mais ça n'a aucune importance
             switch (gameMode)
@@ -83,18 +83,21 @@ public class LobbyCreateUI : MonoBehaviour {
         Hide();
     }
 
-    private void UpdateText() {
+    private void UpdateText()
+    {
         lobbyNameText.text = lobbyName;
         publicPrivateText.text = isPrivate ? "Private" : "Public";
         maxPlayersText.text = maxPlayers.ToString();
         gameModeText.text = gameMode.ToString();
     }
 
-    private void Hide() {
+    private void Hide()
+    {
         gameObject.SetActive(false);
     }
 
-    public void Show() {
+    public void Show()
+    {
         gameObject.SetActive(true);
 
         lobbyName = "MyLobby";
