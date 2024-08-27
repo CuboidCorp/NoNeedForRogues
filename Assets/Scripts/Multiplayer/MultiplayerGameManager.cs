@@ -119,6 +119,9 @@ public class MultiplayerGameManager : NetworkBehaviour
         conf = new();
     }
 
+    /// <summary>
+    /// Charge toutes les prefabs dont on a besoin
+    /// </summary>
     private void LoadPrefabs()
     {
         mainMixer = Resources.Load<AudioMixer>("Audio/Main");
@@ -143,13 +146,10 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private void Update()
     {
-        if (NetworkManager.Singleton.ShutdownInProgress) //TODO est prok aussi quand on se deconnecte tt court
+        if (NetworkManager.Singleton.ShutdownInProgress) //Quand on se deconnecte / Kick ou crash
         {
             Cursor.lockState = CursorLockMode.None;
             NetworkManager.Singleton.Shutdown();
-            //GameObject error = new("ErrorHandler");
-            //error.AddComponent<ErrorHandler>();
-            //error.GetComponent<ErrorHandler>().message = "T'as crash ou l'hote s'est tiré";
             SceneManager.LoadSceneAsync("MenuPrincipal");
         }
     }
@@ -158,13 +158,13 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// Set le nombre de joueurs dans le lobby qui vont jouer
     /// </summary>
     /// <param name="nb">Le nombre de joueur</param>
-    public void SetNbPlayersLobby(int nb, string[] playerNames) //TODO : L'envoyer a tt le monde
+    public void SetNbPlayersLobby(int nb, string[] playerNames)
     {
         nbTotalPlayers = nb;
         playersIds = new ulong[nb];
         for (int i = 0; i < nb; i++)
         {
-            playersIds[i] = ulong.MaxValue;
+            playersIds[i] = -1;
         }
         playersNames = playerNames;
         playersStates = new PlayerState[nb];
@@ -227,9 +227,70 @@ public class MultiplayerGameManager : NetworkBehaviour
     private static IEnumerator DespawnAfterTimer(NetworkObject networkObj, float time)
     {
         yield return new WaitForSeconds(time);
-        networkObj.Despawn();
+        networkObj.Despawn(true);
     }
+
+    #region ClientRpcParams
+
+    /// <summary>
+    /// Renvoie les client rpc params pour envoyer une id à tous les autres joueurs
+    /// </summary>
+    /// <returns>La client rpc params avec les bonnes info</returns>
+    public ClientRpcParams SendRpcToOtherPlayers()
+    {
+        ulong[] otherPlayerIds = playersIds.Where(id => id != OwnerClientId).ToArray();
+
+        return new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = otherPlayerIds
+            }
+        };
+
+
+    }
+
+    /// <summary>
+    /// Renvoie les client rpc params pour envoyer une id à tous les autres joueurs sauf un
+    /// </summary>
+    /// <param name="playerExclu">L'id du player exclu</param>
+    /// <returns>La client rpc params avec les bonnes info</returns>
+    public static ClientRpcParams SendRpcToPlayersExcept(ulong playerExclu)
+    {
+        ulong[] otherPlayerIds = playersIds.Where(id => id != playerExclu).ToArray();
+
+        return new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = otherPlayerIds
+            }
+        };
+    }
+
+    /// <summary>
+    /// Renvoie les client rpc params pour envoyer une rpc à un joueur
+    /// </summary>
+    /// <param name="player">Le joueur a qui envoyer la rpc</param>
+    /// <returns>La client RPC params avec les bonnes infos</returns>
+    public static ClientRpcParams SendRpcToPlayer(ulong player)
+    {
+        return new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = new ulong[] { player }
+            }
+        };
+    }
+
     #endregion
+
+
+    #endregion
+
+    #region Connexion / Deconnexion
 
     /// <summary>
     /// Quand un joueur autre se connecte
@@ -304,10 +365,16 @@ public class MultiplayerGameManager : NetworkBehaviour
         HandlePlayerDisconnection(id);
     }
 
+    /// <summary>
+    /// Gère la deconnexion d'un joueur
+    /// </summary>
+    /// <param name="playerId">L'id du joueur deconnecté</param>
     private void HandlePlayerDisconnection(ulong playerId)
     {
-        //TODO : Despawn tt les objets et resize tous les array
+        //Est ce que il y a qqch a faire --> Voir lors des tests a plusieurs joueurs
     }
+
+    #endregion
 
     #region Vivox Utils
 
@@ -579,7 +646,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, id);
         if (playerIndex != -1)
         {
-            playersGo[playerIndex].GetComponent<MonPlayerController>().HandleDeath();
+            playersGo[playerIndex].tag = "Ragdoll";
             playersStates[playerIndex] = PlayerState.Dead;
         }
     }
@@ -619,7 +686,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, id);
         if (playerIndex != -1)
         {
-            playersGo[playerIndex].GetComponent<MonPlayerController>().HandleRespawn(); //Ca remet juste le tag a player
+            playersGo[playerIndex].tag = "Player";
             playersStates[playerIndex] = PlayerState.Alive;
             MovePlayerTapToHuman(id);
         }
@@ -683,63 +750,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void SetRagdollTempClientRpc(float time, ClientRpcParams client)
     {
         StartCoroutine(MonPlayerController.instanceLocale.SetRagdollTemp(time));
-    }
-
-    #endregion
-
-    #region ClientRpcParams
-
-    /// <summary>
-    /// Renvoie les client rpc params pour envoyer une id à tous les autres joueurs
-    /// </summary>
-    /// <returns>La client rpc params avec les bonnes info</returns>
-    public ClientRpcParams SendRpcToOtherPlayers()
-    {
-        ulong[] otherPlayerIds = playersIds.Where(id => id != OwnerClientId).ToArray();
-
-        return new ClientRpcParams
-        {
-            Send = new ClientRpcSendParams
-            {
-                TargetClientIds = otherPlayerIds
-            }
-        };
-
-
-    }
-
-    /// <summary>
-    /// Renvoie les client rpc params pour envoyer une id à tous les autres joueurs sauf un
-    /// </summary>
-    /// <param name="playerExclu">L'id du player exclu</param>
-    /// <returns>La client rpc params avec les bonnes info</returns>
-    private ClientRpcParams SendRpcToPlayersExcept(ulong playerExclu)
-    {
-        ulong[] otherPlayerIds = playersIds.Where(id => id != playerExclu).ToArray();
-
-        return new ClientRpcParams
-        {
-            Send = new ClientRpcSendParams
-            {
-                TargetClientIds = otherPlayerIds
-            }
-        };
-    }
-
-    /// <summary>
-    /// Renvoie les client rpc params pour envoyer une rpc à un joueur
-    /// </summary>
-    /// <param name="player">Le joueur a qui envoyer la rpc</param>
-    /// <returns>La client RPC params avec les bonnes infos</returns>
-    private ClientRpcParams SendRpcToPlayer(ulong player)
-    {
-        return new ClientRpcParams
-        {
-            Send = new ClientRpcSendParams
-            {
-                TargetClientIds = new ulong[] { player }
-            }
-        };
     }
 
     #endregion
@@ -1113,12 +1123,19 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Lance le compte a rebours pr changer le niveau
+    /// </summary>
+    /// <param name="nbSec">Nombre de secondes avant le changement de niveau</param>
     private IEnumerator StartMovingCountdown(int nbSec)
     {
         yield return new WaitForSeconds(nbSec);
         ChangeLevel();
     }
 
+    /// <summary>
+    /// Change le niveau vers le niveau suivant
+    /// </summary>
     private void ChangeLevel()
     {
         bool direction = playerGoingUp[0];
@@ -1188,6 +1205,9 @@ public class MultiplayerGameManager : NetworkBehaviour
         StatsManager.Instance.InitializeGame(MonPlayerController.instanceLocale.OwnerClientId);
     }
 
+    /// <summary>
+    /// Punit les joueurs qui étaient en train de fuir pr retourner au lobby
+    /// </summary>
     private void TrollCowardPlayer()
     {
         Debug.Log("On ne peut pas fuir comme ça mec");
@@ -1201,7 +1221,7 @@ public class MultiplayerGameManager : NetworkBehaviour
             foreach (ulong player in players)
             {
                 playersAPunir.Add(player);
-                stairPlayerPos.Add(stair.transform.position); //TODO : Ajouter la position de 
+                stairPlayerPos.Add(stair.transform.position);
             }
         }
 
@@ -1209,7 +1229,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             GameObject playerGo = GetPlayerById(playersAPunir[i]);
             //Comment punir le joueur -> Ragdoll
-            playerGo.GetComponent<Rigidbody>().AddExplosionForce(100, stairPlayerPos[i], 10, 1, ForceMode.Impulse);
+            playerGo.GetComponent<Rigidbody>().AddExplosionForce(100, stairPlayerPos[i], 10, 1, ForceMode.Impulse); //
             SetRagdollTempClientRpc(5, new ClientRpcParams() { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { playersAPunir[i] } } });
             AudioManager.instance.PlayOneShotClipServerRpc(playerGo.transform.position, AudioManager.SoundEffectOneShot.NUHUH);
             Rigidbody[] ragdollElems = playerGo.GetComponent<MonPlayerController>().GetRagdollRigidbodies();
@@ -1286,6 +1306,12 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     #endregion
 
+    #region Debug
+
+    /// <summary>
+    /// Demande au serveur de teleporter tous les players vers la position d'un joueur
+    /// </summary>
+    /// <param name="playerDest">L'id du player sur lequel on veut tp tt le monde</param>
     [ServerRpc(RequireOwnership = false)]
     public void TeleportAllServerRpc(ulong playerDest)
     {
@@ -1295,11 +1321,30 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     }
 
+    /// <summary>
+    /// Teleporte tous les clients vers la position
+    /// </summary>
+    /// <param name="pos">Position ou on veut tous les clients</param>
     [ClientRpc]
     private void TeleportAllClientRpc(Vector3 pos)
     {
         MonPlayerController.instanceLocale.transform.position = pos;
     }
+
+    /// <summary>
+    /// Fait apparaitre un objet a ramasser a l'endroit donné
+    /// </summary>
+    /// <param name="position">L'endroit ou on veut spawn l'objet</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void SummonTresorServerRpc(Vector3 position)
+    {
+        GameObject objet = Resources.Load<GameObject>("Donjon/Items"); //TODO : Trouver le vrai chemin et mettre unseul objet 
+        GameObject instance = Instantiate(objet, position, Quaternion.identity);
+        instance.GetComponent<TreasureObject>().value = 1;
+        instance.GetComponent<NetworkObject>().Spawn();
+    }
+
+    #endregion
 
     /// <summary>
     /// Les états possibles d'un joueur (Notamment pr les voice taps)

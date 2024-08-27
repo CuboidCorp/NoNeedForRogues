@@ -39,7 +39,7 @@ public class FireBall : NetworkBehaviour
 
     private void Explode()
     {
-        SpellList.Explosion(transform, explosionRange, explosionForce);
+        SpellRecognition.Explosion(transform, explosionRange, explosionForce);
         Destroy(gameObject);
     }
 }

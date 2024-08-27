@@ -54,7 +54,7 @@ public class StatsManager : NetworkBehaviour
     /// <param name="current">Nouvelle valeur</param>
     private void OnGoldValueChanged(int previous, int current)
     {
-        //TODO : Afficher une petite icone avec du texte vert/rouge en fonction de la différence sur le compteur de gold total
+        PlayerUIManager.Instance.ShowGoldChangedText(current - previous);
         PlayerUIManager.Instance.SetGoldText(current);
     }
 
@@ -128,6 +128,14 @@ public class StatsManager : NetworkBehaviour
     public void AddMort()
     {
         localPlayerStats.nbMorts++;
+    }
+
+    /// <summary>
+    /// Rajout un trickshot au nombre de trickshot du joueur local
+    /// </summary>
+    public void AddTrickshot()
+    {
+        localPlayerStats.nbTrickshot++;
     }
 
     #endregion

@@ -26,7 +26,7 @@ public class Bomb : MonoBehaviour
     {
         if(!isTroll)
         {
-            SpellList.Explosion(transform, explosionRange, explosionForce);
+            SpellRecognition.Explosion(transform, explosionRange, explosionForce);
         }
         Destroy(gameObject);
     }

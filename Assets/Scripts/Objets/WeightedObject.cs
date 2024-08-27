@@ -10,25 +10,28 @@ public abstract class WeightedObject : NetworkBehaviour, IRamassable
     public float weight = 1;
     public string cheminCopie;
 
+
+    [SerializeField] private ulong lastOwner = -1;
+
     public NetworkVariable<bool> isHeld = new(false);
 
     /// <summary>
-    /// Change l'etat de l'objet si il est tenu ou non
+    /// Change l'etat 
     /// </summary>
-    /// <param name="newState">Le nouvel etat de l'objet</param>
-    public void ChangeState(bool newState)
+    /// <param name="newState"></param>
+    [ServerRpc(RequireOwnership = false)] 
+    private void ChangeStateServerRpc(bool newState)
     {
-        if (!IsServer)
-        {
-            ChangeStateServerRpc(newState);
-            return;
-        }
         isHeld.Value = newState;
     }
 
+    /// <summary>
+    /// Dit au serveur l'id du dernier joueur a avoir ramassé l'objet
+    /// </summary>
+    /// <param name="ownerId">L'id du joueur</param>
     [ServerRpc(RequireOwnership = false)]
-    public void ChangeStateServerRpc(bool newState)
+    public void SendLastOwnerServerRpc(ulong ownerId)
     {
-        isHeld.Value = newState;
+        lastOwner = ownerId;
     }
 }

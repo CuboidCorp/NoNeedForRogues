@@ -428,7 +428,7 @@ public class GenEtaLaby : GenerationEtage
     /// Genere un objet tresor a ramasser et recolter a un endroit donné à une valeur donnée
     /// </summary>
     /// <param name="objet">Le trésor a spawn</param>
-    /// <param name="positon">La position de l'objet</param>
+    /// <param name="position">La position de l'objet</param>
     /// <param name="valeur">La valeur de l'objet</param>
     private void GenerateTresor(GameObject objet, Vector3 position, int valeur)
     {

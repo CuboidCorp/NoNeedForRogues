@@ -9,7 +9,6 @@ using UnityEngine.Rendering.Universal;
 [DisallowMultipleComponent]
 public class MonPlayerController : Entity
 {
-
     private Rigidbody rb;
     private PlayerControls controls;
     private PlayerControls.PlayerActions playerActions;
@@ -86,6 +85,11 @@ public class MonPlayerController : Entity
     private GameObject cowPlayerPrefab;
     #endregion
 
+    #region Sound Effects
+    [SerializeField] private AudioSource castingAudioSource;
+    [SerializeField] private AudioSource movementAudioSource;
+    #endregion
+
     private VivoxVoiceConnexion voiceConnexion;
 
     [SerializeField] private int poisonDamageInterval = 1;
@@ -106,9 +110,9 @@ public class MonPlayerController : Entity
         playerActions.Look.performed += actLook;
         playerActions.Run.started += _ => StartRun();
         playerActions.Run.canceled += _ => StopRun();
-        playerActions.LongAttack.started += _ => StartLongAttack();
-        playerActions.LongAttack.performed += _ => StopLongAttack();
-        playerActions.LongAttack.canceled += _ => StopLongAttack();
+        playerActions.LongAttack.started += _ => StartCasting();
+        playerActions.LongAttack.performed += _ => StopCasting();
+        playerActions.LongAttack.canceled += _ => StopCasting();
 
         playerActions.Rotation.started += _ => StartRotation(); //Rajouter un grand hold sur les controles
         playerActions.Rotation.canceled += _ => StopRotation();
@@ -200,35 +204,6 @@ public class MonPlayerController : Entity
     }
 
     /// <summary>
-    /// Passe les parties du corps en mode première personne en les mettant sur une autre layer
-    /// </summary>
-    private void ChangerRenderCorps(ShadowCastingMode shadow)
-    {
-        //On desactive les child 0 a 3 pr le premier child
-        //Ce qui correspond à épaulières, genouières, ceinture, cape
-        for (int i = 0; i < 4; i++)
-        {
-            //On recupere les skinned mesh renderer dans leurs enfants et on met leur option de rendu sur shadow only
-            foreach (SkinnedMeshRenderer smr in transform.GetChild(0).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
-            {
-                smr.shadowCastingMode = shadow;
-            }
-        }
-
-        //On desactive les child 0 a 7 pr le deuxieme child
-        //Ce qui correspond à la tete, le torse, les cheveux, les jambes, les pieds, les moustaches, les yeux, les sourcils
-        for (int i = 0; i < 8; i++)
-        {
-            //On recupere les skinned mesh renderer dans leurs enfants et on met leur option de rendu sur shadow only
-            foreach (SkinnedMeshRenderer smr in transform.GetChild(1).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
-            {
-                smr.shadowCastingMode = shadow;
-            }
-        }
-
-    }
-
-    /// <summary>
     /// Start is called before the first frame update
     /// </summary>
     void Start()
@@ -283,7 +258,6 @@ public class MonPlayerController : Entity
 
     #region Movement
 
-
     /// <summary>
     /// Recoit l'input du joueur pour se déplacer
     /// </summary>
@@ -314,7 +288,8 @@ public class MonPlayerController : Entity
 
         Vector3 moveDirection = new(moveInput.x, 0f, moveInput.y);
 
-        rb.MovePosition(rb.position + moveSpeed * Time.fixedDeltaTime * transform.TransformDirection(moveDirection));
+        //rb.MovePosition(rb.position + moveSpeed * Time.fixedDeltaTime * transform.TransformDirection(moveDirection)); //TODO : On essayer de remplacer ça car ça force à avoir un rb kinematic ce qui empeche l'interaction des autres trucs sur la position du joueur
+        rb.AddForce(moveSpeed * Time.fixedDeltaTime * moveDirection); //Changer le forcemode si ça marche pas faut voir
 
         if (isRunning)
         {
@@ -406,28 +381,6 @@ public class MonPlayerController : Entity
         animator.SetBool("isGrounded", isGrounded);
     }
 
-    /// <summary>
-    /// Vérifie si le joueur peut interagir avec un objet et active l'ui en conséquence
-    /// </summary>
-    private void CheckInteract()
-    {
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDistance))
-        {
-            if (hit.collider.TryGetComponent(out IInteractable interactable))
-            {
-                PlayerUIManager.Instance.ShowInteractText(interactable.GetInteractText());
-            }
-            else
-            {
-                PlayerUIManager.Instance.HideInteractText();
-            }
-        }
-        else
-        {
-            PlayerUIManager.Instance.HideInteractText();
-        }
-    }
-
     #region Degats et Mort
 
     /// <summary>
@@ -504,14 +457,13 @@ public class MonPlayerController : Entity
         StopAllCoroutines(); //Pr faire gaffe au poison
         SendDeathServerRpc(OwnerClientId);
         animator.SetTrigger("Died");
+
         gameObject.GetComponent<SpellRecognition>().enabled = false;
-        gameObject.GetComponent<PickUpController>().DropObject();
         gameObject.GetComponent<PickUpController>().enabled = false;
-        StopEmotes();
 
         StatsManager.Instance.AddMort();
 
-        gameObject.tag = "Ragdoll";
+        
         ChangerRenderCorps(ShadowCastingMode.On);
 
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
@@ -576,14 +528,6 @@ public class MonPlayerController : Entity
     }
 
     /// <summary>
-    /// Gère la mort quand on est pas le propriétaire du joueur
-    /// </summary>
-    public void HandleDeath()
-    {
-        gameObject.tag = "Ragdoll";
-    }
-
-    /// <summary>
     /// Envoie l'information de la mort du joueur au serveur
     /// </summary>
     /// <param name="ownerId">L'id du joueur mort</param>
@@ -599,7 +543,6 @@ public class MonPlayerController : Entity
     public void Respawn()
     {
         transform.position = lastCheckPoint;
-        gameObject.tag = "Player";
         if (MultiplayerGameManager.Instance.soloMode)
         {
             MultiplayerGameManager.Instance.SetNormalChannelTap();
@@ -611,14 +554,6 @@ public class MonPlayerController : Entity
         gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;
         cameraPivot.SetActive(true);
-    }
-
-    /// <summary>
-    /// Handle le respawn d'un joueur dont on est pas propriétaire
-    /// </summary>
-    public void HandleRespawn()
-    {
-        gameObject.tag = "Player";
     }
 
     /// <summary>
@@ -638,6 +573,7 @@ public class MonPlayerController : Entity
     /// </summary>
     public void DisableRagdoll(bool changeCam)
     {
+        gameObject.tag = "Player";
         if (changeCam)
         {
             cameraPivot.SetActive(true);
@@ -663,6 +599,9 @@ public class MonPlayerController : Entity
     /// </summary>
     public void EnableRagdoll(bool changeCam)
     {
+        gameObject.tag = "Ragdoll";
+        StopCasting();
+        StopEmotes();
         GetComponent<PickUpController>().DropObject();
         if (changeCam)
         {
@@ -710,28 +649,48 @@ public class MonPlayerController : Entity
         controls.Enable();
     }
 
-
-
     #endregion
 
-    #region Attaques
+    #region Casting
 
     /// <summary>
-    /// Commence l'animation d'attaque longue
+    /// Commence le casting de sort 
     /// </summary>
-    private void StartLongAttack()
+    private void StartCasting()
     {
         GetComponent<SpellRecognition>().StartListening();
         animator.SetTrigger("isLongAttacking");
+        ChangeCastingSFXStateServerRpc(true);
     }
 
     /// <summary>
     /// Fin de l'animation d'attaque longue
     /// </summary>
-    private void StopLongAttack()
+    private void StopCasting()
     {
         GetComponent<SpellRecognition>().StopListening();
         animator.SetBool("isLongAttacking", false);
+        ChangeCastingSFXStateServerRpc(false);
+    }
+
+    /// <summary>
+    /// Demande au serveur de synchroniser l'etat du sound effect 
+    /// </summary>
+    /// <param name="isActive">Si l'audiosource doit être active ou non</param>
+    [ServerRpc(RequireOwnership = false)]
+    private void ChangeCastingSFXStateServerRpc(bool isActive)
+    {
+        ChangeCastingSFXClientRpc(isActive);
+    }
+
+    /// <summary>
+    /// Active ou desactive l'audio source de casting
+    /// </summary>
+    /// <param name="isActive">Si l'audiosource doit être active ou non</param>
+    [ClientRpc]
+    private void ChangeCastingSFXClientRpc(bool isActive)
+    {
+        castingAudioSource.enabled = isActive;
     }
 
     #endregion
@@ -850,6 +809,38 @@ public class MonPlayerController : Entity
         transform.eulerAngles = new Vector3(0.0f, yaw, 0.0f);
     }
 
+    /// <summary>
+    /// Passe les parties du corps en mode première personne en les mettant sur une autre layer
+    /// </summary>
+    private void ChangerRenderCorps(ShadowCastingMode shadow)
+    {
+        //On desactive les child 0 a 3 pr le premier child
+        //Ce qui correspond à épaulières, genouières, ceinture, cape
+        for (int i = 0 ; i < 4 ; i++)
+        {
+            //On recupere les skinned mesh renderer dans leurs enfants et on met leur option de rendu sur shadow only
+            foreach (SkinnedMeshRenderer smr in transform.GetChild(0).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                smr.shadowCastingMode = shadow;
+            }
+        }
+
+        //On desactive les child 0 a 7 pr le deuxieme child
+        //Ce qui correspond à la tete, le torse, les cheveux, les jambes, les pieds, les moustaches, les yeux, les sourcils
+        for (int i = 0 ; i < 8 ; i++)
+        {
+            //On recupere les skinned mesh renderer dans leurs enfants et on met leur option de rendu sur shadow only
+            foreach (SkinnedMeshRenderer smr in transform.GetChild(1).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                smr.shadowCastingMode = shadow;
+            }
+        }
+
+    }
+
+    /// <summary>
+    /// Desactive la rotation de la camera et permet de faire tourner l'objet qu'on tient dans les mains
+    /// </summary>
     private void StartRotation()
     {
         if (GetComponent<PickUpController>().IsHoldingObject())
@@ -859,6 +850,9 @@ public class MonPlayerController : Entity
         }
     }
 
+    /// <summary>
+    /// Reactive la rotation de la camera et desactive l'action de faire tourner l'objet qu'on tient dans les mains
+    /// </summary>
     public void StopRotation()
     {
         if (GetComponent<PickUpController>().IsHoldingObject())
@@ -872,6 +866,28 @@ public class MonPlayerController : Entity
     #endregion
 
     #region Interactions
+
+    /// <summary>
+    /// Vérifie si le joueur peut interagir avec un objet et active l'ui en conséquence
+    /// </summary>
+    private void CheckInteract()
+    {
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDistance))
+        {
+            if (hit.collider.TryGetComponent(out IInteractable interactable))
+            {
+                PlayerUIManager.Instance.ShowInteractText(interactable.GetInteractText());
+            }
+            else
+            {
+                PlayerUIManager.Instance.HideInteractText();
+            }
+        }
+        else
+        {
+            PlayerUIManager.Instance.HideInteractText();
+        }
+    }
 
     /// <summary>
     /// Permet d'interagir avec les objets qui sont interactables
@@ -903,10 +919,8 @@ public class MonPlayerController : Entity
 #if UNITY_EDITOR
         Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * interactDist, Color.yellow, 1f);
 #endif
-        Debug.Log("Interact spell" + interactDist);
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, interactDist))
         {
-            Debug.Log("Hit : " + hit.collider.name);
             if (hit.collider.TryGetComponent(out IInteractable interactable))
             {
                 interactable.OnInteract();
@@ -1057,15 +1071,25 @@ public class MonPlayerController : Entity
 
     #endregion
 
+    /// <summary>
+    /// Lance la coroutine de poison sur le joueur
+    /// </summary>
+    /// <param name="poisonDamage">Degats de poison pris a chaque tick de poison</param>
+    /// <param name="poisonTime">Duree du poison en secondes</param>
     public void StartPoison(float poisonDamage, int poisonTime)
     {
         StartCoroutine(DoPoisonDamage(poisonDamage, poisonTime));
     }
 
+    /// <summary>
+    /// Coroutine qui tick pour infliger des degats de poisons tous les poisonDamageInterval pendant poisonTime secondes
+    /// </summary>
+    /// <param name="poisonDamage">Degats de poison a chaque tick</param>
+    /// <param name="poisonTime">Duree du poison</param>
     private IEnumerator DoPoisonDamage(float poisonDamage, int poisonTime)
     {
         int cptTime = 0;
-        while (cptTime < poisonDamage)
+        while (cptTime < poisonTime)
         {
             yield return new WaitForSeconds(poisonDamageInterval);
             cptTime += poisonDamageInterval;
@@ -1075,6 +1099,9 @@ public class MonPlayerController : Entity
 
     #endregion
 
+    /// <summary>
+    /// Gère la deconnexion du joueur
+    /// </summary>
     public void Deconnexion()
     {
         LeaveVivox();
@@ -1091,6 +1118,8 @@ public class MonPlayerController : Entity
     /// </summary>
     public void OnApplicationQuit()
     {
+        LeaveVivox();
+        GetComponent<PickUpController>().DropObject();
         NetworkManager.Singleton.Shutdown();
     }
 }

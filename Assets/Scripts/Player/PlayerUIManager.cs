@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 
 public class PlayerUIManager : MonoBehaviour
 {
+    #region UI Elements
     [Header("UI Elements")]
     [SerializeField] private GameObject inGameUI;
     [SerializeField] private UIDocument uiMenu;
@@ -16,6 +17,9 @@ public class PlayerUIManager : MonoBehaviour
     [SerializeField] private VisualTreeAsset gameOverMenu;
     [SerializeField] private VisualTreeAsset optionsMenu;
 
+    #endregion
+
+    #region In Game UI
     [Header("InGameUI Elements")]
     [SerializeField] private GameObject crossHair;
     [SerializeField] private GameObject interactText;
@@ -25,17 +29,27 @@ public class PlayerUIManager : MonoBehaviour
     public TMP_Text healthText;
     public TMP_Text manaText;
     [SerializeField] private TMP_Text goldText;
+    [SerializeField] private TMP_Text goldChangedText;
+    private Coroutine hideGoldChanged;
 
+    #endregion
+
+    #region Pause Menu
     private Button resumeButton;
     private Button optionsButton;
     private Button quitButton;
+    #endregion
 
+    #region Options Menu
     private Slider musicVolumeSlider;
     private Slider sfxVolumeSlider;
     private Slider voiceVolumeSlider;
     private Button returnToPauseButton;
 
     [SerializeField] private AudioMixer mainAudioMixer;
+    #endregion
+
+
 
     public static PlayerUIManager Instance;
 
@@ -90,6 +104,43 @@ public class PlayerUIManager : MonoBehaviour
     {
         goldText.text = amount + " G";
     }
+
+    /// <summary>
+    /// Montre le nombre de gold qui a changé du total
+    /// </summary>
+    /// <param name="difference">La difference entre l'ancienne et la nouvelle valeur</param>
+    public void ShowGoldChangedText(int difference)
+    {
+        if(hideGoldChanged != null)
+        {
+            StopCoroutine(hideGoldChanged);
+        }
+        if(difference <0)
+        {
+            goldChangedText.color = Color.Red;
+            goldChangedText.text = "- ";
+        }
+        else
+        {
+            goldChangedText.color = Color.Green;
+            goldChangedText.text = "+ ";
+        }
+        goldChangedText.text += difference; 
+        hideGoldChanged = HideGoldChangedText(1);
+    }
+
+    /// <summary>
+    /// Cache le texte du goldChangeText au bout de timetohide secondes
+    /// </summary>
+    /// <param name="timeToHide">Nb de secondes avant de recacher le nombre</param>
+    /// <returns></returns>
+    private IEnumerator HideGoldChangedText(int timeToHide)
+    {
+        yield return new WaitForSeconds(timeToHide);
+        goldChangedText.text = "";
+        hideGoldChanged = null;
+    }
+
     #endregion
 
     /// <summary>

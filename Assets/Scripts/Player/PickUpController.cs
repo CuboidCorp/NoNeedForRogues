@@ -60,6 +60,7 @@ public class PickUpController : NetworkBehaviour
     private void PickupObject(GameObject objetRamasse)
     {
         heldObj = objetRamasse;
+        heldObj.GetComponent<WeightedObject>().SendLastOwnerServerRpc(GetComponent<NetworkObject>().OwnerClientId);
         heldObj.GetComponent<WeightedObject>().ChangeStateServerRpc(true);
         SubstituteRealForCopy();
     }
