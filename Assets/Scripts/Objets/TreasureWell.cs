@@ -9,9 +9,9 @@ public class TreasureWell : NetworkBehaviour
     /// <summary>
     /// Desactivation du collider si on est pas le serveur pour avoir uniquement le serv qui fait tourner la logique
     /// </summary>
-    private void Awake()
+    public override void OnNetworkSpawn()
     {
-        if(!IsServer)
+        if (!IsServer)
         {
             GetComponent<Collider>().enabled = false;
         }
@@ -23,7 +23,7 @@ public class TreasureWell : NetworkBehaviour
         {
             int value = tres.TransformToGold();
             AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.MONEY_GAINED);
-            AddGoldCollectedClientRpc(value, MultiplayerGameManager.SendRpcToPlayer(tres.lastOwner));
+            AddGoldCollectedClientRpc(value, MultiplayerGameManager.SendRpcToPlayer(tres.GetLastOwner()));
             Destroy(other.gameObject);
         }
         else

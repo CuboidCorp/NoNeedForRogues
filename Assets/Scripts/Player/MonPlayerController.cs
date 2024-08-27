@@ -60,12 +60,14 @@ public class MonPlayerController : Entity
     [SerializeField] private float walkSpeed = 3f;
     [SerializeField] private float runSpeed = 5f;
 
+    [SerializeField] private float groundMultiplier = 10f;
+    [SerializeField] private float airMultiplier = 0.4f;
+
     [SerializeField] private float boostMaxBonusSpeed = 2f;
     private float boostBonusSpeed = 0f;
 
-
-
-    //private float maxSpeed = 10f;    //private float maxSpeed = 10f;
+    [SerializeField] private float groundDrag = 6f;
+    [SerializeField] private float airDrag = 2f;
 
     private bool isWalking = false;
     private bool isRunning = false;
@@ -252,6 +254,7 @@ public class MonPlayerController : Entity
     private void FixedUpdate()
     {
         MovePlayer();
+        ControlDrag();
         CheckGround();
         CheckInteract();
     }
@@ -288,8 +291,16 @@ public class MonPlayerController : Entity
 
         Vector3 moveDirection = new(moveInput.x, 0f, moveInput.y);
 
-        //rb.MovePosition(rb.position + moveSpeed * Time.fixedDeltaTime * transform.TransformDirection(moveDirection)); //TODO : On essayer de remplacer ça car ça force à avoir un rb kinematic ce qui empeche l'interaction des autres trucs sur la position du joueur
-        rb.AddForce(moveSpeed * Time.fixedDeltaTime * moveDirection); //Changer le forcemode si ça marche pas faut voir
+        if (isGrounded)
+        {
+            rb.AddForce(groundMultiplier * moveSpeed * transform.TransformDirection(moveDirection), ForceMode.Acceleration);
+        }
+        else
+        {
+            rb.AddForce(airMultiplier * moveSpeed * transform.TransformDirection(moveDirection), ForceMode.Acceleration);
+        }
+
+
 
         if (isRunning)
         {
@@ -300,6 +311,18 @@ public class MonPlayerController : Entity
             playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, fov, Time.deltaTime * fovChangeSpeed);
         }
 
+    }
+
+    private void ControlDrag()
+    {
+        if (isGrounded)
+        {
+            rb.drag = groundDrag;
+        }
+        else
+        {
+            rb.drag = airDrag;
+        }
     }
 
     /// <summary>
@@ -463,10 +486,11 @@ public class MonPlayerController : Entity
 
         StatsManager.Instance.AddMort();
 
-        
+
         ChangerRenderCorps(ShadowCastingMode.On);
 
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
+        tag = "Ragdoll";
         EnableRagdoll(false);
 
         controls.Disable();
@@ -550,6 +574,7 @@ public class MonPlayerController : Entity
         FullHeal();
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, false);
+        tag = "Player";
         DisableRagdoll(false);
         gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;
@@ -573,7 +598,6 @@ public class MonPlayerController : Entity
     /// </summary>
     public void DisableRagdoll(bool changeCam)
     {
-        gameObject.tag = "Player";
         if (changeCam)
         {
             cameraPivot.SetActive(true);
@@ -599,7 +623,6 @@ public class MonPlayerController : Entity
     /// </summary>
     public void EnableRagdoll(bool changeCam)
     {
-        gameObject.tag = "Ragdoll";
         StopCasting();
         StopEmotes();
         GetComponent<PickUpController>().DropObject();
@@ -641,10 +664,12 @@ public class MonPlayerController : Entity
         controls.Disable();
         ChangerRenderCorps(ShadowCastingMode.On);
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
+        tag = "Ragdoll";
         EnableRagdoll(true);
         yield return new WaitForSeconds(time);
         ChangerRenderCorps(ShadowCastingMode.ShadowsOnly);
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, false);
+        tag = "Player";
         DisableRagdoll(true);
         controls.Enable();
     }
@@ -816,7 +841,7 @@ public class MonPlayerController : Entity
     {
         //On desactive les child 0 a 3 pr le premier child
         //Ce qui correspond à épaulières, genouières, ceinture, cape
-        for (int i = 0 ; i < 4 ; i++)
+        for (int i = 0; i < 4; i++)
         {
             //On recupere les skinned mesh renderer dans leurs enfants et on met leur option de rendu sur shadow only
             foreach (SkinnedMeshRenderer smr in transform.GetChild(0).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
@@ -827,7 +852,7 @@ public class MonPlayerController : Entity
 
         //On desactive les child 0 a 7 pr le deuxieme child
         //Ce qui correspond à la tete, le torse, les cheveux, les jambes, les pieds, les moustaches, les yeux, les sourcils
-        for (int i = 0 ; i < 8 ; i++)
+        for (int i = 0; i < 8; i++)
         {
             //On recupere les skinned mesh renderer dans leurs enfants et on met leur option de rendu sur shadow only
             foreach (SkinnedMeshRenderer smr in transform.GetChild(1).GetChild(i).GetComponentsInChildren<SkinnedMeshRenderer>())
@@ -1040,6 +1065,7 @@ public class MonPlayerController : Entity
     private void OnCowSpawn()
     {
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, true);
+        tag = "Ragdoll";
         EnableRagdoll(false);
         gameObject.GetComponent<PickUpController>().enabled = false;
         gameObject.GetComponent<SpellRecognition>().enabled = false;
@@ -1063,6 +1089,7 @@ public class MonPlayerController : Entity
     public void Uncow()
     {
         MultiplayerGameManager.Instance.SyncRagdollStateServerRpc(OwnerClientId, false);
+        tag = "Player";
         DisableRagdoll(false);
         gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;

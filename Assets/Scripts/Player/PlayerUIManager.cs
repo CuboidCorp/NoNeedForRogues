@@ -111,22 +111,22 @@ public class PlayerUIManager : MonoBehaviour
     /// <param name="difference">La difference entre l'ancienne et la nouvelle valeur</param>
     public void ShowGoldChangedText(int difference)
     {
-        if(hideGoldChanged != null)
+        if (hideGoldChanged != null)
         {
             StopCoroutine(hideGoldChanged);
         }
-        if(difference <0)
+        if (difference < 0)
         {
-            goldChangedText.color = Color.Red;
+            goldChangedText.color = Color.red;
             goldChangedText.text = "- ";
         }
         else
         {
-            goldChangedText.color = Color.Green;
+            goldChangedText.color = Color.green;
             goldChangedText.text = "+ ";
         }
-        goldChangedText.text += difference; 
-        hideGoldChanged = HideGoldChangedText(1);
+        goldChangedText.text += difference;
+        hideGoldChanged = StartCoroutine(HideGoldChangedText(1));
     }
 
     /// <summary>

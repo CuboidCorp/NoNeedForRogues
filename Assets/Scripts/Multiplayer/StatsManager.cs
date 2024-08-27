@@ -135,7 +135,7 @@ public class StatsManager : NetworkBehaviour
     /// </summary>
     public void AddTrickshot()
     {
-        localPlayerStats.nbTrickshot++;
+        localPlayerStats.nbTrickshots++;
     }
 
     #endregion

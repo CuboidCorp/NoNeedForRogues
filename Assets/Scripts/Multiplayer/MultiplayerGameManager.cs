@@ -93,7 +93,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     public ConfigDonjon conf;
 
     #region Prefabs
-    private GameObject copyCamPrefab;
+    private GameObject alchimieZonePrefab;
     #endregion
 
     #region Sorts
@@ -125,7 +125,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     private void LoadPrefabs()
     {
         mainMixer = Resources.Load<AudioMixer>("Audio/Main");
-        copyCamPrefab = Resources.Load<GameObject>("Perso/CopyCam");
         lightBall = Resources.Load<GameObject>("Sorts/LightBall");
         fireBall = Resources.Load<GameObject>("Sorts/FireBall");
         resurectio = Resources.Load<GameObject>("Sorts/ResurectioProjectile");
@@ -133,6 +132,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         speedProj = Resources.Load<GameObject>("Sorts/AccelProjectile");
         fusrohdahProj = Resources.Load<GameObject>("Sorts/FusRoDahProjectile");
         explosionPrefab = Resources.Load<GameObject>("Sorts/Explosion");
+        alchimieZonePrefab = Resources.Load<GameObject>("Objets/AlchemyZone");
     }
 
     private void Start()
@@ -164,7 +164,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         playersIds = new ulong[nb];
         for (int i = 0; i < nb; i++)
         {
-            playersIds[i] = -1;
+            playersIds[i] = ulong.MaxValue;
         }
         playersNames = playerNames;
         playersStates = new PlayerState[nb];
@@ -224,10 +224,20 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     /// <param name="networkObj">Le network object a despawn</param>
     /// <param name="time">Dans combien de temps il faut le despawn</param>
-    private static IEnumerator DespawnAfterTimer(NetworkObject networkObj, float time)
+    public IEnumerator DespawnAfterTimer(NetworkObjectReference networkObj, float time)
     {
         yield return new WaitForSeconds(time);
-        networkObj.Despawn(true);
+        DespawnObjServerRpc(networkObj);
+    }
+
+    /// <summary>
+    /// Despawn un objet 
+    /// </summary>
+    /// <param name="obj">L'obj a despawn</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void DespawnObjServerRpc(NetworkObjectReference obj)
+    {
+        ((GameObject)obj).GetComponent<NetworkObject>().Despawn(true);
     }
 
     #region ClientRpcParams
@@ -256,7 +266,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     /// <param name="playerExclu">L'id du player exclu</param>
     /// <returns>La client rpc params avec les bonnes info</returns>
-    public static ClientRpcParams SendRpcToPlayersExcept(ulong playerExclu)
+    public ClientRpcParams SendRpcToPlayersExcept(ulong playerExclu)
     {
         ulong[] otherPlayerIds = playersIds.Where(id => id != playerExclu).ToArray();
 
@@ -731,10 +741,12 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             if (ragdollActive)
             {
+                playersGo[playerIndex].tag = "Ragdoll";
                 playersGo[playerIndex].GetComponent<MonPlayerController>().EnableRagdoll(false);
             }
             else
             {
+                playersGo[playerIndex].tag = "Player";
                 playersGo[playerIndex].GetComponent<MonPlayerController>().DisableRagdoll(false);
             }
 
@@ -906,7 +918,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         int playerIndex = Array.IndexOf(playersIds, id);
         if (playerIndex != -1)
         {
-            playersGo[playerIndex].GetComponent<MonPlayerController>().HandleRespawn();
+            playersGo[playerIndex].tag = "Player";
             MovePlayerTapToHuman(id);
         }
     }
@@ -980,6 +992,20 @@ public class MultiplayerGameManager : NetworkBehaviour
             playersGo[playerIndex].GetComponentInChildren<PickUpController>().SupprimerCopie();
         }
     }
+
+    /// <summary>
+    /// Demande au serv de summon une zone d'alchimie a la position donnée
+    /// </summary>
+    /// <param name="pos">Position de l'alchimie zone</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void SummonAlchemyZoneServerRpc(string goName, Vector3 pos)
+    {
+        GameObject alchimieZone = Instantiate(alchimieZonePrefab, pos, Quaternion.identity);
+        alchimieZone.transform.localScale = new Vector3(2, 2, 2);
+        alchimieZone.GetComponent<NetworkObject>().Spawn();
+        GameObject.Find(goName).GetComponent<AlchemyPot>().SetAlchemyZone(alchimieZone);
+    }
+
     #endregion
 
     /// <summary>
@@ -1338,7 +1364,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void SummonTresorServerRpc(Vector3 position)
     {
-        GameObject objet = Resources.Load<GameObject>("Donjon/Items"); //TODO : Trouver le vrai chemin et mettre unseul objet 
+        GameObject objet = Resources.Load<GameObject>("Donjon/Items/Treasures/GoldenIdol");
         GameObject instance = Instantiate(objet, position, Quaternion.identity);
         instance.GetComponent<TreasureObject>().value = 1;
         instance.GetComponent<NetworkObject>().Spawn();

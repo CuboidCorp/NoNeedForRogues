@@ -61,7 +61,7 @@ public class PickUpController : NetworkBehaviour
     {
         heldObj = objetRamasse;
         heldObj.GetComponent<WeightedObject>().SendLastOwnerServerRpc(GetComponent<NetworkObject>().OwnerClientId);
-        heldObj.GetComponent<WeightedObject>().ChangeStateServerRpc(true);
+        heldObj.GetComponent<WeightedObject>().ChangeState(true);
         SubstituteRealForCopy();
     }
 
@@ -141,7 +141,7 @@ public class PickUpController : NetworkBehaviour
         isRotating = false;
         SubstituteCopyForReal(Vector3.zero);
         StopClipping();
-        heldObj.GetComponent<WeightedObject>().ChangeStateServerRpc(false);
+        heldObj.GetComponent<WeightedObject>().ChangeState(false);
         heldObj = null;
     }
 
@@ -160,7 +160,7 @@ public class PickUpController : NetworkBehaviour
         }
         isRotating = false;
         SubstituteCopyForReal(playerCam.transform.forward * throwForce);
-        heldObj.GetComponent<WeightedObject>().ChangeStateServerRpc(false);
+        heldObj.GetComponent<WeightedObject>().ChangeState(false);
         StopClipping();
         heldObj = null;
     }
