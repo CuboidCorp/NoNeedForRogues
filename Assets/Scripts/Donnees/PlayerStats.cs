@@ -14,6 +14,7 @@ public class PlayerStats : INetworkSerializable
     public int nbPotionDrank; //Nombre de potions consommée
     public int nbMorts; //Nombre de mort
     public int nbTrickshots; //Nombre de trickshots
+    public int nbItemsLost; //Nombre d'items sacrifié au void
 
     /// <summary>
     /// Constructeur de base qui met tout a 0
@@ -28,6 +29,7 @@ public class PlayerStats : INetworkSerializable
         nbPotionDrank = 0;
         nbMorts = 0;
         nbTrickshots = 0;
+        nbItemsLost = 0;
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -40,5 +42,6 @@ public class PlayerStats : INetworkSerializable
         serializer.SerializeValue(ref nbPotionDrank);
         serializer.SerializeValue(ref nbMorts);
         serializer.SerializeValue(ref nbTrickshots);
+        serializer.SerializeValue(ref nbItemsLost);
     }
 }

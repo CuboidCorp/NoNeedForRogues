@@ -138,6 +138,14 @@ public class StatsManager : NetworkBehaviour
         localPlayerStats.nbTrickshots++;
     }
 
+    /// <summary>
+    /// Rajout un item perdu au joueur local
+    /// </summary>
+    public void AddItemLost()
+    {
+        localPlayerStats.nbItemsLost++;
+    }
+
     #endregion
 
     /// <summary>

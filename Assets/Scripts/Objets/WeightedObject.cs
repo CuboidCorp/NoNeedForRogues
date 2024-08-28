@@ -5,6 +5,7 @@ using UnityEngine;
 /// Classe qui répresente un objet avec un poids (Qui peut être tenu par le joueur)
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Collider))]
 public abstract class WeightedObject : NetworkBehaviour, IRamassable
 {
     public float weight = 1;

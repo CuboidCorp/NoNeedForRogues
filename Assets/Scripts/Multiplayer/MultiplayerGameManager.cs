@@ -1398,6 +1398,16 @@ public class MultiplayerGameManager : NetworkBehaviour
     #endregion
 
     /// <summary>
+    /// Dit a un joueur qu'il a perdu un item (Le nul)
+    /// </summary>
+    /// <param name="clientRpcParams">Les params pr le client qui a perdu son item</param>
+    [ClientRpc]
+    public void SendItemLostClientRpc(ClientRpcParams clientRpcParams)
+    {
+        StatsManager.Instance.AddItemLost();
+    }
+
+    /// <summary>
     /// Les états possibles d'un joueur (Notamment pr les voice taps)
     /// </summary>
     private enum PlayerState

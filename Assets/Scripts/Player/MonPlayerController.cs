@@ -7,6 +7,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 [DisallowMultipleComponent]
+[RequireComponent(typeof(Rigidbody))]
 public class MonPlayerController : Entity
 {
     private Rigidbody rb;

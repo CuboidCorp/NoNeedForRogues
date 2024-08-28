@@ -1,6 +1,10 @@
 using Unity.Netcode;
 using UnityEngine;
 
+/// <summary>
+/// Zone de vent qui pousse tous les gens dans son trigger
+/// </summary>
+[RequireComponent(typeof(Collider))]
 public class ZoneVent : NetworkBehaviour
 {
     [SerializeField] private float forceVentilo = 1;
