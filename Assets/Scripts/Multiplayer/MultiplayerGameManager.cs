@@ -104,6 +104,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     private GameObject speedProj;
     private GameObject fusrohdahProj;
     private GameObject explosionPrefab;
+    private GameObject zoneVentPrefab;
     #endregion
 
     private void Awake()
@@ -878,13 +879,37 @@ public class MultiplayerGameManager : NetworkBehaviour
         fusrohdah.GetComponent<NetworkObject>().Spawn();
     }
 
+    /// <summary>
+    /// Summon une explosion
+    /// </summary>
+    /// <param name="pos">Position de l'explosion</param>
+    /// <param name="expRange">Range de l'explosion</param>
+    /// <param name="time">Temps pendant lequel l'explosion est visible</param>
     [ServerRpc(RequireOwnership = false)]
     internal void SummonExplosionServerRpc(Vector3 pos, float expRange, float time)
     {
         GameObject explosion = Instantiate(explosionPrefab, pos, Quaternion.identity);
         explosion.transform.localScale = new Vector3(expRange, expRange, expRange);
         explosion.GetComponent<NetworkObject>().Spawn();
-        StartCoroutine(DespawnAfterTimer(explosion.GetComponent<NetworkObject>(), time));
+        StartCoroutine(DespawnAfterTimer(explosion, time));
+    }
+
+    /// <summary>
+    /// Summon une zone de vent
+    /// </summary>
+    /// <param name="pos">Position de la zone de vent</param>
+    /// <param name="dir">Direction de la zone de vent</param>
+    /// <param name="force">Force de pousée de la zone</param>
+    /// <param name="tailleCollider">Taille de la zone de vent</param>
+    /// <param name="posCollider">Position de la zone de vent</param>
+    /// <param name="time">Temps avant de despawn</param>
+    [ServerRpc(RequireOwnership = false)]
+    internal void SummonZoneVentServerRpc(Vector3 pos, Vector3 dir, float force,  Vector3 tailleCollider, Vector3 posCollider, float time)
+    {
+        GameObject zoneVent = Instantiate(zoneVentPrefab, pos, Quaternion.LookRotation(dir));
+        zoneVent.GetComponent<ZoneVent>().SetupZoneVent(force, posCollider, tailleCollider);
+        zoneVent.GetComponent<NetworkObject>().Spawn();
+        StartCoroutine(DespawnAfterTimer(zoneVent, time));
     }
 
     /// <summary>

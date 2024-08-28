@@ -11,13 +11,23 @@ public class PickUpController : NetworkBehaviour
     private Rigidbody copieRb;
     public bool isRotating = false;
     [SerializeField] private float rotationSensitivity = 2;
-
+    
 
     [Header("Physics Settings")]
     [SerializeField] private float pickupRange = 5.0f;
-    [SerializeField] private float pickupForce = 100.0f;
+    [SerializeField] private float pickupForce = 100.0f; //TODO : Reduire ça pr tester
 
     [SerializeField] private float throwForce = 10f; //Quand on lance l'objet
+
+    [Header("Trajectoire")]
+    [SerializeField] private bool showTrajectory = false;
+    [SerializeField] private int lineSegmentCount = 20;
+    LineRenderer lineRenderer;
+
+    private void Awake()
+    {
+        lineRenderer = GetComponentInChildren<LineRenderer>();
+    }
 
     /// <summary>
     /// Si le joueur tient l'objet ou non
@@ -182,8 +192,11 @@ public class PickUpController : NetworkBehaviour
         if (copieObj != null)
         {
             MoveObject();
+            if(showTrajectory)
+            {
+                DrawTrajectory();
+            }
         }
-
     }
 
     #region Rotation
@@ -223,7 +236,10 @@ public class PickUpController : NetworkBehaviour
         }
     }
 
-    void StopClipping() //function only called when dropping/throwing
+    /// <summary>
+    /// Empeche (En théorie) l'objet de drop derrière un mur et le remet en position 
+    /// </summary>
+    private void StopClipping()
     {
         float clipRange = Vector3.Distance(heldObj.transform.position, transform.position); //distance from holdPos to the camera
         //have to use RaycastAll as object blocks raycast in center screen
@@ -237,4 +253,39 @@ public class PickUpController : NetworkBehaviour
             //if your player is small, change the -0.5f to a smaller number (in magnitude) ie: -0.1f
         }
     }
+
+
+    #region Trajectoire
+
+    /// <summary>
+    /// Change l'etat de l'affichage de la trajectoire
+    /// </summary>
+    public void SwitchShowTrajectoryState()
+    {
+        showTrajectory = !showTrajectory;
+    }
+
+    /// <summary>
+    /// Dessine la trajectoire de l'objet en main si on venait à le lancer
+    /// </summary>
+    private void DrawTrajectory()
+    {
+        Vector3[] linePoints = new Vector3[lineSegmentCount];
+
+        lineRenderer.positionCount = lineSegmentCount;
+
+        Vector3 startPosition = copieObj.transform.position;
+        Vector3 startVelocity = throwForce * copieObj.transform.forward;
+
+        for (int i = 0 ; i < lineSegmentCount ; i++)
+        {
+            float time = (float)i / (lineSegmentCount - 1);
+            linePoints[i] = startPosition + time * startVelocity;
+            linePoints[i].y = startPosition.y + startVelocity.y * time + Physics.gravity.y / 2f * time * time;
+        }
+
+        lineRenderer.SetPositions(linePoints);
+    }
+
+    #endregion
 }

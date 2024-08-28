@@ -44,9 +44,14 @@ public class SpellRecognition : MonoBehaviour
 
     private const float interactRange = 10;
 
+    private const float zoneVentForce = 20;
+    private const Vector3 zoneVentSize = new Vector3(2, 2, 5);
+    private const Vector3 zoneVentPos = new Vector3(1, 1, 2.5f); //TODO  : A changer pr les vraies valeurs
+    private const float zoneVentDuration = 5;
+
     #endregion
 
-    private static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "François François François", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "DEBUG", "TPALL", "RAGDOLL", "TRESOR" }; //Les sorts en majuscules sont les sorts de debug
+    private static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "François François François", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE" }; //Les sorts en majuscules sont les sorts de debug
 
     private bool debugMode = false;
 
@@ -69,7 +74,7 @@ public class SpellRecognition : MonoBehaviour
         Vector3 posProj = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
 
         StatsManager.Instance.AddSpellCast();
-        //TODO : Son de sort lancé
+        AudioManager.Instance.PlayOneShotClipServerRpc(transform.position, SoundEffectOneShot.SPELL_CAST);
 
         switch (args.text)
         {
@@ -141,9 +146,10 @@ public class SpellRecognition : MonoBehaviour
                 gameObject.GetComponent<MonPlayerController>().Dash(lookDir, dashForce);
                 break;
             case "Ventus":
-                Debug.LogWarning("NYI Sort pas encore fait");
+                MultiplayerGameManager.Instance.SummonZoneVentServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, zoneVentForce, zoneVentSize, zoneVentPos, zoneVentDuration);
                 break;
 
+            #region SORTS DEBUG
             // SORTS DE DEBUG A PARTIR D'ICI
             case "DEBUG":
                 debugMode = true;
@@ -179,6 +185,17 @@ public class SpellRecognition : MonoBehaviour
                     Debug.LogWarning("Le joueur a essayé de TRESOR sans autorisation");
                 }
                 break;
+            case "TRAJECTOIRE":
+                if (debugMode)
+                {
+                    GetComponent<PickUpController>().SwitchShowTrajectoryState();
+                }
+                else
+                {
+                    Debug.LogWarning("Le joueur a essayé de TRAJECTOIRE sans autorisation");
+                }
+                break;
+                #endregion
         }
     }
 
