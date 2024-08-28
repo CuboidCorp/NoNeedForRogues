@@ -7,7 +7,7 @@ public class Plateforme : MonoBehaviour
 {
 
     [SerializeField] private Transform[] _waypoints;
-    [SerialierField] private float _speed;
+    [SerializeField] private float _speed;
 
     private int _targetWaypointIndex;
 
@@ -27,11 +27,9 @@ public class Plateforme : MonoBehaviour
         _elapsedTime += Time.fixedDeltaTime;
 
         float elapsedPercentage = _elapsedTime / _timeToWaypoint;
-        elapsedPercentage = Mathf.SmoothStep(0,1,elapsedPercentage);
-        transform.position = Vector3.Lerp(_previousWaypoint.position, _targetWaypoint.position, elapsedPercentage);
-        transform.rotation = Quarternion.Lerp(_previousWaypoint.rotation, _targetWaypoint.rotation, elapsedPercentage);
-
-        if(elapsedPercentage >=1)
+        elapsedPercentage = Mathf.SmoothStep(0, 1, elapsedPercentage);
+        transform.SetPositionAndRotation(Vector3.Lerp(_previousWaypoint.position, _targetWaypoint.position, elapsedPercentage), Quaternion.Lerp(_previousWaypoint.rotation, _targetWaypoint.rotation, elapsedPercentage));
+        if (elapsedPercentage >= 1)
         {
             TargetNextWaypoint();
         }
@@ -53,6 +51,6 @@ public class Plateforme : MonoBehaviour
 
     private int GetNextWaypointIndex()
     {
-        return (_targetWaypointIndex + 1) % _waypoints.Length:
+        return (_targetWaypointIndex + 1) % _waypoints.Length;
     }
 }

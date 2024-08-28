@@ -45,8 +45,8 @@ public class SpellRecognition : MonoBehaviour
     private const float interactRange = 10;
 
     private const float zoneVentForce = 20;
-    private const Vector3 zoneVentSize = new Vector3(2, 2, 5);
-    private const Vector3 zoneVentPos = new Vector3(1, 1, 2.5f); //TODO  : A changer pr les vraies valeurs
+    private static Vector3 zoneVentSize = new(2, 2, 5);
+    private static Vector3 zoneVentPos = new(1, 1, 2.5f); //TODO  : A changer pr les vraies valeurs
     private const float zoneVentDuration = 5;
 
     #endregion
@@ -74,7 +74,7 @@ public class SpellRecognition : MonoBehaviour
         Vector3 posProj = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
 
         StatsManager.Instance.AddSpellCast();
-        AudioManager.Instance.PlayOneShotClipServerRpc(transform.position, SoundEffectOneShot.SPELL_CAST);
+        //AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.SPELL_CAST);
 
         switch (args.text)
         {

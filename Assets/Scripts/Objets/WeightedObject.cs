@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
-public abstract class WeightedObject : NetworkBehaviour, IRamassable
+public abstract class WeightedObject : NetworkBehaviour
 {
     public float weight = 1;
     public string cheminCopie;

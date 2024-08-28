@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 /// <summary>
@@ -8,7 +9,7 @@ public class Void : MonoBehaviour
 {
     private void Awake()
     {
-        if(!MultiplayerGameManager.Instance.IsServer)
+        if (!MultiplayerGameManager.Instance.IsServer)
         {
             GetComponent<Collider>().enabled = false;
         }
@@ -16,9 +17,9 @@ public class Void : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.CompareTag("PickUp"))
+        if (other.CompareTag("PickUp"))
         {
-            if(other.TryGetComponent(out TreasureObject tres))
+            if (other.TryGetComponent(out TreasureObject tres))
             {
                 MultiplayerGameManager.Instance.SendItemLostClientRpc(MultiplayerGameManager.SendRpcToPlayer(tres.GetLastOwner()));
             }
@@ -26,6 +27,6 @@ public class Void : MonoBehaviour
         }
     }
 
-    
-    
+
+
 }

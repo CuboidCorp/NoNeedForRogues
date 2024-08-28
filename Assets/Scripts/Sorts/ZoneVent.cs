@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Zone de vent qui pousse tous les gens dans son trigger
 /// </summary>
-[RequireComponent(typeof(Collider))]
+[RequireComponent(typeof(BoxCollider))]
 public class ZoneVent : NetworkBehaviour
 {
     [SerializeField] private float forceVentilo = 1;
@@ -19,16 +19,21 @@ public class ZoneVent : NetworkBehaviour
 
         if (!IsServer)
         {
-            GetComponent<Collider>().enabled = false;
+            GetComponent<BoxCollider>().enabled = false;
         }
         else
         {
-            GetComponent<Collider>().size = tailleCollider;
-            GetComponent<Collider>().center = posCenter;
+            GetComponent<BoxCollider>().size = tailleCollider;
+            GetComponent<BoxCollider>().center = posCenter;
         }
         //TODO : Changer la taille du truc de particule aussi et la vitesse pr que les particules arrivent a la fin
-        Shape shape = ps.shape;
-        shape.scale = tailleCollider;
+        ParticleSystem.ShapeModule shape = ps.shape;
+        shape.scale = new Vector3(tailleCollider.x, tailleCollider.y, 1);
+
+        //Distance parcourue par les particules = lifetime * speed
+        //Donc lifetime = distance/speed
+        ParticleSystem.MainModule main = ps.main;
+        main.startLifetime = tailleCollider.z / main.startSpeed.constant;
 
     }
 
