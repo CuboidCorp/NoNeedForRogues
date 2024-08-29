@@ -134,6 +134,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         fusrohdahProj = Resources.Load<GameObject>("Sorts/FusRoDahProjectile");
         explosionPrefab = Resources.Load<GameObject>("Sorts/Explosion");
         alchimieZonePrefab = Resources.Load<GameObject>("Objets/AlchemyZone");
+        zoneVentPrefab = Resources.Load<GameObject>("Sorts/ZoneVent");
     }
 
     private void Start()
@@ -904,7 +905,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="posCollider">Position de la zone de vent</param>
     /// <param name="time">Temps avant de despawn</param>
     [ServerRpc(RequireOwnership = false)]
-    internal void SummonZoneVentServerRpc(Vector3 pos, Vector3 dir, float force,  Vector3 tailleCollider, Vector3 posCollider, float time)
+    internal void SummonZoneVentServerRpc(Vector3 pos, Vector3 dir, float force, Vector3 tailleCollider, Vector3 posCollider, float time)
     {
         GameObject zoneVent = Instantiate(zoneVentPrefab, pos, Quaternion.LookRotation(dir));
         zoneVent.GetComponent<ZoneVent>().SetupZoneVent(force, posCollider, tailleCollider);
@@ -1049,7 +1050,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     }
 
     /// <summary>
-    /// Synchronise la config du donjon entre l'hote et les autres clients
+    /// Synchronise la config du donjon entre l'hote et les autres clientsb 
     /// </summary>
     /// <param name="conf">La nouvelle configuration du donjon</param>
     [ClientRpc]

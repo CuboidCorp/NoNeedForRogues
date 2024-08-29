@@ -20,7 +20,7 @@ public class Ventilo : MonoBehaviour
         nbVentilo++;
         if (MultiplayerGameManager.Instance.IsServer)
         {
-            MultiplayerGameManager.Instance.SummonVentiloWindZoneServerRpc(name, transform.position, transform.rotation.eulerAngles, forceWindZone, tailleColliderWindZone, posColliderWindZone));
+            MultiplayerGameManager.Instance.SummonVentiloWindZoneServerRpc(name, transform.position, transform.rotation.eulerAngles, forceWindZone, tailleColliderWindZone, posColliderWindZone);
         }
     }
 
