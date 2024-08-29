@@ -37,6 +37,22 @@ public class GenEtaLaby : GenerationEtage
 
     private List<Vector2Int> deadEnds;
     private Vector2Int[] stairsPos;
+    private Vector2Int[] trapsPos;
+
+    public enum Traps //TODO : A mettre dans l'ordre qu'ils sont dans le dossier des ressources
+    {
+        BOULDER_TRAP,
+        FLOOR_TRAP,
+        SPIKE_TRAP,
+        BEAR_TRAP,
+        CRUSH_TRAP,
+        ARROW_TRAP,
+        POISON_ARROW_TRAP,
+        AXE_TRAP,
+        SAW_TRAP,
+        DOOR_TRAP
+    }
+
 
     private const float yCoordinateUpStairs = 0;
     private const float yCoordinateDownStairs = -1;
@@ -108,9 +124,9 @@ public class GenEtaLaby : GenerationEtage
     {
         objets = new List<GameObject>();
         etage = new WallState[tailleEtage.x, tailleEtage.y];
-        for (int i = 0; i < tailleEtage.x; i++)
+        for (int i = 0 ; i < tailleEtage.x ; i++)
         {
-            for (int j = 0; j < tailleEtage.y; j++)
+            for (int j = 0 ; j < tailleEtage.y ; j++)
             {
                 etage[i, j] = WallState.LEFT | WallState.RIGHT | WallState.UP | WallState.DOWN;
             }
@@ -304,9 +320,9 @@ public class GenEtaLaby : GenerationEtage
 
     private void RenderingLabyrinthe()
     {
-        for (int i = 0; i < tailleEtage.x; i++)
+        for (int i = 0 ; i < tailleEtage.x ; i++)
         {
-            for (int j = 0; j < tailleEtage.y; j++)
+            for (int j = 0 ; j < tailleEtage.y ; j++)
             {
                 GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], new Vector3(i, 0, j) * cellSize, Quaternion.identity);
                 go.transform.parent = hallwaysHolder;
@@ -391,7 +407,7 @@ public class GenEtaLaby : GenerationEtage
                     GeneratePotion(prefabsPotions[Random.Range(0, prefabsPotions.Length)], position, force);
                     break;
                 case 3: //Coffres
-                    GenerateChest(prefabsCoffres[Random.Range(0, prefabsCoffres.Length)], position, valeur, force);
+                    GenerateChest(prefabsCoffres[Random.Range(0, prefabsCoffres.Length)], position, valeur, force, etage[deadEnd.x, deadEnd.y]);
                     break;
             }
             Debug.DrawRay(position, Vector3.up, Color.yellow, 100f);
@@ -455,11 +471,13 @@ public class GenEtaLaby : GenerationEtage
         instance.GetComponent<NetworkObject>().Spawn();
     }
 
-    private void GenerateChest(GameObject chest, Vector3 position, int valeur, int force)
+    private void GenerateChest(GameObject chest, Vector3 position, int valeur, int force, WallState etatPos)
     {
         GameObject instance = Instantiate(chest, itemHolder);
         objets.Add(instance);
+        Debug.Log(etatPos);
         instance.transform.position = position;
+        instance.transform.rotation = Quaternion.Euler(0, etatPos * 90, 0); //TODO : Verifier au niveau des bits c'est quoi la bonne formule
         int typeCoffre = Random.Range(0, 2);
         Chest coffreScript = instance.GetComponent<Chest>();
         instance.GetComponent<NetworkObject>().Spawn();
@@ -518,8 +536,89 @@ public class GenEtaLaby : GenerationEtage
     #region Generation Pieges
     public override void GeneratePieges()
     {
+        int nbPieges = 10 + difficulty * 2;
+
+        trapsPos = new Vector2Int[nbPieges];
+        int nbPiegesPlaces = 0;
+
+
+
         //On genere les pieges en fonction de la diffculté --> Pr le moment pas de lien entre les items et tt
         //Donc n'importe quel pos mais pas dans les deadends pr certains
+
+        while (nbPiegesPlaces < nbPieges)
+        {
+            Vector2Int posPiege = new(Random.Range(0, tailleEtage.x), Random.Range(0, tailleEtage.y));
+
+            if (!IsTrapPosValid(posPiege))
+            {
+                continue;
+            }
+
+            //Nimporte ou : 
+            //Sol qui s'ouvre
+            //Piege a pique
+            //Piege a scie 
+            //Piege boulder
+            //Piege a ours
+            List<int> possibleTraps = { 0, 1, 2, 3, 4, 5 };
+
+            WallState etatMurs = etage[posPiege.x, posPiege.y] & ~WallState.VISITED;
+
+            if (etatMurs == 5 || etatMurs == 10) 
+            {
+                //2 murs et 2 endrois ou passer
+                //Piege hache
+                //Mur compresseur
+                possibleTraps.Add(6);
+                possibleTraps.Add(7);
+            }
+
+            if (posPiege.x == tailleEtage.x - 1 || posPiege.x == 0 || posPiege.y == tailleEtage.y - 1 || posPiege.y == 0)
+            {
+                //Extremite
+                //Fausse porte
+                //Piege a fleches
+                possibleTraps.Add(8);
+                possibleTraps.Add(9);
+            }
+
+            int indexPiege = possibleTraps[Random.Range(0, possibleTraps.Count)];
+
+            //TODO : Instantiate le gameObject du piege dans la liste des pieges
+
+            //Si ça marche et qu'on a tt placé
+            trapsPos[nbPiegesPlaces] = posPiege;
+            nbPiegesPlaces++;
+
+
+        }
+
+
+
+    }
+
+    /// <summary>
+    /// Vérifie si la position du piège est valide ou non
+    /// </summary>
+    /// <param name="trapPos">La position du piège</param>
+    /// <returns>True si elle est inoccupée, false sinon</returns>
+    private bool IsTrapPosValid(Vector2Int trapPos)
+    {
+        if (deadEnds.Contains(trapPos))
+        {
+            return false;
+        }
+
+        foreach (Vector2Int pos in trapsPos)
+        {
+            if (pos == trapPos)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

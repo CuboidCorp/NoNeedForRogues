@@ -1018,9 +1018,12 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
+    #endregion
+
     /// <summary>
     /// Demande au serv de summon une zone d'alchimie a la position donnée
     /// </summary>
+    /// <param name="goName">Nom du alchemy pot qui veut sa zone</param>
     /// <param name="pos">Position de l'alchimie zone</param>
     [ServerRpc(RequireOwnership = false)]
     public void SummonAlchemyZoneServerRpc(string goName, Vector3 pos)
@@ -1031,7 +1034,19 @@ public class MultiplayerGameManager : NetworkBehaviour
         GameObject.Find(goName).GetComponent<AlchemyPot>().SetAlchemyZone(alchimieZone);
     }
 
-    #endregion
+    /// <summary>
+    /// Demande au serv de summon une wind zone pr un ventilo a la pos donnée avec les params donnés
+    /// </summary>
+    /// <param name="goName">Nom du ventilo qui veut sa zone</param>
+    /// <param name="pos">Position de la future windzone</param>
+    [ServerRpc(RequireOwnership = false)]
+    public void SummonVentiloWindZoneServerRpc(string goName, Vector3 pos, Vector3 dir, float force, Vector3 tailleCollider, Vector3 posCollider)
+    {
+        GameObject zoneVent = Instantiate(zoneVentPrefab, pos, Quaternion.LookRotation(dir));
+        zoneVent.GetComponent<ZoneVent>().SetupZoneVent(force, posCollider, tailleCollider);
+        zoneVent.GetComponent<NetworkObject>().Spawn();
+        GameObject.Find(goName).GetComponent<Ventilo>().SetWindZone(zoneVent);
+    }
 
     /// <summary>
     /// Synchronise la config du donjon entre l'hote et les autres clients
