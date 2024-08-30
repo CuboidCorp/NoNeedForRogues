@@ -11,7 +11,7 @@ public class PickUpController : NetworkBehaviour
     private Rigidbody copieRb;
     public bool isRotating = false;
     [SerializeField] private float rotationSensitivity = 2;
-    
+
 
     [Header("Physics Settings")]
     [SerializeField] private float pickupRange = 5.0f;
@@ -27,6 +27,7 @@ public class PickUpController : NetworkBehaviour
     private void Awake()
     {
         lineRenderer = GetComponentInChildren<LineRenderer>();
+        lineRenderer.enabled = false;
     }
 
     /// <summary>
@@ -128,8 +129,7 @@ public class PickUpController : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void SetObjectDataServerRpc(NetworkObjectReference obj, Vector3 newPosition, Vector3 rotation, Vector3 force)
     {
-        ((GameObject)obj).transform.position = newPosition;
-        ((GameObject)obj).transform.rotation = Quaternion.Euler(rotation);
+        ((GameObject)obj).transform.SetPositionAndRotation(newPosition, Quaternion.Euler(rotation));
         ((GameObject)obj).GetComponent<Rigidbody>().AddForce(force, ForceMode.Impulse);
 
     }
@@ -153,6 +153,8 @@ public class PickUpController : NetworkBehaviour
         StopClipping();
         heldObj.GetComponent<WeightedObject>().ChangeState(false);
         heldObj = null;
+        showTrajectory = false;
+        HideTrajectory();
     }
 
     /// <summary>
@@ -173,6 +175,8 @@ public class PickUpController : NetworkBehaviour
         heldObj.GetComponent<WeightedObject>().ChangeState(false);
         StopClipping();
         heldObj = null;
+        showTrajectory = false;
+        HideTrajectory();
     }
 
     /// <summary>
@@ -192,7 +196,7 @@ public class PickUpController : NetworkBehaviour
         if (copieObj != null)
         {
             MoveObject();
-            if(showTrajectory)
+            if (showTrajectory)
             {
                 DrawTrajectory();
             }
@@ -263,6 +267,20 @@ public class PickUpController : NetworkBehaviour
     public void SwitchShowTrajectoryState()
     {
         showTrajectory = !showTrajectory;
+        if (!showTrajectory)
+        {
+            HideTrajectory();
+        }
+        else
+        {
+            lineRenderer.enabled = true;
+        }
+    }
+
+    private void HideTrajectory()
+    {
+        lineRenderer.enabled = false;
+        lineRenderer.positionCount = 0;
     }
 
     /// <summary>
@@ -270,21 +288,29 @@ public class PickUpController : NetworkBehaviour
     /// </summary>
     private void DrawTrajectory()
     {
-        Vector3[] linePoints = new Vector3[lineSegmentCount];
-
         lineRenderer.positionCount = lineSegmentCount;
 
         Vector3 startPosition = copieObj.transform.position;
         Vector3 startVelocity = throwForce * copieObj.transform.forward;
 
-        for (int i = 0 ; i < lineSegmentCount ; i++)
+        lineRenderer.SetPosition(0, startPosition);
+
+        for (int i = 1; i < lineSegmentCount; i++)
         {
             float time = (float)i / (lineSegmentCount - 1);
-            linePoints[i] = startPosition + time * startVelocity;
-            linePoints[i].y = startPosition.y + startVelocity.y * time + Physics.gravity.y / 2f * time * time;
-        }
+            Vector3 pos = startPosition + time * startVelocity;
+            pos.y = startPosition.y + startVelocity.y * time + Physics.gravity.y / 2f * time * time;
 
-        lineRenderer.SetPositions(linePoints);
+            lineRenderer.SetPosition(i, pos);
+            Vector3 lastPos = lineRenderer.GetPosition(i - 1);
+            if (Physics.Raycast(lastPos, (pos - lastPos).normalized, out RaycastHit hit, (pos - lastPos).magnitude))
+            {
+                lineRenderer.SetPosition(i, hit.point);
+                lineRenderer.positionCount = i + 1;
+
+                return;
+            }
+        }
     }
 
     #endregion

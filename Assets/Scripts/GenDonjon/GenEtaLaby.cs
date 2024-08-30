@@ -105,9 +105,9 @@ public class GenEtaLaby : GenerationEtage
     {
         objets = new List<GameObject>();
         etage = new WallState[tailleEtage.x, tailleEtage.y];
-        for (int i = 0 ; i < tailleEtage.x ; i++)
+        for (int i = 0; i < tailleEtage.x; i++)
         {
-            for (int j = 0 ; j < tailleEtage.y ; j++)
+            for (int j = 0; j < tailleEtage.y; j++)
             {
                 etage[i, j] = WallState.LEFT | WallState.RIGHT | WallState.UP | WallState.DOWN;
             }
@@ -301,9 +301,9 @@ public class GenEtaLaby : GenerationEtage
 
     private void RenderingLabyrinthe()
     {
-        for (int i = 0 ; i < tailleEtage.x ; i++)
+        for (int i = 0; i < tailleEtage.x; i++)
         {
-            for (int j = 0 ; j < tailleEtage.y ; j++)
+            for (int j = 0; j < tailleEtage.y; j++)
             {
                 GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], new Vector3(i, 0, j) * cellSize, Quaternion.identity);
                 go.transform.parent = hallwaysHolder;
@@ -458,7 +458,7 @@ public class GenEtaLaby : GenerationEtage
         objets.Add(instance);
         Debug.Log(etatPos);
         instance.transform.position = position;
-        instance.transform.rotation = Quaternion.Euler(0, etatPos * 90, 0); //TODO : Verifier au niveau des bits c'est quoi la bonne formule
+        instance.transform.rotation = Quaternion.Euler(0, (int)etatPos * 90, 0); //TODO : Verifier au niveau des bits c'est quoi la bonne formule
         int typeCoffre = Random.Range(0, 2);
         Chest coffreScript = instance.GetComponent<Chest>();
         instance.GetComponent<NetworkObject>().Spawn();
@@ -542,11 +542,11 @@ public class GenEtaLaby : GenerationEtage
             //Piege a scie 
             //Piege boulder
             //Piege a ours
-            List<int> possibleTraps = { 0, 1, 2, 3, 4, 5 };
+            List<int> possibleTraps = new() { 0, 1, 2, 3, 4, 5 };
 
             WallState etatMurs = etage[posPiege.x, posPiege.y] & ~WallState.VISITED;
 
-            if (etatMurs == 5 || etatMurs == 10)
+            if ((int)etatMurs == 5 || (int)etatMurs == 10)
             {
                 //2 murs et 2 endrois ou passer
                 //Piege hache

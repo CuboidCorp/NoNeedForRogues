@@ -146,7 +146,7 @@ public class SpellRecognition : MonoBehaviour
                 gameObject.GetComponent<MonPlayerController>().Dash(lookDir, dashForce);
                 break;
             case "Ventus":
-                MultiplayerGameManager.Instance.SummonZoneVentServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, zoneVentForce, zoneVentSize, zoneVentPos, zoneVentDuration);
+                MultiplayerGameManager.Instance.SummonZoneVentServerRpc(gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 1f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, zoneVentForce, zoneVentSize, zoneVentPos, zoneVentDuration);
                 break;
 
             #region SORTS DEBUG
