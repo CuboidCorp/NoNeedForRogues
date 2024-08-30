@@ -39,21 +39,6 @@ public class GenEtaLaby : GenerationEtage
     private Vector2Int[] stairsPos;
     private Vector2Int[] trapsPos;
 
-    public enum Traps //TODO : A mettre dans l'ordre qu'ils sont dans le dossier des ressources
-    {
-        BOULDER_TRAP,
-        FLOOR_TRAP,
-        SPIKE_TRAP,
-        BEAR_TRAP,
-        CRUSH_TRAP,
-        ARROW_TRAP,
-        POISON_ARROW_TRAP,
-        AXE_TRAP,
-        SAW_TRAP,
-        DOOR_TRAP
-    }
-
-
     private const float yCoordinateUpStairs = 0;
     private const float yCoordinateDownStairs = -1;
 
@@ -70,16 +55,22 @@ public class GenEtaLaby : GenerationEtage
     #endregion
 
     #region Traps
-    private GameObject prefabPiegePique;
-    private GameObject prefabPiegeScie;
-    private GameObject prefabPiegeOurs;
-    private GameObject prefabArrowWall;
-    private GameObject prefabPiegeHache;
-    private GameObject prefabPiegeCaillou;
-    private GameObject prefabMurCompresseur;
-    private GameObject prefabPorteMalefique;
-    private GameObject prefabToxicGaz;
-    private GameObject prefabSleepingGaz;
+    private GameObject[] prefabsTraps;
+    public enum Traps //TODO : A mettre dans l'ordre qu'ils sont dans le dossier des ressources
+    {
+        BOULDER_TRAP,
+        FLOOR_TRAP,
+        SPIKE_TRAP,
+        BEAR_TRAP,
+        CRUSH_TRAP,
+        ARROW_TRAP,
+        POISON_ARROW_TRAP,
+        AXE_TRAP,
+        SAW_TRAP,
+        DOOR_TRAP,
+        TOXIC_GAZ,
+        SLEEP_GAZ
+    }
     #endregion
 
     public override void GenerateEtage()
@@ -100,17 +91,7 @@ public class GenEtaLaby : GenerationEtage
         prefabsObjets = Resources.LoadAll<GameObject>(pathToObjets);
         prefabsPotions = Resources.LoadAll<GameObject>(pathToPotions);
         prefabsCoffres = Resources.LoadAll<GameObject>(pathToChests);
-        prefabPiegePique = Resources.Load<GameObject>(pathToPieges + "/PiegePique");
-        prefabPiegeScie = Resources.Load<GameObject>(pathToPieges + "/PiegeScie");
-        prefabPiegeOurs = Resources.Load<GameObject>(pathToPieges + "/PiegePique");
-        prefabArrowWall = Resources.Load<GameObject>(pathToPieges + "/PiegeFleches");
-        prefabPiegeHache = Resources.Load<GameObject>(pathToPieges + "/PiegeHache");
-        prefabPiegeCaillou = Resources.Load<GameObject>(pathToPieges + "/PiegeCaillou");
-        prefabMurCompresseur = Resources.Load<GameObject>(pathToPieges + "/PiegeMurCompresseur");
-        prefabPorteMalefique = Resources.Load<GameObject>(pathToPieges + "/PiegePorteMalefique");
-        prefabToxicGaz = Resources.Load<GameObject>(pathToPieges + "/ToxicGaz");
-        prefabSleepingGaz = Resources.Load<GameObject>(pathToPieges + "/SleepingGaz");
-
+        prefabsTraps = Resources.LoadAll<GameObject>(pathToPieges);
     }
 
     public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems)
@@ -565,7 +546,7 @@ public class GenEtaLaby : GenerationEtage
 
             WallState etatMurs = etage[posPiege.x, posPiege.y] & ~WallState.VISITED;
 
-            if (etatMurs == 5 || etatMurs == 10) 
+            if (etatMurs == 5 || etatMurs == 10)
             {
                 //2 murs et 2 endrois ou passer
                 //Piege hache
@@ -585,8 +566,9 @@ public class GenEtaLaby : GenerationEtage
 
             int indexPiege = possibleTraps[Random.Range(0, possibleTraps.Count)];
 
+            Debug.Log("Piege choisi : " + (Traps)indexPiege);
             //TODO : Instantiate le gameObject du piege dans la liste des pieges
-
+            GameObject piege = Instantiate(prefabsTraps[indexPiege], posPiege, Quaternion.identity);
             //Si ça marche et qu'on a tt placé
             trapsPos[nbPiegesPlaces] = posPiege;
             nbPiegesPlaces++;
@@ -630,7 +612,7 @@ public class GenEtaLaby : GenerationEtage
     /// <param name="gazDuration">Durée avant la destruction du gaz</param>
     private void SummonToxicGaz(Vector3 position, float damage, float expansionSpeed, float gazDuration)
     {
-        GameObject toxicGaz = Instantiate(prefabToxicGaz, position, Quaternion.identity);
+        GameObject toxicGaz = Instantiate(prefabsTraps[Traps.TOXIC_GAZ], position, Quaternion.identity);
         toxicGaz.GetComponent<NetworkObject>().Spawn();
         toxicGaz.GetComponent<ToxicGaz>().poisonDamage = damage;
         toxicGaz.GetComponent<ToxicGaz>().expansionSpeed = expansionSpeed;
@@ -647,7 +629,7 @@ public class GenEtaLaby : GenerationEtage
     /// <param name="gazDuration">Durée avant la destruction du gaz</param>
     private void SummonSleepingGaz(Vector3 position, float sleepDuration, float expansionSpeed, float gazDuration)
     {
-        GameObject sleepingGaz = Instantiate(prefabSleepingGaz, position, Quaternion.identity);
+        GameObject sleepingGaz = Instantiate(prefabsTraps[Traps.SLEEP_GAZ], position, Quaternion.identity);
         sleepingGaz.GetComponent<NetworkObject>().Spawn();
         sleepingGaz.GetComponent<SleepingGaz>().sleepingTime = sleepDuration;
         sleepingGaz.GetComponent<ToxicGaz>().expansionSpeed = expansionSpeed;

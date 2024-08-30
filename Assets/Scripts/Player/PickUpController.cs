@@ -288,4 +288,31 @@ public class PickUpController : NetworkBehaviour
     }
 
     #endregion
+
+    private void CreatePhysicsScene()
+    {
+        Scene simulationSccene = SceneManager.CreateScene("Simulation", new CreateSceneParameters(LocalPhysicsMode.Physics3D));
+        PhysicsScene physicsScene = simulationSccene.GetPhysicsScene();
+
+        //On veut recup les objets qui nous interessent donc les enfants des zones de trickshots et aussi les zones affectées (windzones)
+        GameObject[] trickshotsZones = GameObject.FindGameObjectsWithTag("TrickshotZone");
+
+        foreach(GameObject trickshotZone in trickshotsZones)
+        {
+            foreach(Transform enfant in trickshotZone.transform)
+            {
+                GameObject ghostObj = Instantiate(enfant.gameObject, enfant.position, enfant.rotation);
+                if(ghostObj.TryGetComponent(out Renderer render))
+                {
+                    render.enabled = false;
+                }
+                if(ghostObj.TryGetComponent(out Ventilo vent))
+                {
+
+                }
+                SceneManager.MoveGameObjectToScene(ghostObj, simulationSccene);
+            }
+        }
+    }
+
 }
