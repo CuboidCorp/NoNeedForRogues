@@ -24,6 +24,10 @@ public class PickUpController : NetworkBehaviour
     [SerializeField] private int lineSegmentCount = 20;
     LineRenderer lineRenderer;
 
+    [SerializeField] private int nbIterationsPhysique = 200;
+    private Scene simulationScene;
+    private PhysicsScene physicsScene;
+
     private void Awake()
     {
         lineRenderer = GetComponentInChildren<LineRenderer>();
@@ -317,8 +321,8 @@ public class PickUpController : NetworkBehaviour
 
     private void CreatePhysicsScene()
     {
-        Scene simulationSccene = SceneManager.CreateScene("Simulation", new CreateSceneParameters(LocalPhysicsMode.Physics3D));
-        PhysicsScene physicsScene = simulationSccene.GetPhysicsScene();
+        simulationSccene = SceneManager.CreateScene("Simulation", new CreateSceneParameters(LocalPhysicsMode.Physics3D));
+        physicsScene = simulationSccene.GetPhysicsScene();
 
         //On veut recup les objets qui nous interessent donc les enfants des zones de trickshots et aussi les zones affectées (windzones)
         GameObject[] trickshotsZones = GameObject.FindGameObjectsWithTag("TrickshotZone");
@@ -334,11 +338,38 @@ public class PickUpController : NetworkBehaviour
                 }
                 if(ghostObj.TryGetComponent(out Ventilo vent))
                 {
-
+                    GameObject zoneVent = vent.GetZoneVent();
+                    GameObject zoneVentGhost = Instantiate(zoneVent.gameObject, zoneVent.position, zoneVent.rotation);
+                    zoneVentGhost.GetComponentInChildren<ParticleSystem>().enabled = false;
+                    SceneManager.MoveGameObjectToScene(zoneVentGhost, simulationSccene);
                 }
                 SceneManager.MoveGameObjectToScene(ghostObj, simulationSccene);
             }
         }
+    }
+
+    public void SimulateTrajectory(GameObject objectToCopy, Vector3 pos, Vector3 force)
+    {
+        GameObject ghostCopy = Instantiate(objectToCopy, pos, Quaternion.identity);
+        SceneManager.MoveGameObjectToScene(ghostCopy, simulationScene);
+
+        ghostCopy.GetComponent<Rigidbody>().AddForce(force, ForceMode.Impulse);
+
+        lineRenderer.positionCount = nbIterationsPhysique;
+
+        for(int i = 0 ; i<nbIterationsPhysique ;i++)
+        {
+            physicsScene.Simulate(Time.fixedDeltaTime);
+            lineRenderer.SetPosition(i, ghostCopy.transform.position);
+        }
+
+        Destroy(ghostCopy);
+
+    }
+
+    private async void DespawnPhysicsScene()
+    {
+        await SceneManager.UnloadSceneAsync(simulationScene);
     }
 
 }

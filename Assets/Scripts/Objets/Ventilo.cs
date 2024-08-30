@@ -40,4 +40,9 @@ public class Ventilo : MonoBehaviour
 
         }
     }
+
+    public GameObject GetZoneVent()
+    {
+        return zoneVent;
+    }
 }

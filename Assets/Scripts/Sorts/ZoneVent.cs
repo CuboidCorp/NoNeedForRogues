@@ -26,7 +26,6 @@ public class ZoneVent : NetworkBehaviour
             GetComponent<BoxCollider>().size = tailleCollider;
             GetComponent<BoxCollider>().center = posCenter;
         }
-        //TODO : Changer la taille du truc de particule aussi et la vitesse pr que les particules arrivent a la fin
         ParticleSystem.ShapeModule shape = ps.shape;
         shape.scale = new Vector3(tailleCollider.x, tailleCollider.y, 1);
 
