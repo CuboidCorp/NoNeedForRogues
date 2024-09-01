@@ -305,7 +305,7 @@ public class GenEtaLaby : GenerationEtage
         {
             for (int j = 0; j < tailleEtage.y; j++)
             {
-                GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], new Vector3(i, 0, j) * cellSize, Quaternion.identity);
+                GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], ConvertToRealWorldPos(new Vector2Int(i, j)), Quaternion.identity);
                 go.transform.parent = hallwaysHolder;
                 go.name = "Couloir" + GetIndexCouloir(new Vector2Int(i, j)) + "P" + i + "_" + j;
                 GameObject goToRemove = go.transform.GetChild(0).gameObject;
@@ -568,7 +568,7 @@ public class GenEtaLaby : GenerationEtage
 
             Debug.Log("Piege choisi : " + (Traps)indexPiege);
             //TODO : Instantiate le gameObject du piege dans la liste des pieges
-            GameObject piege = Instantiate(prefabsTraps[indexPiege], posPiege, Quaternion.identity);
+            GameObject piege = Instantiate(prefabsTraps[indexPiege], ConvertToRealWorldPos(posPiege), Quaternion.identity);
             //Si ça marche et qu'on a tt placé
             trapsPos[nbPiegesPlaces] = posPiege;
             nbPiegesPlaces++;
@@ -612,7 +612,7 @@ public class GenEtaLaby : GenerationEtage
     /// <param name="gazDuration">Durée avant la destruction du gaz</param>
     private void SummonToxicGaz(Vector3 position, float damage, float expansionSpeed, float gazDuration)
     {
-        GameObject toxicGaz = Instantiate(prefabsTraps[Traps.TOXIC_GAZ], position, Quaternion.identity);
+        GameObject toxicGaz = Instantiate(prefabsTraps[(int)Traps.TOXIC_GAZ], position, Quaternion.identity);
         toxicGaz.GetComponent<NetworkObject>().Spawn();
         toxicGaz.GetComponent<ToxicGaz>().poisonDamage = damage;
         toxicGaz.GetComponent<ToxicGaz>().expansionSpeed = expansionSpeed;
@@ -629,7 +629,7 @@ public class GenEtaLaby : GenerationEtage
     /// <param name="gazDuration">Durée avant la destruction du gaz</param>
     private void SummonSleepingGaz(Vector3 position, float sleepDuration, float expansionSpeed, float gazDuration)
     {
-        GameObject sleepingGaz = Instantiate(prefabsTraps[Traps.SLEEP_GAZ], position, Quaternion.identity);
+        GameObject sleepingGaz = Instantiate(prefabsTraps[(int)Traps.SLEEP_GAZ], position, Quaternion.identity);
         sleepingGaz.GetComponent<NetworkObject>().Spawn();
         sleepingGaz.GetComponent<SleepingGaz>().sleepingTime = sleepDuration;
         sleepingGaz.GetComponent<ToxicGaz>().expansionSpeed = expansionSpeed;
@@ -637,5 +637,10 @@ public class GenEtaLaby : GenerationEtage
         Destroy(sleepingGaz, gazDuration);
     }
     #endregion
+
+    private Vector3 ConvertToRealWorldPos(Vector2Int pos)
+    {
+        return new Vector3(pos.x, 0, pos.y) * cellSize;
+    }
 
 }

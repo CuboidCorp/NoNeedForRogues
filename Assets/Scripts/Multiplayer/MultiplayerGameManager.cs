@@ -1043,7 +1043,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void SummonVentiloWindZoneServerRpc(string goName, Vector3 pos, Vector3 dir, float force, Vector3 tailleCollider, Vector3 posCollider)
     {
-        GameObject zoneVent = Instantiate(zoneVentPrefab, pos, Quaternion.LookRotation(dir));
+        GameObject zoneVent = Instantiate(zoneVentPrefab, pos, Quaternion.Euler(dir));
         zoneVent.GetComponent<ZoneVent>().SetupZoneVent(force, posCollider, tailleCollider);
         zoneVent.GetComponent<NetworkObject>().Spawn();
         GameObject.Find(goName).GetComponent<Ventilo>().SetWindZone(zoneVent);

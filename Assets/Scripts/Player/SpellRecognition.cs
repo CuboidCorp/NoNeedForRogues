@@ -188,7 +188,7 @@ public class SpellRecognition : MonoBehaviour
             case "TRAJECTOIRE":
                 if (debugMode)
                 {
-                    GetComponent<PickUpController>().SwitchShowTrajectoryState();
+                    GetComponent<PickUpController>().ShowTrajectory();
                 }
                 else
                 {

@@ -35,6 +35,7 @@ public class AudioManager : NetworkBehaviour
         PLAYER_DAMAGED,
         PLAYER_DEAD,
         SPELL_CAST,
+        FAIL_TRICKSHOT,
         CHEST_OPENED,
         ARROW_TRAP,
         FLOOR_TRAP,

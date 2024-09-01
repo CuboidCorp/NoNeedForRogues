@@ -21,6 +21,7 @@ public class Void : MonoBehaviour
         {
             if (other.TryGetComponent(out TreasureObject tres))
             {
+                AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.FAIL_TRICKSHOT);
                 MultiplayerGameManager.Instance.SendItemLostClientRpc(MultiplayerGameManager.SendRpcToPlayer(tres.GetLastOwner()));
             }
             other.GetComponent<NetworkObject>().Despawn(true);

@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PickUpController : NetworkBehaviour
 {
@@ -20,8 +21,6 @@ public class PickUpController : NetworkBehaviour
     [SerializeField] private float throwForce = 10f; //Quand on lance l'objet
 
     [Header("Trajectoire")]
-    [SerializeField] private bool showTrajectory = false;
-    [SerializeField] private int lineSegmentCount = 20;
     LineRenderer lineRenderer;
 
     [SerializeField] private int nbIterationsPhysique = 200;
@@ -157,7 +156,6 @@ public class PickUpController : NetworkBehaviour
         StopClipping();
         heldObj.GetComponent<WeightedObject>().ChangeState(false);
         heldObj = null;
-        showTrajectory = false;
         HideTrajectory();
     }
 
@@ -175,11 +173,10 @@ public class PickUpController : NetworkBehaviour
             MonPlayerController.instanceLocale.StopRotation();
         }
         isRotating = false;
-        SubstituteCopyForReal(playerCam.transform.forward * throwForce);
+        SubstituteCopyForReal(holdArea.transform.forward * throwForce);
         heldObj.GetComponent<WeightedObject>().ChangeState(false);
         StopClipping();
         heldObj = null;
-        showTrajectory = false;
         HideTrajectory();
     }
 
@@ -200,10 +197,6 @@ public class PickUpController : NetworkBehaviour
         if (copieObj != null)
         {
             MoveObject();
-            if (showTrajectory)
-            {
-                DrawTrajectory();
-            }
         }
     }
 
@@ -264,112 +257,99 @@ public class PickUpController : NetworkBehaviour
 
 
     #region Trajectoire
-
-    /// <summary>
-    /// Change l'etat de l'affichage de la trajectoire
-    /// </summary>
-    public void SwitchShowTrajectoryState()
-    {
-        showTrajectory = !showTrajectory;
-        if (!showTrajectory)
-        {
-            HideTrajectory();
-        }
-        else
-        {
-            lineRenderer.enabled = true;
-        }
-    }
-
     private void HideTrajectory()
     {
         lineRenderer.enabled = false;
         lineRenderer.positionCount = 0;
     }
 
-    /// <summary>
-    /// Dessine la trajectoire de l'objet en main si on venait à le lancer
-    /// </summary>
-    private void DrawTrajectory()
+    public void ShowTrajectory()
     {
-        lineRenderer.positionCount = lineSegmentCount;
-
-        Vector3 startPosition = copieObj.transform.position;
-        Vector3 startVelocity = throwForce * copieObj.transform.forward;
-
-        lineRenderer.SetPosition(0, startPosition);
-
-        for (int i = 1; i < lineSegmentCount; i++)
+        if (heldObj == null)
         {
-            float time = (float)i / (lineSegmentCount - 1);
-            Vector3 pos = startPosition + time * startVelocity;
-            pos.y = startPosition.y + startVelocity.y * time + Physics.gravity.y / 2f * time * time;
-
-            lineRenderer.SetPosition(i, pos);
-            Vector3 lastPos = lineRenderer.GetPosition(i - 1);
-            if (Physics.Raycast(lastPos, (pos - lastPos).normalized, out RaycastHit hit, (pos - lastPos).magnitude))
-            {
-                lineRenderer.SetPosition(i, hit.point);
-                lineRenderer.positionCount = i + 1;
-
-                return;
-            }
+            return;
         }
+        lineRenderer.enabled = true;
+        CreatePhysicsScene();
+        SimulateTrajectory(copieObj, copieObj.transform.position, throwForce * holdArea.transform.forward);
+        DespawnPhysicsScene();
     }
 
-    #endregion
-
+    /// <summary>
+    /// Cree une copie de la scene actuelle pour simuler la trajectoire
+    /// Copie uniquement les infos des trickshot zones et des ventilo zones
+    /// </summary>
     private void CreatePhysicsScene()
     {
-        simulationSccene = SceneManager.CreateScene("Simulation", new CreateSceneParameters(LocalPhysicsMode.Physics3D));
-        physicsScene = simulationSccene.GetPhysicsScene();
+        simulationScene = SceneManager.CreateScene("Simulation", new CreateSceneParameters(LocalPhysicsMode.Physics3D));
+        physicsScene = simulationScene.GetPhysicsScene();
 
         //On veut recup les objets qui nous interessent donc les enfants des zones de trickshots et aussi les zones affectées (windzones)
         GameObject[] trickshotsZones = GameObject.FindGameObjectsWithTag("TrickshotZone");
-
-        foreach(GameObject trickshotZone in trickshotsZones)
+        foreach (GameObject trickshotZone in trickshotsZones)
         {
-            foreach(Transform enfant in trickshotZone.transform)
+            foreach (Transform enfant in trickshotZone.transform)
             {
                 GameObject ghostObj = Instantiate(enfant.gameObject, enfant.position, enfant.rotation);
-                if(ghostObj.TryGetComponent(out Renderer render))
+                if (ghostObj.TryGetComponent(out Renderer render))
                 {
                     render.enabled = false;
                 }
-                if(ghostObj.TryGetComponent(out Ventilo vent))
+                if (ghostObj.TryGetComponent(out AlchemyPot alcPot))
+                {
+                    Destroy(alcPot);
+                    Destroy(alcPot.GetComponentInChildren<ParticleSystem>());
+                }
+                if (ghostObj.TryGetComponent(out Ventilo vent))
                 {
                     GameObject zoneVent = vent.GetZoneVent();
-                    GameObject zoneVentGhost = Instantiate(zoneVent.gameObject, zoneVent.position, zoneVent.rotation);
-                    zoneVentGhost.GetComponentInChildren<ParticleSystem>().enabled = false;
-                    SceneManager.MoveGameObjectToScene(zoneVentGhost, simulationSccene);
+                    GameObject zoneVentGhost = Instantiate(zoneVent.gameObject, zoneVent.transform.position, zoneVent.transform.rotation);
+                    Destroy(zoneVentGhost.GetComponentInChildren<ParticleSystem>());
+                    SceneManager.MoveGameObjectToScene(zoneVentGhost, simulationScene);
                 }
-                SceneManager.MoveGameObjectToScene(ghostObj, simulationSccene);
+                SceneManager.MoveGameObjectToScene(ghostObj, simulationScene);
             }
         }
+
     }
 
-    public void SimulateTrajectory(GameObject objectToCopy, Vector3 pos, Vector3 force)
+    /// <summary>
+    /// Simule la trajectoire de l'objet en fonction de la force donnée
+    /// </summary>
+    /// <param name="objectToCopy">Le game object qu'on veut tester</param>
+    /// <param name="pos">La position de départ du gameObject</param>
+    /// <param name="force">Force a appliquer a l'objet</param>
+    private void SimulateTrajectory(GameObject objectToCopy, Vector3 pos, Vector3 force)
     {
         GameObject ghostCopy = Instantiate(objectToCopy, pos, Quaternion.identity);
         SceneManager.MoveGameObjectToScene(ghostCopy, simulationScene);
 
-        ghostCopy.GetComponent<Rigidbody>().AddForce(force, ForceMode.Impulse);
-
+        Rigidbody rb = ghostCopy.GetComponent<Rigidbody>();
+        rb.useGravity = true;
+        rb.constraints = RigidbodyConstraints.None;
+        rb.drag = 0;
+        rb.AddForce(force, ForceMode.Impulse);
         lineRenderer.positionCount = nbIterationsPhysique;
 
-        for(int i = 0 ; i<nbIterationsPhysique ;i++)
+        for (int i = 0; i < nbIterationsPhysique; i++)
         {
             physicsScene.Simulate(Time.fixedDeltaTime);
             lineRenderer.SetPosition(i, ghostCopy.transform.position);
         }
 
         Destroy(ghostCopy);
-
     }
 
-    private async void DespawnPhysicsScene()
+    /// <summary>
+    /// Decharge la scene de simulation
+    /// </summary>
+    private void DespawnPhysicsScene()
     {
-        await SceneManager.UnloadSceneAsync(simulationScene);
+        SceneManager.UnloadSceneAsync(simulationScene);
     }
+
+    #endregion
+
+
 
 }

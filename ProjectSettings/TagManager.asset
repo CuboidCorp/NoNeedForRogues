@@ -20,6 +20,7 @@ TagManager:
   - UpStairs
   - DownStairs
   - Cow
+  - TrickshotZone
   layers:
   - Default
   - TransparentFX

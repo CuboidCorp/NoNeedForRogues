@@ -82,7 +82,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 78cfe479a39d09f4fbaa171a3e6e6ae1, type: 3}
   - {fileID: 8300000, guid: 9d861bfc34e83e8409fd90b0e274ed22, type: 3}
   - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 8300000, guid: 269d51ec32f49ee43aefb91362f8eeee, type: 3}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}

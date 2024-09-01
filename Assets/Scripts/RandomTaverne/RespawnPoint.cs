@@ -6,6 +6,7 @@ public class RespawnPoint : MonoBehaviour
     {
         if (other.CompareTag("PlayerGhost"))
         {
+            AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.RESURRECTION);
             other.gameObject.GetComponent<GhostController>().Respawn();
         }
     }
