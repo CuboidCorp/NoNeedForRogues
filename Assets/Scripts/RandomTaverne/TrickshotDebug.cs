@@ -1,7 +1,8 @@
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
-public class TrickshotDebug : MonoBehaviour
+public class TrickshotDebug : NetworkBehaviour
 {
     private int compteurTrickshot = 0;
 
@@ -11,41 +12,63 @@ public class TrickshotDebug : MonoBehaviour
     private GameObject trickshotActuel;
     private GameObject[] trickshots;
 
+    [SerializeField] private TMP_Text nomPrefab;
+
     private void Awake()
     {
         trickshots = Resources.LoadAll<GameObject>("Donjon/Type1/Trickshots");
     }
 
-    public void SpawnNextTrickshot(TMP_Text text)
+    public void SpawnNextTrickshot()
     {
-        if (trickshotActuel != null)
-        {
-            Destroy(trickshotActuel);
-        }
+        SendCompteurChangeServerRpc(1);
+    }
 
-        compteurTrickshot = TrueModulo(compteurTrickshot + 1, trickshots.Length);
-
-        text.text = trickshots[compteurTrickshot].name;
-
-
+    public void SpawnPreviousTrickshot()
+    {
+        SendCompteurChangeServerRpc(-1);
     }
 
     public void SpawnTrickshot()
     {
+        SendSpawnServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SendCompteurChangeServerRpc(int change)
+    {
+        TryDestroy();
+        compteurTrickshot = TrueModulo(compteurTrickshot + change, trickshots.Length);
+        SetTextClientRpc(trickshots[compteurTrickshot].name);
+    }
+
+    [ClientRpc]
+    private void SetTextClientRpc(string text)
+    {
+        nomPrefab.text = text;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SendSpawnServerRpc()
+    {
+        TryDestroy();
         trickshotActuel = Instantiate(trickshots[compteurTrickshot], posTrickshot, Quaternion.Euler(rotTrickshot));
     }
 
 
-    public void SpawnPreviousTrickshot(TMP_Text text)
+
+
+
+
+    /// <summary>
+    /// Essaie de détruire le trickshot actuel (UNIQUEMENT SUR LE SERV)
+    /// </summary>
+    private void TryDestroy()
     {
         if (trickshotActuel != null)
         {
             Destroy(trickshotActuel);
         }
-
-        compteurTrickshot = TrueModulo(compteurTrickshot - 1, trickshots.Length);
-        text.text = trickshots[compteurTrickshot].name;
-
     }
 
     /// <summary>

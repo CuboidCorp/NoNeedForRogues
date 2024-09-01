@@ -55,10 +55,13 @@ public class LobbyManager : MonoBehaviour
     private string playerName;
     private int nbPlayers;
 
+    private GameObject audioManager;
 
     private void Awake()
     {
         Instance = this;
+        audioManager = Resources.Load<GameObject>("AudioManager");
+
     }
 
     /// <summary>
@@ -90,6 +93,7 @@ public class LobbyManager : MonoBehaviour
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData("127.0.0.1", 7777);
         MultiplayerGameManager.Instance.soloMode = true;
         MultiplayerGameManager.Instance.SetDataSolo();
+        Instantiate(audioManager);
         OnGameStarted?.Invoke(this, EventArgs.Empty);
         NetworkManager.Singleton.OnClientConnectedCallback += MultiplayerGameManager.Instance.OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += MultiplayerGameManager.Instance.OnClientDisconnected;

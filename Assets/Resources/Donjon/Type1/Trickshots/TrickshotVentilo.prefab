@@ -591,7 +591,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   forceWindZone: 20
-  tailleColliderWindZone: {x: 1, y: 1, z: 4}
+  tailleColliderWindZone: {x: 1, y: 4, z: 4}
   posColliderWindZone: {x: 0, y: 0, z: 2.5}
 --- !u!1 &1953849885848044490
 GameObject:
