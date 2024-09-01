@@ -590,7 +590,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 161f7286cede25345ad7a79d35f516d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  forceWindZone: 20
+  forceWindZone: 90
   tailleColliderWindZone: {x: 1, y: 4, z: 4}
   posColliderWindZone: {x: 0, y: 0, z: 2.5}
 --- !u!1 &1953849885848044490

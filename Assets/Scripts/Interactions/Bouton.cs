@@ -103,18 +103,10 @@ public class Bouton : NetworkBehaviour, IInteractable
 
     /// <summary>
     /// Si qqn interagit avec le bouton on envoie un message au serv pr lui dire
+    /// Le serv gère l'interaction, si les actions ont besoin d'etre sur tt le monde elles doivent etre faites avec une client rpc
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
     private void SendInteractionServerRpc()
-    {
-        SendInteractionClientRpc();
-    }
-
-    /// <summary>
-    /// Le serveur envoie un message a tt le monde pr synchroniser l'interaction
-    /// </summary>
-    [ClientRpc]
-    private void SendInteractionClientRpc()
     {
         HandleInteraction();
     }

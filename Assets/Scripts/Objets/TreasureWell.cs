@@ -24,7 +24,7 @@ public class TreasureWell : NetworkBehaviour
             int value = tres.TransformToGold();
             AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.MONEY_GAINED);
             AddGoldCollectedClientRpc(value, MultiplayerGameManager.SendRpcToPlayer(tres.GetLastOwner()));
-            Destroy(other.gameObject);
+            MultiplayerGameManager.Instance.DespawnObjServerRpc(other.gameObject);
         }
         else
         {

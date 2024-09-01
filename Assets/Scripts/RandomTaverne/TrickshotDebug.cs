@@ -19,12 +19,12 @@ public class TrickshotDebug : NetworkBehaviour
         trickshots = Resources.LoadAll<GameObject>("Donjon/Type1/Trickshots");
     }
 
-    public void SpawnNextTrickshot()
+    public void GoToNextTrickshot()
     {
         SendCompteurChangeServerRpc(1);
     }
 
-    public void SpawnPreviousTrickshot()
+    public void GoToPreviousTrickshot()
     {
         SendCompteurChangeServerRpc(-1);
     }
@@ -38,7 +38,10 @@ public class TrickshotDebug : NetworkBehaviour
     private void SendCompteurChangeServerRpc(int change)
     {
         TryDestroy();
+        Debug.Log("Compteur : " + compteurTrickshot);
+        Debug.Log("Change : " + change);
         compteurTrickshot = TrueModulo(compteurTrickshot + change, trickshots.Length);
+        Debug.Log("Compteur New : " + compteurTrickshot);
         SetTextClientRpc(trickshots[compteurTrickshot].name);
     }
 
@@ -48,13 +51,25 @@ public class TrickshotDebug : NetworkBehaviour
         nomPrefab.text = text;
     }
 
+    /// <summary>
+    /// Dit au serv de spawn le trickshot actuel
+    /// </summary>
     [ServerRpc(RequireOwnership = false)]
     private void SendSpawnServerRpc()
     {
         TryDestroy();
-        trickshotActuel = Instantiate(trickshots[compteurTrickshot], posTrickshot, Quaternion.Euler(rotTrickshot));
+        SpawnTrickshotClientRpc(compteurTrickshot);
     }
 
+    /// <summary>
+    /// Fait spawn le trickshot actuel sur les clients
+    /// </summary>
+    /// <param name="trickshotIndex">L'index du trickshot</param>
+    [ClientRpc]
+    private void SpawnTrickshotClientRpc(int trickshotIndex)
+    {
+        trickshotActuel = Instantiate(trickshots[trickshotIndex], posTrickshot, Quaternion.Euler(rotTrickshot));
+    }
 
 
 
@@ -64,6 +79,15 @@ public class TrickshotDebug : NetworkBehaviour
     /// Essaie de détruire le trickshot actuel (UNIQUEMENT SUR LE SERV)
     /// </summary>
     private void TryDestroy()
+    {
+        TryDestroyClientRpc();
+    }
+
+    /// <summary>
+    /// Dit aux clients de detruire le trickshot actuel
+    /// </summary>
+    [ClientRpc]
+    private void TryDestroyClientRpc()
     {
         if (trickshotActuel != null)
         {
