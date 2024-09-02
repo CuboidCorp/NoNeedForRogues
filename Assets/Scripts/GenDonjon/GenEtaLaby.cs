@@ -34,6 +34,8 @@ public class GenEtaLaby : GenerationEtage
     private Transform stairHolder;
     private Transform hallwaysHolder;
     private Transform itemHolder;
+    private Transform trapHolder;
+    private Transform triggerHolder;
 
     private List<Vector2Int> deadEnds;
     private Vector2Int[] stairsPos;
@@ -56,20 +58,23 @@ public class GenEtaLaby : GenerationEtage
 
     #region Traps
     private GameObject[] prefabsTraps;
+    private GameObject[] placedTraps;
     public enum Traps //TODO : A mettre dans l'ordre qu'ils sont dans le dossier des ressources
     {
-        BOULDER_TRAP,
-        FLOOR_TRAP,
-        SPIKE_TRAP,
-        BEAR_TRAP,
+        BOMB,
+        PIEGE_CAILLOU,
+        PIEGE_PIQUE,
+        PIEGE_SCIE,
+        PIEGE_TROU,
+        SLEEP_GAZ,
+        TOXIC_GAZ,
+        PIEGE_OURS,
         CRUSH_TRAP,
         ARROW_TRAP,
         POISON_ARROW_TRAP,
         AXE_TRAP,
-        SAW_TRAP,
-        DOOR_TRAP,
-        TOXIC_GAZ,
-        SLEEP_GAZ
+        DOOR_TRAP
+
     }
     #endregion
 
@@ -94,11 +99,13 @@ public class GenEtaLaby : GenerationEtage
         prefabsTraps = Resources.LoadAll<GameObject>(pathToPieges);
     }
 
-    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems)
+    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems, Transform holderTraps, Transform holderTrigger)
     {
         stairHolder = holderStairs;
         hallwaysHolder = holderHallways;
         itemHolder = holderItems;
+        trapHolder = holderTraps;
+        triggerHolder = holderTrigger;
     }
 
     private void InitEtage()
@@ -395,13 +402,21 @@ public class GenEtaLaby : GenerationEtage
         }
     }
 
-    public override void DespawnItems()
+    public override void DespawnObjects()
     {
         foreach (GameObject obj in objets)
         {
             if (obj != null)
             {
                 obj.GetComponent<NetworkObject>().Despawn(true);
+            }
+        }
+
+        foreach (GameObject trap in placedTraps)
+        {
+            if (trap != null)
+            {
+                trap.GetComponent<NetworkObject>().Despawn(true);
             }
         }
     }
@@ -458,7 +473,7 @@ public class GenEtaLaby : GenerationEtage
         objets.Add(instance);
         Debug.Log(etatPos);
         instance.transform.position = position;
-        instance.transform.rotation = Quaternion.Euler(0, (int)etatPos * 90, 0); //TODO : Verifier au niveau des bits c'est quoi la bonne formule
+        instance.transform.rotation = Quaternion.Euler(0, (int)etatPos * 90 + 180, 0); //TODO : Verifier au niveau des bits c'est quoi la bonne formule
         int typeCoffre = Random.Range(0, 2);
         Chest coffreScript = instance.GetComponent<Chest>();
         instance.GetComponent<NetworkObject>().Spawn();
@@ -542,7 +557,7 @@ public class GenEtaLaby : GenerationEtage
             //Piege a scie 
             //Piege boulder
             //Piege a ours
-            List<int> possibleTraps = new() { 0, 1, 2, 3, 4, 5 };
+            List<int> possibleTraps = new() { 1, 2, 3, 4 };
 
             WallState etatMurs = etage[posPiege.x, posPiege.y] & ~WallState.VISITED;
 
@@ -551,8 +566,8 @@ public class GenEtaLaby : GenerationEtage
                 //2 murs et 2 endrois ou passer
                 //Piege hache
                 //Mur compresseur
-                possibleTraps.Add(6);
-                possibleTraps.Add(7);
+                //possibleTraps.Add(6);
+                //possibleTraps.Add(7);
             }
 
             if (posPiege.x == tailleEtage.x - 1 || posPiege.x == 0 || posPiege.y == tailleEtage.y - 1 || posPiege.y == 0)
@@ -560,8 +575,8 @@ public class GenEtaLaby : GenerationEtage
                 //Extremite
                 //Fausse porte
                 //Piege a fleches
-                possibleTraps.Add(8);
-                possibleTraps.Add(9);
+                //possibleTraps.Add(8);
+                //possibleTraps.Add(9);
             }
 
             int indexPiege = possibleTraps[Random.Range(0, possibleTraps.Count)];
@@ -569,6 +584,28 @@ public class GenEtaLaby : GenerationEtage
             Debug.Log("Piege choisi : " + (Traps)indexPiege);
             //TODO : Instantiate le gameObject du piege dans la liste des pieges
             GameObject piege = Instantiate(prefabsTraps[indexPiege], ConvertToRealWorldPos(posPiege), Quaternion.identity);
+            piege.transform.parent = trapHolder;
+
+            switch ((Traps)indexPiege)
+            {
+                case Traps.PIEGE_CAILLOU: //Piege caillou
+                    //On met le piege en haut genre 6
+                    piege.transform.position += new Vector3(0, 6f, 0);
+                    piege.GetComponent<BoulderTrap>().SetDirection(Random.Range(0, 4));
+                    //TODO : Faire un pressure plate qui trigger le piege
+
+                    break;
+                case Traps.PIEGE_PIQUE:
+                    //TODO : On a un trigger dessus ou une plaque de pression dans la case d'a coté
+                    break;
+                case Traps.PIEGE_SCIE:
+                    piege.transform.position += new Vector3(0, 0.5f, 0);
+                    piege.GetComponentInChildren<Sawtrap>().ActivateTrap();
+                    break;
+                    //TODO : Faire les autres pieges
+            }
+
+            placedTraps[nbPiegesPlaces] = piege;
             //Si ça marche et qu'on a tt placé
             trapsPos[nbPiegesPlaces] = posPiege;
             nbPiegesPlaces++;

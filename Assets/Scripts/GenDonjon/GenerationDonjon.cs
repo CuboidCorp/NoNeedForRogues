@@ -99,11 +99,16 @@ public class GenerationDonjon : NetworkBehaviour
 
     private Transform holderItems;
 
-    private GenerationEtage genEtage;
+    private Transform holderTraps;
+
+    private Transform holderTriggers;
+
+
 
     #endregion
 
     public static GenerationDonjon instance;
+    private GenerationEtage genEtage;
 
     void Awake()
     {
@@ -135,6 +140,8 @@ public class GenerationDonjon : NetworkBehaviour
         holderHallways = holder.transform.GetChild(1);
         holderRooms = holder.transform.GetChild(2);
         holderItems = holder.transform.GetChild(3);
+        holderTraps = holder.transform.GetChild(4);
+        holderTriggers = holder.transform.GetChild(5);
 
         currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
 
@@ -166,7 +173,7 @@ public class GenerationDonjon : NetworkBehaviour
             Destroy(cam);
         }
 
-        if (IsServer)
+        if (MultiplayerGameManager.Instance.IsServer)
         {
             MultiplayerGameManager.Instance.SpawnPlayers();
         }
@@ -185,7 +192,7 @@ public class GenerationDonjon : NetworkBehaviour
     /// </summary>
     public void DespawnItems()
     {
-        genEtage.DespawnItems();
+        genEtage.DespawnObjects();
     }
 
     /// <summary>
@@ -195,7 +202,7 @@ public class GenerationDonjon : NetworkBehaviour
     private void Configure(ConfigDonjon conf)
     {
         maxEtage = conf.nbEtages;
-        if (IsServer)
+        if (MultiplayerGameManager.Instance.IsServer)
         {
             seed.Value = conf.seed;
         }
@@ -228,11 +235,11 @@ public class GenerationDonjon : NetworkBehaviour
                 genEtage = GetComponent<GenEtaAbre>();
                 break;
         }
-        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, currentDifficulty, IsServer);
+        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, currentDifficulty, MultiplayerGameManager.Instance.IsServer);
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs, pathToPieces, pathToObjets, pathToPotions, pathToChests, pathToPieges);
-        genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs, holderItems);
+        genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs, holderItems, holderTraps, holderTriggers);
         genEtage.GenerateEtage();
-        if (isNewEtage && IsServer)
+        if (isNewEtage && MultiplayerGameManager.Instance.IsServer)
         {
             genEtage.GenerateItems();
         }

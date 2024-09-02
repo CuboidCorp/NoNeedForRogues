@@ -30,16 +30,7 @@ public class Tripwire : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void SendTriggerServerRpc()
     {
-        SendTriggerClientRpc();
-    }
-
-    /// <summary>
-    /// Envoie l'info sur le client que le tripwire a été déclenché
-    /// </summary>
-    [ClientRpc]
-    private void SendTriggerClientRpc()
-    {
         OnTrigger.Invoke();
-        Destroy(gameObject);
+        gameObject.GetComponent<NetworkObject>().Despawn(true);
     }
 }

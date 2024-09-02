@@ -14,7 +14,7 @@ public class BoulderTrap : Trap
 
     private void Awake()
     {
-        boulderPrefab = Resources.Load<GameObject>("Pieges/Boulder");
+        boulderPrefab = Resources.Load<GameObject>("Objets/Boulder");
     }
 
     public override void OnNetworkSpawn()
@@ -23,6 +23,15 @@ public class BoulderTrap : Trap
         {
             enabled = false;
         }
+    }
+
+    /// <summary>
+    /// Set la direction du boulder trap
+    /// </summary>
+    /// <param name="newDirection">La direction qu'on veut donner au piege</param>
+    public void SetDirection(int newDirection)
+    {
+        direction = newDirection;
     }
 
     /// <summary>

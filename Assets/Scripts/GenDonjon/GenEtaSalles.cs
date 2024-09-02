@@ -18,7 +18,7 @@ public class GenEtaSalles : GenerationEtage
     [SerializeField]
     private int nbAttempts;
 
-    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems)
+    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems, Transform holderTraps, Transform holderTrigger)
     {
         throw new System.NotImplementedException();
     }
@@ -28,7 +28,7 @@ public class GenEtaSalles : GenerationEtage
         throw new System.NotImplementedException();
     }
 
-    public override void DespawnItems()
+    public override void DespawnObjects()
     {
         throw new System.NotImplementedException();
     }

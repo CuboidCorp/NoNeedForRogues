@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.Netcode;
 using UnityEngine;
 
 public class Bomb : MonoBehaviour
@@ -24,7 +23,7 @@ public class Bomb : MonoBehaviour
 
     private void Explode()
     {
-        if(!isTroll)
+        if (!isTroll)
         {
             SpellRecognition.Explosion(transform, explosionRange, explosionForce);
         }

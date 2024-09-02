@@ -40,9 +40,9 @@ public abstract class GenerationEtage : MonoBehaviour
     public abstract void GenerateItems();
 
     /// <summary>
-    /// Despawn les items de l'étage
+    /// Despawn les items et les pieges de l'étage
     /// </summary>
-    public abstract void DespawnItems();
+    public abstract void DespawnObjects();
 
     /// <summary>
     /// Genere les pieges de l'étage
@@ -68,5 +68,8 @@ public abstract class GenerationEtage : MonoBehaviour
     /// <param name="holderRooms">Le transform qui contient tt les salles</param>
     /// <param name="holderHallways">Le transform qui contient tt les hallways</param>
     /// <param name="holderStairs">Le transform qui contien tt les stairs</param>
-    public abstract void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems);
+    /// <param name="holderItems">Le transform qui contient tt les items</param>
+    /// <param name="holderTraps">Le transform qui contient tt les pieges</param>
+    /// <param name="holderTrigger">Le transform qui contient tt les triggers</param>"
+    public abstract void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems, Transform holderTraps, Transform holderTrigger);
 }

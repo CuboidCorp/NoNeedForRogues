@@ -6,6 +6,8 @@ using UnityEngine;
 public class KillBox : MonoBehaviour
 {
 
+    [SerializeField] private bool isOOB = true;
+
     /// <summary>
     /// Lorsque le joueur rentre dans la zone de mort il meurt
     /// </summary>
@@ -14,8 +16,13 @@ public class KillBox : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            Debug.LogError("Player IN KILLBOX OOB" + other.gameObject.name);
+            if (isOOB)
+            {
+                //Le joueur est pas censé être dans la killbox
+                Debug.LogWarning("Player IN KILLBOX OOB" + other.gameObject.name);
+            }
             other.gameObject.GetComponent<MonPlayerController>().Die();
+            //TODO : Gerer le cas des vaches aussi
         }
     }
 }

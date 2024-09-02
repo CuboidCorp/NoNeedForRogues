@@ -58,6 +58,14 @@ public class PressurePlate : NetworkBehaviour
         animator = GetComponent<Animator>();
     }
 
+    public override void OnNetworkSpawn()
+    {
+        if (!MultiplayerGameManager.Instance.IsServer)
+        {
+            GetComponent<Collider>().enabled = false;//On ne gère le traitement 
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player") || other.CompareTag("Entity"))
