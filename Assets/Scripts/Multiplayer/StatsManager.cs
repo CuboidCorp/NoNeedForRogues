@@ -148,6 +148,7 @@ public class StatsManager : NetworkBehaviour
 
     #endregion
 
+    #region EndGame
     /// <summary>
     /// Envoie les stats du joueur local au serveur
     /// </summary>
@@ -155,5 +156,22 @@ public class StatsManager : NetworkBehaviour
     public void SendStatsServerRpc(PlayerStats stats, ulong playerId)
     {
         allStatsHolder.Add(playerId, stats);
+        OnPlayerAdded();
     }
+
+    /// <summary>
+    /// Quand on rajoute 
+    /// </summary>
+    private void OnPlayerAdded()
+    {
+        if (allStatsHolder.Keys.Count == MultiplayerGameManager.Instance.GetNbTotalPlayers())
+        {
+            EndGameManager.Instance.CalculTitres();
+            EndGameManager.Instance.DisplayAllPlayerStats();
+        }
+    }
+
+    #endregion
+
+
 }

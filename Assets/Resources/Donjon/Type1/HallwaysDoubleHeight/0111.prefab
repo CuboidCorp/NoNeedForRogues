@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5766917718284027331}
   m_Layer: 0
   m_Name: Ceiling_SquareLarge
-  m_TagString: Untagged
+  m_TagString: Roof
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -120,7 +120,7 @@ GameObject:
   - component: {fileID: 6132505362295782993}
   m_Layer: 0
   m_Name: Up (1)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -260,7 +260,7 @@ GameObject:
   - component: {fileID: 1048701401821709816}
   m_Layer: 0
   m_Name: Floor_Flat (2)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -366,7 +366,7 @@ GameObject:
   - component: {fileID: 7641561098381111762}
   m_Layer: 0
   m_Name: Floor_Flat
-  m_TagString: Untagged
+  m_TagString: Floor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -472,7 +472,7 @@ GameObject:
   - component: {fileID: 2530105195459005382}
   m_Layer: 0
   m_Name: Up
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647

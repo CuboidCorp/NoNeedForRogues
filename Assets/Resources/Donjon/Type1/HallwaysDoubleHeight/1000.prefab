@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4448750019923180954}
   m_Layer: 0
   m_Name: Ceiling_SquareLarge
-  m_TagString: Untagged
+  m_TagString: Roof
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -120,7 +120,7 @@ GameObject:
   - component: {fileID: 1545473259139417305}
   m_Layer: 0
   m_Name: Left
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -228,7 +228,7 @@ GameObject:
   - component: {fileID: 3582977775054738869}
   m_Layer: 0
   m_Name: Bottom (1)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -334,7 +334,7 @@ GameObject:
   - component: {fileID: 9169321579811038674}
   m_Layer: 0
   m_Name: Right (1)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -440,7 +440,7 @@ GameObject:
   - component: {fileID: 5107265633152288586}
   m_Layer: 0
   m_Name: Floor_Flat (3)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -546,7 +546,7 @@ GameObject:
   - component: {fileID: 3894613395839669700}
   m_Layer: 0
   m_Name: Right
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -654,7 +654,7 @@ GameObject:
   - component: {fileID: 7197057847317729956}
   m_Layer: 0
   m_Name: Floor_Flat (4)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -760,7 +760,7 @@ GameObject:
   - component: {fileID: 8703263088518715031}
   m_Layer: 0
   m_Name: Left (1)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -866,7 +866,7 @@ GameObject:
   - component: {fileID: 556875375342409744}
   m_Layer: 0
   m_Name: Floor_Flat (1)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -972,7 +972,7 @@ GameObject:
   - component: {fileID: 5570959958563952625}
   m_Layer: 0
   m_Name: Floor_Flat
-  m_TagString: Untagged
+  m_TagString: Floor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -1078,7 +1078,7 @@ GameObject:
   - component: {fileID: 7621316149950856668}
   m_Layer: 0
   m_Name: Bottom
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647

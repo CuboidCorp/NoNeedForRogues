@@ -56,7 +56,9 @@ public class GenerationDonjon : NetworkBehaviour
     private int[] seeds;
 
     [SerializeField]
-    private NetworkVariable<int> seed = new NetworkVariable<int>();
+    private NetworkVariable<int> seed = new();
+
+    private int tempSeed;
 
     #endregion
 
@@ -86,6 +88,9 @@ public class GenerationDonjon : NetworkBehaviour
     [SerializeField]
     private string pathToPieges;
 
+    [SerializeField]
+    private string pathToTrickshots;
+
     #endregion
 
     #region Holders
@@ -103,6 +108,7 @@ public class GenerationDonjon : NetworkBehaviour
 
     private Transform holderTriggers;
 
+    private Transform holderTrickshots;
 
 
     #endregion
@@ -130,6 +136,11 @@ public class GenerationDonjon : NetworkBehaviour
         OnSceneLoaded();
     }
 
+    public override void OnNetworkSpawn()
+    {
+        seed.Value = tempSeed;
+    }
+
     /// <summary>
     /// Appelé quand la scene est chargée
     /// </summary>
@@ -142,6 +153,7 @@ public class GenerationDonjon : NetworkBehaviour
         holderItems = holder.transform.GetChild(3);
         holderTraps = holder.transform.GetChild(4);
         holderTriggers = holder.transform.GetChild(5);
+        holderTrickshots = holder.transform.GetChild(6);
 
         currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
 
@@ -163,7 +175,10 @@ public class GenerationDonjon : NetworkBehaviour
         }
         else
         {
-            seed.Value = seeds[currentEtage - 1];
+            if (MultiplayerGameManager.Instance.IsServer)
+            {
+                seed.Value = seeds[currentEtage - 1];
+            }
             Generate(false);
         }
 
@@ -202,19 +217,18 @@ public class GenerationDonjon : NetworkBehaviour
     private void Configure(ConfigDonjon conf)
     {
         maxEtage = conf.nbEtages;
-        if (MultiplayerGameManager.Instance.IsServer)
-        {
-            seed.Value = conf.seed;
-        }
+        tempSeed = conf.seed;
         minTailleEtage = conf.minTailleEtage;
         maxTailleEtage = conf.maxTailleEtage;
         nbStairs = conf.nbStairs;
+        nbCauldrons = conf.nbChaudrons;
         typeEtage = conf.typeEtage;
         baseDifficulty = conf.baseDiff;
         difficultyScaling = conf.diffScaling;
         currentEtage = 1;
         maxEtageReached = 0;
         seeds = new int[maxEtage];
+        Random.InitState(tempSeed);
     }
 
     /// <summary>
@@ -235,9 +249,9 @@ public class GenerationDonjon : NetworkBehaviour
                 genEtage = GetComponent<GenEtaAbre>();
                 break;
         }
-        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, currentDifficulty, MultiplayerGameManager.Instance.IsServer);
-        genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs, pathToPieces, pathToObjets, pathToPotions, pathToChests, pathToPieges);
-        genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs, holderItems, holderTraps, holderTriggers);
+        genEtage.Initialize(new Vector2Int(Random.Range(minTailleEtage.x, maxTailleEtage.x), Random.Range(minTailleEtage.y, maxTailleEtage.y)), nbStairs, cellSize, currentDifficulty, MultiplayerGameManager.Instance.IsServer, nbCauldrons);
+        genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs, pathToPieces, pathToObjets, pathToPotions, pathToChests, pathToPieges, pathToTrickshots);
+        genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs, holderItems, holderTraps, holderTriggers, holderTrickshots);
         genEtage.GenerateEtage();
         if (isNewEtage && MultiplayerGameManager.Instance.IsServer)
         {

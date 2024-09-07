@@ -16,6 +16,7 @@ public class ConfigDonjonUI : MonoBehaviour
     private Vector2IntField minTailleEtage;
     private Vector2IntField maxTailleEtage;
     private SliderInt nbStairs;
+    private SliderInt nbChaudrons;
     private SliderInt baseDifficulty;
     private SliderInt difficultyScaling;
     private Label labelInfo;
@@ -39,6 +40,7 @@ public class ConfigDonjonUI : MonoBehaviour
         minTailleEtage = root.Q<Vector2IntField>("minTailleEtage");
         maxTailleEtage = root.Q<Vector2IntField>("maxTailleEtage");
         nbStairs = root.Q<SliderInt>("nbStairs");
+        nbChaudrons = root.Q<SliderInt>("nbChaudrons");
         baseDifficulty = root.Q<SliderInt>("baseDiff");
         difficultyScaling = root.Q<SliderInt>("diffScaling");
         saveChanges = root.Q<Button>("saveChanges");
@@ -101,6 +103,7 @@ public class ConfigDonjonUI : MonoBehaviour
                 minTailleEtage = minTailleEtage.value,
                 maxTailleEtage = maxTailleEtage.value,
                 nbStairs = nbStairs.value,
+                nbChaudrons = nbChaudrons.value,
                 typeEtage = TypeEtage.Labyrinthe,
                 baseDiff = baseDifficulty.value,
                 diffScaling = difficultyScaling.value
@@ -133,6 +136,7 @@ public class ConfigDonjonUI : MonoBehaviour
         minTailleEtage.value = config.minTailleEtage;
         maxTailleEtage.value = config.maxTailleEtage;
         nbStairs.value = config.nbStairs;
+        nbChaudrons.value = config.nbChaudrons;
         baseDifficulty.value = config.baseDiff;
         difficultyScaling.value = config.diffScaling;
     }
@@ -178,6 +182,7 @@ public class ConfigDonjon : INetworkSerializable
     public Vector2Int minTailleEtage;
     public Vector2Int maxTailleEtage;
     public int nbStairs;
+    public int nbChaudrons;
     public TypeEtage typeEtage;
     public int baseDiff;
     public int diffScaling;
@@ -190,6 +195,7 @@ public class ConfigDonjon : INetworkSerializable
         minTailleEtage = new(10, 10);
         maxTailleEtage = new(20, 20);
         nbStairs = 2;
+        nbChaudrons = 2;
         typeEtage = TypeEtage.Labyrinthe;
         baseDiff = 1;
         diffScaling = 1;
@@ -200,6 +206,7 @@ public class ConfigDonjon : INetworkSerializable
         return $"ConfigDonjon:\n" +
                $"- Nombre d'étages: {nbEtages}\n" +
                $"- Seed: {seed}\n" +
+               $"- Nombre de chaudrons: {nbChaudrons}\n" +
                $"- Taille minimale d'un étage: {minTailleEtage.x} x {minTailleEtage.y}\n" +
                $"- Taille maximale d'un étage: {maxTailleEtage.x} x {maxTailleEtage.y}\n" +
                $"- Nombre d'escaliers: {nbStairs}\n" +
@@ -215,6 +222,7 @@ public class ConfigDonjon : INetworkSerializable
         serializer.SerializeValue(ref minTailleEtage);
         serializer.SerializeValue(ref maxTailleEtage);
         serializer.SerializeValue(ref nbStairs);
+        serializer.SerializeValue(ref nbChaudrons);
         serializer.SerializeValue(ref typeEtage);
         serializer.SerializeValue(ref baseDiff);
         serializer.SerializeValue(ref diffScaling);

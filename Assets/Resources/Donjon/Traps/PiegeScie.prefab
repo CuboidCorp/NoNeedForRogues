@@ -9,7 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7548186458156791383}
-  - component: {fileID: 2630483082356751524}
+  - component: {fileID: 3412095235125526398}
+  - component: {fileID: 5019350742268542078}
+  - component: {fileID: 8228860529294972538}
+  - component: {fileID: 1581955174623757461}
   m_Layer: 0
   m_Name: MovingSawBlade
   m_TagString: Untagged
@@ -33,7 +36,41 @@ Transform:
   - {fileID: 6834218260976446319}
   m_Father: {fileID: 7024028001849650653}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &2630483082356751524
+--- !u!114 &3412095235125526398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4376398253061950589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8eb6e5a97abe6544a0fc54d6e2d17c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 1
+  damage: 1
+--- !u!114 &5019350742268542078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4376398253061950589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2116015117
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!95 &8228860529294972538
 Animator:
   serializedVersion: 5
   m_ObjectHideFlags: 0
@@ -46,7 +83,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 7075a0e5141147345acf085bc72929e7, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_WarningMessage: 
@@ -54,6 +91,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1581955174623757461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4376398253061950589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TransitionStateInfoList: []
+  m_Animator: {fileID: 8228860529294972538}
 --- !u!1 &4862998032266066695
 GameObject:
   m_ObjectHideFlags: 0
@@ -67,7 +118,6 @@ GameObject:
   - component: {fileID: 8849606835117618401}
   - component: {fileID: 3121072655072299669}
   - component: {fileID: 5880308361750073698}
-  - component: {fileID: 1593765800157380729}
   - component: {fileID: 7980630645935217573}
   m_Layer: 0
   m_Name: Sawblade
@@ -184,20 +234,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -318380812313391449, guid: edcc86a903182d0429c0d7b2c727fec0, type: 3}
---- !u!114 &1593765800157380729
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4862998032266066695}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8eb6e5a97abe6544a0fc54d6e2d17c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 1
-  damage: 1
 --- !u!114 &7980630645935217573
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -195,6 +195,15 @@ public class MultiplayerGameManager : NetworkBehaviour
         participants = new VivoxParticipant[1];
     }
 
+    /// <summary>
+    /// Renvoie le nombre total de joueurs
+    /// </summary>
+    /// <returns>Renvoie le nombre de joueurs</returns>
+    public int GetNbTotalPlayers()
+    {
+        return nbTotalPlayers;
+    }
+
     #region Utilitaires
 
     /// <summary>
@@ -240,6 +249,21 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void DespawnObjServerRpc(NetworkObjectReference obj)
     {
         ((GameObject)obj).GetComponent<NetworkObject>().Despawn(true);
+    }
+
+    /// <summary>
+    /// Renvoie le nom du joueur correspondant à l'id netcode
+    /// </summary>
+    /// <param name="playerId">L'id du joueur dont on veut le nom</param>
+    /// <returns>Le nom du joueur</returns>
+    public string GetPlayerName(ulong playerId)
+    {
+        int playerIndex = Array.IndexOf(playersIds, playerId);
+        if (playerIndex != -1)
+        {
+            return playersNames[playerIndex];
+        }
+        return null;
     }
 
     #region ClientRpcParams
@@ -1104,6 +1128,17 @@ public class MultiplayerGameManager : NetworkBehaviour
         MonPlayerController.instanceLocale.SetRespawnPoint(pos);
     }
 
+    /// <summary>
+    /// Set la position de spawn de tous les joueurs
+    /// </summary>
+    /// <param name="pos">Le nouveau spawn de tous les joueurs</param>
+    public void SetSpawnAllPlayers(Vector3 pos)
+    {
+        foreach (ulong playerId in playersIds)
+        {
+            SetSpawnPositionClientRpc(pos, new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { playerId } } });
+        }
+    }
 
     /// <summary>
     /// Envoie au serveur l'information que le joueur est prêt

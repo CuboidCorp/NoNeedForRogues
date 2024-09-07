@@ -29,12 +29,12 @@ public class GenEtaAbre : GenerationEtage
         throw new System.NotImplementedException();
     }
 
-    public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs, string pathToPieces, string pathToObjets, string pathToPotions, string pathToChests, string pathToPieges)
+    public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs, string pathToPieces, string pathToObjets, string pathToPotions, string pathToChests, string pathToPieges, string pathToTrickshots)
     {
         throw new System.NotImplementedException();
     }
 
-    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems, Transform holderTraps, Transform holderTrigger)
+    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems, Transform holderTraps, Transform holderTrigger, Transform holderTrickshot)
     {
         throw new System.NotImplementedException();
     }

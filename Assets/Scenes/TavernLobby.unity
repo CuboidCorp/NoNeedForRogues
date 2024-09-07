@@ -166,25 +166,17 @@ Transform:
   - {fileID: 1968411730}
   m_Father: {fileID: 2122679276}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &19184237 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4376398253061950589, guid: e3e4dc84303f5d14d97d6b20a7171444, type: 3}
+--- !u!114 &19184240 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3412095235125526398, guid: e3e4dc84303f5d14d97d6b20a7171444, type: 3}
   m_PrefabInstance: {fileID: 1684120743}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &19184240
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 19184237}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e8eb6e5a97abe6544a0fc54d6e2d17c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 1
-  damage: 1
 --- !u!1001 &26680630
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7261,9 +7253,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Crepitus, Lux, Mortus, Ragdoll, Infernum, Sesamae occludit, Penitus, Fusrohdah,
+  m_text: Crepitus, Lux, Mortus, Infernum, Sesamae occludit, Penitus, Fusrohdah,
     Capere, Dimittas, Emitto, Resurrectio, Acceleratio, Curae, Saltus, Polymorphismus,
-    Offendas
+    Offendas, Ventus
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 12bf5ba272199a541ba8d91ff6e42b41, type: 2}
   m_sharedMaterial: {fileID: 8030851293896615881, guid: 12bf5ba272199a541ba8d91ff6e42b41, type: 2}
@@ -14956,6 +14948,7 @@ MonoBehaviour:
     minTailleEtage: {x: 10, y: 10}
     maxTailleEtage: {x: 20, y: 20}
     nbStairs: 2
+    nbChaudrons: 0
     typeEtage: 0
     baseDiff: 1
     diffScaling: 1
@@ -15720,6 +15713,7 @@ MonoBehaviour:
     minTailleEtage: {x: 10, y: 10}
     maxTailleEtage: {x: 20, y: 20}
     nbStairs: 2
+    nbChaudrons: 0
     typeEtage: 0
     baseDiff: 1
     diffScaling: 1
@@ -17941,6 +17935,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1301781418}
     m_Modifications:
+    - target: {fileID: 2516450550644229591, guid: e3e4dc84303f5d14d97d6b20a7171444, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 343378791
+      objectReference: {fileID: 0}
+    - target: {fileID: 5019350742268542078, guid: e3e4dc84303f5d14d97d6b20a7171444, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 1243115935
+      objectReference: {fileID: 0}
     - target: {fileID: 5110788378480115998, guid: e3e4dc84303f5d14d97d6b20a7171444, type: 3}
       propertyPath: m_Name
       value: MovingSawblade
@@ -17985,14 +17987,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 1593765800157380729, guid: e3e4dc84303f5d14d97d6b20a7171444, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4376398253061950589, guid: e3e4dc84303f5d14d97d6b20a7171444, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 19184240}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e3e4dc84303f5d14d97d6b20a7171444, type: 3}
 --- !u!4 &1684120744 stripped
 Transform:

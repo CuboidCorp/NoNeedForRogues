@@ -10,13 +10,14 @@ public abstract class GenerationEtage : MonoBehaviour
         Stairs
     }
 
-    public void Initialize(Vector2Int tailleEtage, int nbStairs, float cellSize, int difficulty, bool estServeur)
+    public void Initialize(Vector2Int tailleEtage, int nbStairs, float cellSize, int difficulty, bool estServeur, int nbChaudrons)
     {
         this.tailleEtage = tailleEtage;
         this.nbStairs = nbStairs;
         this.cellSize = cellSize;
         this.difficulty = difficulty;
-        this.estServ = estServeur;
+        estServ = estServeur;
+        this.nbChaudrons = nbChaudrons;
     }
 
     protected Vector2Int tailleEtage;
@@ -28,6 +29,9 @@ public abstract class GenerationEtage : MonoBehaviour
     protected int difficulty;
 
     protected bool estServ;
+
+    protected int nbChaudrons;
+
 
     /// <summary>
     /// Génère l'étage 
@@ -60,7 +64,8 @@ public abstract class GenerationEtage : MonoBehaviour
     /// <param name="pathToPotions">Le chemin dans les resources pr charger les potions</param>
     /// <param name="pathToChests">Le chemin dans les resources pr charger les coffres</param>
     /// <param name="pathToPieges">Le chemin dans les resources du dossier des pieges</param>
-    public abstract void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs, string pathToPieces, string pathToObjets, string pathToPotions, string pathToChests, string pathToPieges);
+    /// <param name="pathToTrickshots">Le chemin dans les resources du dossier des trickshots</param>
+    public abstract void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs, string pathToPieces, string pathToObjets, string pathToPotions, string pathToChests, string pathToPieges, string pathToTrickshots);
 
     /// <summary>
     /// Charge les holders pour les salles, les corridors et les escaliers
@@ -71,5 +76,6 @@ public abstract class GenerationEtage : MonoBehaviour
     /// <param name="holderItems">Le transform qui contient tt les items</param>
     /// <param name="holderTraps">Le transform qui contient tt les pieges</param>
     /// <param name="holderTrigger">Le transform qui contient tt les triggers</param>"
-    public abstract void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems, Transform holderTraps, Transform holderTrigger);
+    /// <param name="holderTrickshot">Le transform qui contient tt lkes trickshots</param>
+    public abstract void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems, Transform holderTraps, Transform holderTrigger, Transform holderTrickshot);
 }

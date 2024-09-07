@@ -36,10 +36,12 @@ public class GenEtaLaby : GenerationEtage
     private Transform itemHolder;
     private Transform trapHolder;
     private Transform triggerHolder;
+    private Transform trickshotHolder;
 
     private List<Vector2Int> deadEnds;
     private Vector2Int[] stairsPos;
     private Vector2Int[] trapsPos;
+    private Vector2Int[] trickshotsPos;
 
     private const float yCoordinateUpStairs = 0;
     private const float yCoordinateDownStairs = -1;
@@ -51,6 +53,7 @@ public class GenEtaLaby : GenerationEtage
     private GameObject[] prefabsObjets;
     private GameObject[] prefabsPotions;
     private GameObject[] prefabsCoffres;
+    private GameObject[] prefabsTrickshots;
 
     private List<GameObject> objets;
 
@@ -83,10 +86,11 @@ public class GenEtaLaby : GenerationEtage
         InitEtage();
         GenerationTheorique();
         GenerationEscaliers();
+        GenerateTrickshots();
         RenderingLabyrinthe();
     }
 
-    public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs, string pathToPieces, string pathToObjets, string pathToPotions, string pathToChests, string pathToPieges)
+    public override void ChargePrefabs(string pathToRooms, string pathToHallways, string pathToStairs, string pathToPieces, string pathToObjets, string pathToPotions, string pathToChests, string pathToPieges, string pathToTrickshots)
     {
         couloirsPrefabs = Resources.LoadAll<GameObject>(pathToHallways);
         upStairPrefab = Resources.Load<GameObject>(pathToStairs + "UpStairs");
@@ -97,15 +101,17 @@ public class GenEtaLaby : GenerationEtage
         prefabsPotions = Resources.LoadAll<GameObject>(pathToPotions);
         prefabsCoffres = Resources.LoadAll<GameObject>(pathToChests);
         prefabsTraps = Resources.LoadAll<GameObject>(pathToPieges);
+        prefabsTrickshots = Resources.LoadAll<GameObject>(pathToTrickshots);
     }
 
-    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems, Transform holderTraps, Transform holderTrigger)
+    public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems, Transform holderTraps, Transform holderTrigger, Transform holderTrickshot)
     {
         stairHolder = holderStairs;
         hallwaysHolder = holderHallways;
         itemHolder = holderItems;
         trapHolder = holderTraps;
         triggerHolder = holderTrigger;
+        trickshotHolder = holderTrickshot;
     }
 
     private void InitEtage()
@@ -160,10 +166,9 @@ public class GenEtaLaby : GenerationEtage
 
             if (IsStairPlaceable(stairPos))
             {
-                GameObject stairs = Instantiate(upStairPrefab, new Vector3(stairPos.x, yCoordinateUpStairs, stairPos.y) * cellSize, Quaternion.identity);
+                GameObject stairs = Instantiate(upStairPrefab, new Vector3(stairPos.x, yCoordinateUpStairs, stairPos.y) * cellSize, Quaternion.Euler(new Vector3(0, 90 - (side * 90), 0)));
                 stairs.transform.parent = stairHolder;
                 stairs.name = "SUp" + stairPos.x + "_" + stairPos.y;
-                stairs.transform.eulerAngles = new Vector3(0, 90 - (side * 90), 0);
                 if (estServ)
                 {
                     GameObject leave = Instantiate(leavePrefab, stairs.transform.GetChild(6).position, Quaternion.Euler(0, 180 - (side * 90), 0));
@@ -228,10 +233,9 @@ public class GenEtaLaby : GenerationEtage
                         stairPos.y++;
                         break;
                 }
-                GameObject stairs = Instantiate(downStairPrefab, new Vector3(stairPos.x, yCoordinateDownStairs, stairPos.y) * cellSize, Quaternion.identity);
+                GameObject stairs = Instantiate(downStairPrefab, new Vector3(stairPos.x, yCoordinateDownStairs, stairPos.y) * cellSize, Quaternion.Euler(new Vector3(0, 270 - (side * 90), 0)));
                 stairs.transform.parent = stairHolder;
                 stairs.name = "SDown" + stairPos.x + "_" + stairPos.y;
-                stairs.transform.eulerAngles = new Vector3(0, 270 - (side * 90), 0);
                 if (estServ)
                 {
                     GameObject leave = Instantiate(leavePrefab, stairs.transform.GetChild(6).position, Quaternion.Euler(0, 180 - (side * 90), 0));
@@ -267,6 +271,7 @@ public class GenEtaLaby : GenerationEtage
         return true;
     }
 
+    #region Generation Couloirs
     /// <summary>
     /// Décide du retrait des murs en se promenant dans le labyrinthe et en faisant machine arrière des qu'il rencontre une impasse
     /// </summary>
@@ -372,6 +377,8 @@ public class GenEtaLaby : GenerationEtage
         int allFlagsMask = (int)(WallState.DOWN | WallState.UP | WallState.LEFT | WallState.RIGHT | WallState.VISITED);
         return ~(int)etage[position.x, position.y] & allFlagsMask;
     }
+
+    #endregion
 
     #region Generation Objets
     public override void GenerateItems()
@@ -535,6 +542,7 @@ public class GenEtaLaby : GenerationEtage
         int nbPieges = 10 + difficulty * 2;
 
         trapsPos = new Vector2Int[nbPieges];
+        placedTraps = new GameObject[nbPieges];
         int nbPiegesPlaces = 0;
 
 
@@ -581,10 +589,8 @@ public class GenEtaLaby : GenerationEtage
 
             int indexPiege = possibleTraps[Random.Range(0, possibleTraps.Count)];
 
-            Debug.Log("Piege choisi : " + (Traps)indexPiege);
             //TODO : Instantiate le gameObject du piege dans la liste des pieges
             GameObject piege = Instantiate(prefabsTraps[indexPiege], ConvertToRealWorldPos(posPiege), Quaternion.identity);
-            piege.transform.parent = trapHolder;
 
             switch ((Traps)indexPiege)
             {
@@ -596,11 +602,35 @@ public class GenEtaLaby : GenerationEtage
 
                     break;
                 case Traps.PIEGE_PIQUE:
+                    piege.transform.position += new Vector3(0, .25f, 0);
                     //TODO : On a un trigger dessus ou une plaque de pression dans la case d'a coté
                     break;
                 case Traps.PIEGE_SCIE:
-                    piege.transform.position += new Vector3(0, 0.5f, 0);
-                    piege.GetComponentInChildren<Sawtrap>().ActivateTrap();
+                    piege.transform.position += new Vector3(0, 0.3f, 0);
+                    if (estServ)
+                    {
+                        GameObject sawTrap = piege.GetComponentInChildren<Sawtrap>().gameObject;
+                        sawTrap.GetComponent<NetworkObject>().Spawn();
+                        sawTrap.GetComponent<Sawtrap>().ActivateTrap();
+                    }
+                    break;
+                case Traps.PIEGE_TROU:
+                    //TODO : On a un trigger dessus ou une plaque de pression dans la case d'a coté
+                    //Suppresion du sol on fait un raycast
+                    piege.transform.position += new Vector3(0, 0.1525f, 0);
+                    Ray ray = new(piege.transform.position + new Vector3(0, .5f, 0), Vector3.down);
+                    RaycastHit[] hits = new RaycastHit[2];
+                    int nbCol = Physics.RaycastNonAlloc(ray, hits, 2);
+                    if (nbCol > 0)
+                    {
+                        foreach (RaycastHit hit in hits)
+                        {
+                            if (hit.collider.CompareTag("Floor"))
+                            {
+                                Destroy(hit.collider.gameObject);
+                            }
+                        }
+                    }
                     break;
                     //TODO : Faire les autres pieges
             }
@@ -609,12 +639,7 @@ public class GenEtaLaby : GenerationEtage
             //Si ça marche et qu'on a tt placé
             trapsPos[nbPiegesPlaces] = posPiege;
             nbPiegesPlaces++;
-
-
         }
-
-
-
     }
 
     /// <summary>
@@ -674,6 +699,76 @@ public class GenEtaLaby : GenerationEtage
         Destroy(sleepingGaz, gazDuration);
     }
     #endregion
+
+    private void GenerateTrickshots()
+    {
+        trickshotsPos = new Vector2Int[nbChaudrons];
+        int cptTrickshot = 0;
+        Vector2Int cellPos = new(0, 0);
+        Vector2Int trickPos = new(0, 0);
+        while (cptTrickshot < nbChaudrons)
+        {
+            int side = Random.Range(0, 4); //0 gauche 1 Haut 2 droite 3 bas
+            switch (side)
+            {
+                case 0: //Angle a 90
+                    trickPos.x = -1;
+                    trickPos.y = Random.Range(0, tailleEtage.y);
+                    cellPos = new Vector2Int(0, trickPos.y);
+                    break;
+                case 1: // Angle a 0
+                    trickPos.x = Random.Range(0, tailleEtage.x);
+                    trickPos.y = -1;
+                    cellPos = new Vector2Int(trickPos.x, 0);
+                    break;
+                case 2: //Angle a 270
+                    trickPos.x = tailleEtage.x;
+                    trickPos.y = Random.Range(0, tailleEtage.y);
+                    cellPos = new Vector2Int(tailleEtage.x - 1, trickPos.y);
+                    break;
+                case 3: //Angle a 180
+                    trickPos.x = Random.Range(0, tailleEtage.x);
+                    trickPos.y = tailleEtage.y;
+                    cellPos = new Vector2Int(trickPos.x, tailleEtage.y - 1);
+                    break;
+            }
+
+            if (IsTrickPlaceable(trickPos))
+            {
+                GameObject trickshot = Instantiate(prefabsTrickshots[Random.Range(0, prefabsTrickshots.Length)], ConvertToRealWorldPos(trickPos), Quaternion.Euler(new Vector3(0, side * -90, 0)));
+                trickshot.transform.parent = trickshotHolder;
+                trickshot.name += trickPos.x + "_" + trickPos.y;
+                trickshotsPos[cptTrickshot] = trickPos;
+                etage[cellPos.x, cellPos.y] ^= (WallState)(1 << side);
+                cptTrickshot++;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Vérifie si la trickshot zone est placeable
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <returns></returns>
+    private bool IsTrickPlaceable(Vector2Int pos)
+    {
+        if (IsStairPlaceable(pos))
+        {
+            foreach (Vector2Int vector in trickshotsPos)
+            {
+                if (pos == vector)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
 
     private Vector3 ConvertToRealWorldPos(Vector2Int pos)
     {
