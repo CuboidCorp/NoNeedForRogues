@@ -986,7 +986,7 @@ GameObject:
   - component: {fileID: 4878307586278892009}
   - component: {fileID: 111401584577476936}
   m_Layer: 0
-  m_Name: SolPiegeAsset2
+  m_Name: SolOuvrant
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

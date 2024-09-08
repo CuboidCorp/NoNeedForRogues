@@ -1,6 +1,7 @@
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 public class PressurePlate : NetworkBehaviour
@@ -163,4 +164,22 @@ public class PressurePlate : NetworkBehaviour
     }
 
     #endregion
+
+    /// <summary>
+    /// Set l'action à effectuer lors de la pression de la plaque
+    /// </summary>
+    /// <param name="action">L'action a effectuer</param>
+    public void SetOnPress(UnityAction action)
+    {
+        onPress.AddListener(action);
+    }
+
+    /// <summary>
+    /// Set l'action à effectuer lors du reset de la plaque
+    /// </summary>
+    /// <param name="action">L'action a effectuer</param>
+    public void SetOnReset(UnityAction action)
+    {
+        onReset.AddListener(action);
+    }
 }

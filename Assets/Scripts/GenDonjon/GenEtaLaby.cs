@@ -54,6 +54,7 @@ public class GenEtaLaby : GenerationEtage
     private GameObject[] prefabsPotions;
     private GameObject[] prefabsCoffres;
     private GameObject[] prefabsTrickshots;
+    private GameObject[] prefabsTriggers;
 
     private List<GameObject> objets;
 
@@ -102,6 +103,7 @@ public class GenEtaLaby : GenerationEtage
         prefabsCoffres = Resources.LoadAll<GameObject>(pathToChests);
         prefabsTraps = Resources.LoadAll<GameObject>(pathToPieges);
         prefabsTrickshots = Resources.LoadAll<GameObject>(pathToTrickshots);
+        prefabsTriggers = Resources.LoadAll<GameObject>("Triggers");
     }
 
     public override void ChargeHolders(Transform holderRooms, Transform holderHallways, Transform holderStairs, Transform holderItems, Transform holderTraps, Transform holderTrigger, Transform holderTrickshot)
@@ -479,8 +481,7 @@ public class GenEtaLaby : GenerationEtage
         GameObject instance = Instantiate(chest, itemHolder);
         objets.Add(instance);
         Debug.Log(etatPos);
-        instance.transform.position = position;
-        instance.transform.rotation = Quaternion.Euler(0, (int)etatPos * 90 + 180, 0); //TODO : Verifier au niveau des bits c'est quoi la bonne formule
+        instance.transform.SetPositionAndRotation(position, Quaternion.Euler(0, (int)etatPos * 90 + 180, 0));
         int typeCoffre = Random.Range(0, 2);
         Chest coffreScript = instance.GetComponent<Chest>();
         instance.GetComponent<NetworkObject>().Spawn();
@@ -545,8 +546,6 @@ public class GenEtaLaby : GenerationEtage
         placedTraps = new GameObject[nbPieges];
         int nbPiegesPlaces = 0;
 
-
-
         //On genere les pieges en fonction de la diffculté --> Pr le moment pas de lien entre les items et tt
         //Donc n'importe quel pos mais pas dans les deadends pr certains
 
@@ -591,19 +590,42 @@ public class GenEtaLaby : GenerationEtage
 
             //TODO : Instantiate le gameObject du piege dans la liste des pieges
             GameObject piege = Instantiate(prefabsTraps[indexPiege], ConvertToRealWorldPos(posPiege), Quaternion.identity);
-
             switch ((Traps)indexPiege)
             {
                 case Traps.PIEGE_CAILLOU: //Piege caillou
                     //On met le piege en haut genre 6
                     piege.transform.position += new Vector3(0, 6f, 0);
                     piege.GetComponent<BoulderTrap>().SetDirection(Random.Range(0, 4));
+                    if (estServ)
+                    {
+                        piege.GetComponent<NetworkObject>().Spawn();
+                        piege.transform.parent = trapHolder;
+                        placedTraps[nbPiegesPlaces] = piege;
+
+                        GameObject plaque = Instantiate(prefabsTriggers[0], ConvertToRealWorldPos(posPiege), Quaternion.identity);
+                        plaque.GetComponent<NetworkObject>().Spawn();
+                        plaque.transform.parent = triggerHolder;
+                        plaque.GetComponent<PressurePlate>().SetOnPress(() => piege.GetComponent<BoulderTrap>().ActivateTrap());
+
+                    }
                     //TODO : Faire un pressure plate qui trigger le piege
 
                     break;
                 case Traps.PIEGE_PIQUE:
                     piege.transform.position += new Vector3(0, .25f, 0);
-                    //TODO : On a un trigger dessus ou une plaque de pression dans la case d'a coté
+                    if (estServ)
+                    {
+                        GameObject spikes = piege.GetComponentInChildren<NetworkObject>().gameObject;
+                        spikes.GetComponent<NetworkObject>().Spawn();
+                        spikes.transform.parent = trapHolder;
+                        placedTraps[nbPiegesPlaces] = spikes;
+                        //TODO : Une plaque de pression dans la case d'a coté ? 
+                        GameObject trigger = Instantiate(prefabsTriggers[1], ConvertToRealWorldPos(posPiege), Quaternion.identity);
+                        trigger.GetComponent<NetworkObject>().Spawn();
+                        trigger.transform.parent = triggerHolder;
+                        trigger.GetComponent<Tripwire>().SetTrigger(() => spikes.GetComponent<SpikeTrap>().ActivateTrap());
+                    }
+
                     break;
                 case Traps.PIEGE_SCIE:
                     piege.transform.position += new Vector3(0, 0.3f, 0);
@@ -611,11 +633,12 @@ public class GenEtaLaby : GenerationEtage
                     {
                         GameObject sawTrap = piege.GetComponentInChildren<Sawtrap>().gameObject;
                         sawTrap.GetComponent<NetworkObject>().Spawn();
-                        sawTrap.GetComponent<Sawtrap>().ActivateTrap();
+                        sawTrap.transform.parent = trapHolder;
+                        sawTrap.GetComponent<Sawtrap>().ActivateTrap(); //TODO : Le piege s'active pas regarder pk
+                        placedTraps[nbPiegesPlaces] = sawTrap;
                     }
                     break;
                 case Traps.PIEGE_TROU:
-                    //TODO : On a un trigger dessus ou une plaque de pression dans la case d'a coté
                     //Suppresion du sol on fait un raycast
                     piege.transform.position += new Vector3(0, 0.1525f, 0);
                     Ray ray = new(piege.transform.position + new Vector3(0, .5f, 0), Vector3.down);
@@ -631,11 +654,24 @@ public class GenEtaLaby : GenerationEtage
                             }
                         }
                     }
+                    if (estServ)
+                    {
+                        GameObject solOuvrant = piege.GetComponentInChildren<NetworkObject>().gameObject;
+                        solOuvrant.GetComponent<NetworkObject>().Spawn();
+                        solOuvrant.transform.parent = trapHolder;
+                        placedTraps[nbPiegesPlaces] = solOuvrant;
+
+                        //TODO : Ptet une plaque de pression dans la case d'a coté
+                        GameObject trigger = Instantiate(prefabsTriggers[1], ConvertToRealWorldPos(posPiege), Quaternion.identity);
+                        trigger.GetComponent<NetworkObject>().Spawn();
+                        trigger.transform.parent = triggerHolder;
+                        trigger.GetComponent<Tripwire>().SetTrigger(() => solOuvrant.GetComponent<Openable>().Open());
+                    }
                     break;
                     //TODO : Faire les autres pieges
             }
 
-            placedTraps[nbPiegesPlaces] = piege;
+
             //Si ça marche et qu'on a tt placé
             trapsPos[nbPiegesPlaces] = posPiege;
             nbPiegesPlaces++;
@@ -741,6 +777,9 @@ public class GenEtaLaby : GenerationEtage
                 trickshotsPos[cptTrickshot] = trickPos;
                 etage[cellPos.x, cellPos.y] ^= (WallState)(1 << side);
                 cptTrickshot++;
+
+                GameObject wall = Instantiate(Resources.Load<GameObject>("Donjon/Type1/Wall"), trickshot.transform);
+                wall.transform.SetLocalPositionAndRotation(new Vector3(2.4f, 4.8f, 0), Quaternion.Euler(0, 90, 0));
             }
         }
     }

@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 /// <summary>
@@ -32,5 +33,14 @@ public class Tripwire : NetworkBehaviour
     {
         OnTrigger.Invoke();
         gameObject.GetComponent<NetworkObject>().Despawn(true);
+    }
+
+    /// <summary>
+    /// Set l'action à effectuer lors du déclenchement du tripwire
+    /// </summary>
+    /// <param name="action">L'action a effectuer</param>
+    public void SetTrigger(UnityAction action)
+    {
+        OnTrigger.AddListener(action);
     }
 }
