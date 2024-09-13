@@ -17,8 +17,24 @@ public class Plateforme : MonoBehaviour
     private float _timeToWaypoint;
     private float _elapsedTime;
 
+    public void Initialize(float speed, Transform[] waypoints)
+    {
+        _waypoints = waypoints;
+        _speed = speed;
+    }
+
+    public void SetSpeed(float speed)
+    {
+        _speed = speed;
+    }
+
     private void Start()
     {
+        if (_waypoints.Length == 0)
+        {
+            Debug.LogError("Pas de waypoints pour la plateforme " + gameObject.name);
+            Destroy(this);
+        }
         TargetNextWaypoint();
     }
 

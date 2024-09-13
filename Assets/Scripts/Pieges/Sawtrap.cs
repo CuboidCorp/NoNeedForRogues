@@ -2,29 +2,28 @@ using UnityEngine;
 
 public class Sawtrap : Trap
 {
-    private Animator anim;
-
     [SerializeField] private float speed = 1;
     [SerializeField] private float damage = 1;
 
+    private Plateforme scieMobile;
     private DamageZone damageZone;
 
     private void Awake()
     {
-        anim = GetComponent<Animator>();
-        anim.speed = speed;
+        scieMobile = GetComponentInChildren<Plateforme>();
+        scieMobile.SetSpeed(0);
         damageZone = GetComponentInChildren<DamageZone>();
         damageZone.damage = damage;
     }
     public override void ActivateTrap()
     {
-        anim.SetBool("Activated", true);
+        scieMobile.SetSpeed(speed);
         damageZone.isActivated = true;
     }
 
     public override void DeactivateTrap()
     {
-        anim.SetBool("Activated", false);
+        scieMobile.SetSpeed(0);
         damageZone.isActivated = false;
     }
 }

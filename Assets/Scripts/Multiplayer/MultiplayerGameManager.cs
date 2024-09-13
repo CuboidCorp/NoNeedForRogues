@@ -494,9 +494,12 @@ public class MultiplayerGameManager : NetworkBehaviour
         try //On met un try catch car si le joueur est trop loin il a pas de playerTap
         {
             GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
-            tap.transform.SetParent(GetGhostTransformFromPlayerId(playerId));
-            tap.transform.localPosition = new Vector3(0, 1.6f, 0);
-            AddParamToParticipantAudioSource(playerIndex);
+            if (tap != null)
+            {
+                tap.transform.SetParent(GetGhostTransformFromPlayerId(playerId));
+                tap.transform.localPosition = new Vector3(0, 1.6f, 0);
+                AddParamToParticipantAudioSource(playerIndex);
+            }
         }
         catch (Exception e)
         {
@@ -515,9 +518,13 @@ public class MultiplayerGameManager : NetworkBehaviour
         try //On met un try catch car si le joueur est trop loin il a pas de playerTap
         {
             GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
-            tap.transform.SetParent(GetCowTransformFromPlayerId(playerId));
-            tap.transform.localPosition = new Vector3(0, 1.6f, 0);
-            AddParamToParticipantAudioSource(playerIndex);
+            if (tap != null)
+            {
+                tap.transform.SetParent(GetCowTransformFromPlayerId(playerId));
+                tap.transform.localPosition = new Vector3(0, 1.6f, 0);
+                AddParamToParticipantAudioSource(playerIndex);
+            }
+
         }
         catch (Exception e)
         {
@@ -532,9 +539,12 @@ public class MultiplayerGameManager : NetworkBehaviour
         try //On met un try catch car si le joueur est trop loin il a pas de playerTap
         {
             GameObject tap = participants[playerIndex].CreateVivoxParticipantTap("Tap " + playerIndex);
-            tap.transform.SetParent(GetPlayerTransformFromAuthId(playersAuthId[playerIndex]));
-            tap.transform.localPosition = new Vector3(0, 1.6f, 0);
-            AddParamToParticipantAudioSource(playerIndex);
+            if (tap != null)
+            {
+                tap.transform.SetParent(GetPlayerTransformFromAuthId(playersAuthId[playerIndex]));
+                tap.transform.localPosition = new Vector3(0, 1.6f, 0);
+                AddParamToParticipantAudioSource(playerIndex);
+            }
         }
         catch (Exception e)
         {

@@ -133,12 +133,16 @@ public class GenerationDonjon : NetworkBehaviour
 
     private void Start()
     {
+
         OnSceneLoaded();
     }
 
     public override void OnNetworkSpawn()
     {
-        seed.Value = tempSeed;
+        if (IsServer)
+        {
+            seed.Value = tempSeed;
+        }
     }
 
     /// <summary>
@@ -253,11 +257,12 @@ public class GenerationDonjon : NetworkBehaviour
         genEtage.ChargePrefabs(pathToRooms, pathToHallways, pathToStairs, pathToPieces, pathToObjets, pathToPotions, pathToChests, pathToPieges, pathToTrickshots);
         genEtage.ChargeHolders(holderRooms, holderHallways, holderStairs, holderItems, holderTraps, holderTriggers, holderTrickshots);
         genEtage.GenerateEtage();
+        genEtage.GeneratePieges();
         if (isNewEtage && MultiplayerGameManager.Instance.IsServer)
         {
             genEtage.GenerateItems();
         }
-        genEtage.GeneratePieges();
+
     }
 
     /// <summary>
@@ -266,5 +271,10 @@ public class GenerationDonjon : NetworkBehaviour
     public void RandomizeSeed()
     {
         seed.Value = Random.Range(0, 1000000);
+    }
+
+    public int GetSeed()
+    {
+        return seed.Value;
     }
 }

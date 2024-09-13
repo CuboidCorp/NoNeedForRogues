@@ -51,7 +51,7 @@ public class SpellRecognition : MonoBehaviour
 
     #endregion
 
-    private static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "François François François", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE" }; //Les sorts en majuscules sont les sorts de debug
+    private static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "François François François", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED" }; //Les sorts en majuscules sont les sorts de debug
 
     private bool debugMode = false;
 
@@ -193,6 +193,26 @@ public class SpellRecognition : MonoBehaviour
                 else
                 {
                     Debug.LogWarning("Le joueur a essayé de TRAJECTOIRE sans autorisation");
+                }
+                break;
+            case "SEED":
+                if (debugMode)
+                {
+                    if (GenerationDonjon.instance != null)
+                    {
+                        Debug.Log("Seed : " + GenerationDonjon.instance.GetSeed());
+                        Debug.Log("Unity Engine Random Seed  : " + UnityEngine.Random.state);
+
+                    }
+                    else
+                    {
+                        Debug.Log("Pas de generation de donjon");
+                    }
+
+                }
+                else
+                {
+                    Debug.LogWarning("Le joueur a essayé de SEED sans autorisation");
                 }
                 break;
                 #endregion

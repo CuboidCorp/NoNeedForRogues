@@ -63,6 +63,7 @@ public class GenEtaLaby : GenerationEtage
     #region Traps
     private GameObject[] prefabsTraps;
     private GameObject[] placedTraps;
+    private List<GameObject> placedTrigger;
     public enum Traps //TODO : A mettre dans l'ordre qu'ils sont dans le dossier des ressources
     {
         BOMB,
@@ -428,6 +429,14 @@ public class GenEtaLaby : GenerationEtage
                 trap.GetComponent<NetworkObject>().Despawn(true);
             }
         }
+
+        foreach (GameObject trigger in placedTrigger)
+        {
+            if (trigger != null)
+            {
+                trigger.GetComponent<NetworkObject>().Despawn(true);
+            }
+        }
     }
 
     /// <summary>
@@ -480,7 +489,6 @@ public class GenEtaLaby : GenerationEtage
     {
         GameObject instance = Instantiate(chest, itemHolder);
         objets.Add(instance);
-        Debug.Log(etatPos);
         instance.transform.SetPositionAndRotation(position, Quaternion.Euler(0, (int)etatPos * 90 + 180, 0));
         int typeCoffre = Random.Range(0, 2);
         Chest coffreScript = instance.GetComponent<Chest>();
@@ -544,6 +552,7 @@ public class GenEtaLaby : GenerationEtage
 
         trapsPos = new Vector2Int[nbPieges];
         placedTraps = new GameObject[nbPieges];
+        placedTrigger = new List<GameObject>();
         int nbPiegesPlaces = 0;
 
         //On genere les pieges en fonction de la diffculté --> Pr le moment pas de lien entre les items et tt
@@ -590,55 +599,71 @@ public class GenEtaLaby : GenerationEtage
 
             //TODO : Instantiate le gameObject du piege dans la liste des pieges
             GameObject piege = Instantiate(prefabsTraps[indexPiege], ConvertToRealWorldPos(posPiege), Quaternion.identity);
+            piege.name = "Piege" + indexPiege;
             switch ((Traps)indexPiege)
             {
                 case Traps.PIEGE_CAILLOU: //Piege caillou
                     //On met le piege en haut genre 6
+                    piege.name += "_Rock";
                     piege.transform.position += new Vector3(0, 6f, 0);
                     piege.GetComponent<BoulderTrap>().SetDirection(Random.Range(0, 4));
                     if (estServ)
                     {
                         piege.GetComponent<NetworkObject>().Spawn();
-                        piege.transform.parent = trapHolder;
+                        //piege.GetComponent<NetworkObject>().TrySetParent(trapHolder);
                         placedTraps[nbPiegesPlaces] = piege;
 
                         GameObject plaque = Instantiate(prefabsTriggers[0], ConvertToRealWorldPos(posPiege), Quaternion.identity);
+                        plaque.transform.position += new Vector3(0, 0.25f, 0);
                         plaque.GetComponent<NetworkObject>().Spawn();
-                        plaque.transform.parent = triggerHolder;
                         plaque.GetComponent<PressurePlate>().SetOnPress(() => piege.GetComponent<BoulderTrap>().ActivateTrap());
+                        placedTrigger.Add(plaque);
 
                     }
-                    //TODO : Faire un pressure plate qui trigger le piege
-
+                    else
+                    {
+                        Destroy(piege);
+                    }
                     break;
                 case Traps.PIEGE_PIQUE:
+                    piege.name += "_Spike";
                     piege.transform.position += new Vector3(0, .25f, 0);
                     if (estServ)
                     {
-                        GameObject spikes = piege.GetComponentInChildren<NetworkObject>().gameObject;
-                        spikes.GetComponent<NetworkObject>().Spawn();
-                        spikes.transform.parent = trapHolder;
-                        placedTraps[nbPiegesPlaces] = spikes;
+                        piege.GetComponent<NetworkObject>().Spawn();
+                        //piege.GetComponent<NetworkObject>().TrySetParent(trapHolder);
+                        placedTraps[nbPiegesPlaces] = piege;
                         //TODO : Une plaque de pression dans la case d'a coté ? 
                         GameObject trigger = Instantiate(prefabsTriggers[1], ConvertToRealWorldPos(posPiege), Quaternion.identity);
                         trigger.GetComponent<NetworkObject>().Spawn();
-                        trigger.transform.parent = triggerHolder;
-                        trigger.GetComponent<Tripwire>().SetTrigger(() => spikes.GetComponent<SpikeTrap>().ActivateTrap());
+                        trigger.GetComponent<Tripwire>().SetTrigger(() => piege.GetComponent<SpikeTrap>().ActivateTrap());
+                        placedTrigger.Add(trigger);
                     }
-
+                    else
+                    {
+                        Destroy(piege);
+                    }
                     break;
                 case Traps.PIEGE_SCIE:
+                    piege.name += "_Saw";
                     piege.transform.position += new Vector3(0, 0.3f, 0);
                     if (estServ)
                     {
-                        GameObject sawTrap = piege.GetComponentInChildren<Sawtrap>().gameObject;
-                        sawTrap.GetComponent<NetworkObject>().Spawn();
-                        sawTrap.transform.parent = trapHolder;
-                        sawTrap.GetComponent<Sawtrap>().ActivateTrap(); //TODO : Le piege s'active pas regarder pk
-                        placedTraps[nbPiegesPlaces] = sawTrap;
+                        piege.GetComponent<NetworkObject>().Spawn();
+                        //piege.GetComponent<NetworkObject>().TrySetParent(trapHolder);
+                        piege.GetComponent<Sawtrap>().ActivateTrap();
+                        placedTraps[nbPiegesPlaces] = piege;
+                    }
+                    else
+                    {
+                        //On detruit le piege
+                        Destroy(piege);
                     }
                     break;
                 case Traps.PIEGE_TROU:
+                    piege.name += "_Hole";
+                    Debug.Log("Piege trou");
+                    Debug.Log("Position" + piege.transform.position);
                     //Suppresion du sol on fait un raycast
                     piege.transform.position += new Vector3(0, 0.1525f, 0);
                     Ray ray = new(piege.transform.position + new Vector3(0, .5f, 0), Vector3.down);
@@ -646,32 +671,32 @@ public class GenEtaLaby : GenerationEtage
                     int nbCol = Physics.RaycastNonAlloc(ray, hits, 2);
                     if (nbCol > 0)
                     {
-                        foreach (RaycastHit hit in hits)
+                        for (int i = 0; i < nbCol; i++)
                         {
-                            if (hit.collider.CompareTag("Floor"))
+                            if (hits[i].collider.CompareTag("Floor"))
                             {
-                                Destroy(hit.collider.gameObject);
+                                Destroy(hits[i].collider.gameObject);
                             }
                         }
                     }
                     if (estServ)
                     {
-                        GameObject solOuvrant = piege.GetComponentInChildren<NetworkObject>().gameObject;
+                        GameObject solOuvrant = Instantiate(Resources.Load<GameObject>(piege.GetComponent<FloorTrap>().GetSolOuvrant()), piege.transform.position, Quaternion.Euler(180, 0, 0));
                         solOuvrant.GetComponent<NetworkObject>().Spawn();
-                        solOuvrant.transform.parent = trapHolder;
+                        //solOuvrant.GetComponent<NetworkObject>().TrySetParent(trapHolder);
                         placedTraps[nbPiegesPlaces] = solOuvrant;
 
                         //TODO : Ptet une plaque de pression dans la case d'a coté
                         GameObject trigger = Instantiate(prefabsTriggers[1], ConvertToRealWorldPos(posPiege), Quaternion.identity);
                         trigger.GetComponent<NetworkObject>().Spawn();
-                        trigger.transform.parent = triggerHolder;
                         trigger.GetComponent<Tripwire>().SetTrigger(() => solOuvrant.GetComponent<Openable>().Open());
+                        placedTrigger.Add(trigger);
                     }
                     break;
                     //TODO : Faire les autres pieges
             }
-
-
+            piege.name += "-P" + posPiege.x + "_" + posPiege.y;
+            Debug.Log("Nouveau piege : " + piege.name);
             //Si ça marche et qu'on a tt placé
             trapsPos[nbPiegesPlaces] = posPiege;
             nbPiegesPlaces++;

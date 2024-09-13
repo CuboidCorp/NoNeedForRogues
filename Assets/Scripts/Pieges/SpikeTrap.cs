@@ -1,37 +1,37 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class SpikeTrap : Trap
 {
     private Animator anim;
+    private DamageZone damageZone;
 
     [SerializeField] private float speed = 1;
     [SerializeField] private float damage = 5;
 
     private void Awake()
     {
-        anim = GetComponent<Animator>();
+        anim = GetComponentInChildren<Animator>();
         anim.speed = speed;
+        damageZone = GetComponentInChildren<DamageZone>();
+        damageZone.damage = damage;
     }
 
     public override void ActivateTrap()
     {
-        anim.SetBool("Activated", true);
+        damageZone.isActivated = true;
+        SendActivationClientRpc(true);
     }
 
     public override void DeactivateTrap()
     {
-        anim.SetBool("Activated", false);
+        damageZone.isActivated = false;
+        SendActivationClientRpc(false);
     }
 
-    private void OnTriggerEnter(Collider other) //TODO : Temp on fera en fonction de la vélocité je pense
+    [ClientRpc]
+    private void SendActivationClientRpc(bool activated)
     {
-        if (other.CompareTag("Player"))
-        {
-            other.GetComponent<MonPlayerController>().Damage(damage);
-        }
-        else if(other.CompareTag("Cow"))
-        {
-            other.GetComponent<CowController>().UnCow();
-        }
+        anim.SetBool("Activated", activated);
     }
 }
