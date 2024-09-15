@@ -15706,6 +15706,10 @@ MonoBehaviour:
     typeEtage: 0
     baseDiff: 1
     diffScaling: 1
+  seeds: 
+  currentSeed: 0
+  currentEtage: 1
+  maxEtageReached: 0
 --- !u!4 &1525618758
 Transform:
   m_ObjectHideFlags: 0

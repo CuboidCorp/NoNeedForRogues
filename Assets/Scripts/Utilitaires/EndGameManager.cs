@@ -89,68 +89,93 @@ public class EndGameManager : MonoBehaviour
                 maxHolders[7] = playStats.Key;
             }
         }
-        playerTitles.Add(maxHolders[0], new List<string> { "L'avare" });
-        if (playerTitles.ContainsKey(maxHolders[1]))
+        if (maxGold > 0)
         {
-            playerTitles[maxHolders[1]].Add("Le sauteur");
+            playerTitles.Add(maxHolders[0], new List<string> { "L'avare" });
         }
-        else
+        if (maxJumps > 0)
         {
-            playerTitles.Add(maxHolders[1], new List<string> { "Le sauteur" });
+            if (playerTitles.ContainsKey(maxHolders[1]))
+            {
+                playerTitles[maxHolders[1]].Add("Le sauteur");
+            }
+            else
+            {
+                playerTitles.Add(maxHolders[1], new List<string> { "Le sauteur" });
+            }
         }
-
-        if (playerTitles.ContainsKey(maxHolders[2]))
+        if (maxSpells > 0)
         {
-            playerTitles[maxHolders[2]].Add("Le mage");
-        }
-        else
-        {
-            playerTitles.Add(maxHolders[2], new List<string> { "Le mage" });
-        }
-
-        if (playerTitles.ContainsKey(maxHolders[3]))
-        {
-            playerTitles[maxHolders[3]].Add("Le tank");
-        }
-        else
-        {
-            playerTitles.Add(maxHolders[3], new List<string> { "Le tank" });
-        }
-
-        if (playerTitles.ContainsKey(maxHolders[4]))
-        {
-            playerTitles[maxHolders[4]].Add("L'alcoolique");
-        }
-        else
-        {
-            playerTitles.Add(maxHolders[4], new List<string> { "L'alcoolique" });
+            if (playerTitles.ContainsKey(maxHolders[2]))
+            {
+                playerTitles[maxHolders[2]].Add("Le mage");
+            }
+            else
+            {
+                playerTitles.Add(maxHolders[2], new List<string> { "Le mage" });
+            }
         }
 
-        if (playerTitles.ContainsKey(maxHolders[5]))
+        if (maxDamage > 0)
         {
-            playerTitles[maxHolders[5]].Add("Le suicidaire");
-        }
-        else
-        {
-            playerTitles.Add(maxHolders[5], new List<string> { "Le suicidaire" });
-        }
-
-        if (playerTitles.ContainsKey(maxHolders[6]))
-        {
-            playerTitles[maxHolders[6]].Add("Le trickshoteur");
-        }
-        else
-        {
-            playerTitles.Add(maxHolders[6], new List<string> { "Le trickshoteur" });
+            if (playerTitles.ContainsKey(maxHolders[3]))
+            {
+                playerTitles[maxHolders[3]].Add("Le tank");
+            }
+            else
+            {
+                playerTitles.Add(maxHolders[3], new List<string> { "Le tank" });
+            }
         }
 
-        if (playerTitles.ContainsKey(maxHolders[7]))
+        if (maxPotions > 0)
         {
-            playerTitles[maxHolders[7]].Add("Le maladroit");
+            if (playerTitles.ContainsKey(maxHolders[4]))
+            {
+                playerTitles[maxHolders[4]].Add("L'alcoolique");
+            }
+            else
+            {
+                playerTitles.Add(maxHolders[4], new List<string> { "L'alcoolique" });
+            }
         }
-        else
+
+
+        if (maxDeaths > 0)
         {
-            playerTitles.Add(maxHolders[7], new List<string> { "Le maladroit" });
+            if (playerTitles.ContainsKey(maxHolders[5]))
+            {
+                playerTitles[maxHolders[5]].Add("Le suicidaire");
+            }
+            else
+            {
+                playerTitles.Add(maxHolders[5], new List<string> { "Le suicidaire" });
+            }
+        }
+
+
+        if (maxTrickshots > 0)
+        {
+            if (playerTitles.ContainsKey(maxHolders[6]))
+            {
+                playerTitles[maxHolders[6]].Add("Le trickshoteur");
+            }
+            else
+            {
+                playerTitles.Add(maxHolders[6], new List<string> { "Le trickshoteur" });
+            }
+        }
+
+        if (maxItemsLost > 0)
+        {
+            if (playerTitles.ContainsKey(maxHolders[7]))
+            {
+                playerTitles[maxHolders[7]].Add("Le maladroit");
+            }
+            else
+            {
+                playerTitles.Add(maxHolders[7], new List<string> { "Le maladroit" });
+            }
         }
     }
 

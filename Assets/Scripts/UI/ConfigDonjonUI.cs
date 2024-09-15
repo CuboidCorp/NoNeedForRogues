@@ -187,6 +187,12 @@ public class ConfigDonjon : INetworkSerializable
     public int baseDiff;
     public int diffScaling;
 
+    //Stats courantes
+    public int currentSeed;
+    public int currentEtage;
+    public int maxEtageReached;
+
+
     public ConfigDonjon()
     {
         nbEtages = 5;
@@ -199,6 +205,9 @@ public class ConfigDonjon : INetworkSerializable
         typeEtage = TypeEtage.Labyrinthe;
         baseDiff = 1;
         diffScaling = 1;
+        currentSeed = seed;
+        currentEtage = 1;
+        maxEtageReached = 0;
     }
 
     public override string ToString()

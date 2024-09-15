@@ -90,7 +90,15 @@ public class MultiplayerGameManager : NetworkBehaviour
 
     private Coroutine changeLevelCoroutine;
 
+    #region Donjon
+    [Header("Donjon")]
     public ConfigDonjon conf;
+
+    /// <summary>
+    /// Les seeds des etages
+    /// </summary>
+    public int[] seeds;
+    #endregion
 
     #region Prefabs
     private GameObject alchimieZonePrefab;
@@ -1090,7 +1098,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ClientRpc]
     public void SyncConfigDonjonClientRpc(ConfigDonjon conf)
     {
-        ConfigDonjonUI.Instance.SetConf(conf);
+        if (ConfigDonjonUI.Instance != null)
+        {
+            ConfigDonjonUI.Instance.SetConf(conf);
+        }
         this.conf = conf;
     }
 
@@ -1255,7 +1266,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         if (!isInLobby)
         {
             GenerationDonjon.instance.DespawnItems();
-            Debug.Log("Change level going " + (direction ? "up" : "down") + " : Current etage : " + GenerationDonjon.instance.currentEtage);
+            Debug.Log("Change level going " + (direction ? "up" : "down") + " : Current etage : " + conf.currentEtage);
             playerRepartitionByStairs = new ulong[escaliersGo.Length][];
             for (int i = 0; i < escaliersGo.Length; i++)
             {
@@ -1264,8 +1275,8 @@ public class MultiplayerGameManager : NetworkBehaviour
             //On vérifie en fonction du génération donjon le current level
             if (direction == false) //On descend
             {
-                GenerationDonjon.instance.currentEtage++;
-                if (GenerationDonjon.instance.currentEtage > GenerationDonjon.instance.maxEtage)
+                conf.currentEtage++;
+                if (conf.currentEtage > conf.nbEtages)
                 {
                     NetworkManager.SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
                 }
@@ -1273,20 +1284,21 @@ public class MultiplayerGameManager : NetworkBehaviour
             else
             {
 
-                if (GenerationDonjon.instance.currentEtage == 1) //On ne part pas
+                if (conf.currentEtage == 1) //On ne part pas
                 {
                     TrollCowardPlayer();
                     return;
                 }
                 else
                 {
-                    GenerationDonjon.instance.currentEtage--;
+                    conf.currentEtage--;
                 }
 
             }
         }
         else
         {
+            seeds = new int[conf.nbEtages];
             LeaveLobbyClientRpc();
         }
         //On sauvegarde par escalier là ou sont les gens

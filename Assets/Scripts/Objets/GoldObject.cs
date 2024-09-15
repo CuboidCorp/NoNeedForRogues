@@ -31,7 +31,7 @@ public class GoldObject : NetworkBehaviour, IInteractable
     public void HandleInteraction()
     {
         //Rajoute le gold au truc du serveur
-        AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.MONEY_GAINED);
+        AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.MONEY_GAINED, .75f);
         StatsManager.Instance.AddGold(value);
         DespawnServerRpc();
     }

@@ -98,10 +98,11 @@ public class AudioManager : NetworkBehaviour
     /// </summary>
     /// <param name="position">Position du sound effect</param>
     /// <param name="soundEffect">Le sound effect a jouer</param>
+    /// <param name="volume">Le volume du sound effect</param>
     [ServerRpc(RequireOwnership = false)]
-    public void PlayOneShotClipServerRpc(Vector3 position, SoundEffectOneShot soundEffect)
+    public void PlayOneShotClipServerRpc(Vector3 position, SoundEffectOneShot soundEffect, float volume = 1)
     {
-        PlayOneShotClipClientRpc(position, soundEffect);
+        PlayOneShotClipClientRpc(position, soundEffect, volume);
     }
 
     /// <summary>
@@ -109,8 +110,9 @@ public class AudioManager : NetworkBehaviour
     /// </summary>
     /// <param name="position">Position du sound effect</param>
     /// <param name="soundEffect">Le sound effect en question</param>
+    /// <param name="volume">Le volume du sound effect</param>
     [ClientRpc]
-    private void PlayOneShotClipClientRpc(Vector3 position, SoundEffectOneShot soundEffect)
+    private void PlayOneShotClipClientRpc(Vector3 position, SoundEffectOneShot soundEffect, float volume)
     {
         AudioSource audioSource = Instantiate(soundFxPrefab, position, Quaternion.identity).GetComponent<AudioSource>();
         AudioClip clip = oneShotClips[(int)soundEffect];
@@ -119,6 +121,7 @@ public class AudioManager : NetworkBehaviour
             Debug.LogWarning("Le clip " + soundEffect + " n'est pas encore attribué");
         }
         audioSource.clip = clip;
+        audioSource.volume = volume;
         audioSource.Play();
         Destroy(audioSource.gameObject, clip.length);
 

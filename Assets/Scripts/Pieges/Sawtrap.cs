@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class Sawtrap : Trap
@@ -17,13 +18,19 @@ public class Sawtrap : Trap
     }
     public override void ActivateTrap()
     {
-        scieMobile.SetSpeed(speed);
+        ChangePlateformeClientRpc(speed);
         damageZone.isActivated = true;
+    }
+
+    [ClientRpc]
+    private void ChangePlateformeClientRpc(float moveSpeed)
+    {
+        scieMobile.SetSpeed(moveSpeed);
     }
 
     public override void DeactivateTrap()
     {
-        scieMobile.SetSpeed(0);
+        ChangePlateformeClientRpc(0);
         damageZone.isActivated = false;
     }
 }

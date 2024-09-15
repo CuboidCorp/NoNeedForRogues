@@ -662,8 +662,6 @@ public class GenEtaLaby : GenerationEtage
                     break;
                 case Traps.PIEGE_TROU:
                     piege.name += "_Hole";
-                    Debug.Log("Piege trou");
-                    Debug.Log("Position" + piege.transform.position);
                     //Suppresion du sol on fait un raycast
                     piege.transform.position += new Vector3(0, 0.1525f, 0);
                     Ray ray = new(piege.transform.position + new Vector3(0, .5f, 0), Vector3.down);
@@ -696,7 +694,6 @@ public class GenEtaLaby : GenerationEtage
                     //TODO : Faire les autres pieges
             }
             piege.name += "-P" + posPiege.x + "_" + posPiege.y;
-            Debug.Log("Nouveau piege : " + piege.name);
             //Si ça marche et qu'on a tt placé
             trapsPos[nbPiegesPlaces] = posPiege;
             nbPiegesPlaces++;

@@ -28,9 +28,9 @@ public class StatsManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        allStatsHolder = new Dictionary<ulong, PlayerStats>();
         if (IsServer)
         {
-            allStatsHolder = new Dictionary<ulong, PlayerStats>();
             totalGold.Value = 0;
         }
         totalGold.OnValueChanged += OnGoldValueChanged;
@@ -154,6 +154,12 @@ public class StatsManager : NetworkBehaviour
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
     public void SendStatsServerRpc(PlayerStats stats, ulong playerId)
+    {
+        SendStatsClientRpc(stats, playerId);
+    }
+
+    [ClientRpc]
+    private void SendStatsClientRpc(PlayerStats stats, ulong playerId)
     {
         allStatsHolder.Add(playerId, stats);
         OnPlayerAdded();

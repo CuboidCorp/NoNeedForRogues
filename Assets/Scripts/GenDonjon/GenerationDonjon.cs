@@ -9,7 +9,7 @@ public class GenerationDonjon : NetworkBehaviour
     /// <summary>
     /// Le nombre d'etage du donjon
     /// </summary>
-    public int maxEtage = 5;
+    private int maxEtage = 5;
 
     /// <summary>
     /// Dernier etage atteint, permet de ne pas regenerer des items quand on revient dans un etage déjà atteint
@@ -31,15 +31,15 @@ public class GenerationDonjon : NetworkBehaviour
     [SerializeField]
     private Vector2Int maxTailleEtage;
 
-    public int nbStairs = 1;
+    private int nbStairs = 1;
 
     /// <summary>
     /// Nombre de chaudrons d'alchimie
     /// </summary>
     private int nbCauldrons = 1;
 
-    public int baseDifficulty = 1;
-    public int difficultyScaling = 1;
+    private int baseDifficulty = 1;
+    private int difficultyScaling = 1;
     private int currentDifficulty;
     #endregion
 
@@ -48,17 +48,11 @@ public class GenerationDonjon : NetworkBehaviour
     /// <summary>
     /// Etage actuel va de 1 a maxEtage
     /// </summary>
-    public int currentEtage = 1;
+    private int currentEtage = 1;
 
-    /// <summary>
-    /// Liste des seeds des etages déjà visité
-    /// </summary>
-    private int[] seeds;
 
     [SerializeField]
-    private NetworkVariable<int> seed = new();
-
-    private int tempSeed;
+    private int seed;
 
     #endregion
 
@@ -118,31 +112,13 @@ public class GenerationDonjon : NetworkBehaviour
 
     void Awake()
     {
-        if (instance != null)
-        {
-            instance.OnSceneLoaded();
-            Destroy(gameObject);
-        }
-        else
-        {
-            instance = this;
-            seed.OnValueChanged += OnSeedValueChanged;
-            DontDestroyOnLoad(this);
-        }
+        instance = this;
     }
 
     private void Start()
     {
 
         OnSceneLoaded();
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        if (IsServer)
-        {
-            seed.Value = tempSeed;
-        }
     }
 
     /// <summary>
@@ -159,31 +135,26 @@ public class GenerationDonjon : NetworkBehaviour
         holderTriggers = holder.transform.GetChild(5);
         holderTrickshots = holder.transform.GetChild(6);
 
-        currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
-
         if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
         {
-            if (maxEtageReached == 0)
-            {
-                //Premier etage
-                Configure(MultiplayerGameManager.Instance.conf);
-            }
-            else
+            if (maxEtageReached != 0)
             {
                 RandomizeSeed();
             }
+            if (MultiplayerGameManager.Instance.IsServer)
+            {
+                MultiplayerGameManager.Instance.seeds[currentEtage - 1] = seed;
+                MultiplayerGameManager.Instance.conf.maxEtageReached = currentEtage;
+                SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, seed, true);
+            }
 
-            seeds[currentEtage - 1] = seed.Value;
-            maxEtageReached = currentEtage;
-            Generate(true);
         }
         else
         {
             if (MultiplayerGameManager.Instance.IsServer)
             {
-                seed.Value = seeds[currentEtage - 1];
+                SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, MultiplayerGameManager.Instance.seeds[currentEtage - 1], false);
             }
-            Generate(false);
         }
 
         GameObject cam = GameObject.Find("Main Camera");
@@ -198,12 +169,14 @@ public class GenerationDonjon : NetworkBehaviour
         }
     }
 
-    /// <summary>
-    /// Quand la valeur du seed change on reseed le random pour toujours avoir les mêmes niveaux   
-    /// </summary>
-    private void OnSeedValueChanged(int previous, int current)
+    [ClientRpc]
+    private void SendGenerationClientRpc(ConfigDonjon conf, int seed, bool isNewEtage)
     {
-        Random.InitState(current);
+        this.seed = seed;
+        Random.InitState(seed);
+        Configure(conf);
+        currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
+        Generate(isNewEtage);
     }
 
     /// <summary>
@@ -216,12 +189,14 @@ public class GenerationDonjon : NetworkBehaviour
 
     /// <summary>
     /// Configure le dojon en se basant sur une config de donjon
+    /// Et sur les infos stockés dans le multiplayerGameManager
     /// </summary>
     /// <param name="conf">La config de donjon qui parametre le donjon</param>
     private void Configure(ConfigDonjon conf)
     {
+        Debug.Log(conf);
         maxEtage = conf.nbEtages;
-        tempSeed = conf.seed;
+        seed = MultiplayerGameManager.Instance.conf.currentSeed;
         minTailleEtage = conf.minTailleEtage;
         maxTailleEtage = conf.maxTailleEtage;
         nbStairs = conf.nbStairs;
@@ -229,10 +204,9 @@ public class GenerationDonjon : NetworkBehaviour
         typeEtage = conf.typeEtage;
         baseDifficulty = conf.baseDiff;
         difficultyScaling = conf.diffScaling;
-        currentEtage = 1;
-        maxEtageReached = 0;
-        seeds = new int[maxEtage];
-        Random.InitState(tempSeed);
+        currentEtage = MultiplayerGameManager.Instance.conf.currentEtage;
+        maxEtageReached = MultiplayerGameManager.Instance.conf.maxEtageReached;
+        Random.InitState(seed);
     }
 
     /// <summary>
@@ -241,6 +215,7 @@ public class GenerationDonjon : NetworkBehaviour
     /// <param name="isNewEtage">Si l'étage est nouveau ou non</param>
     public void Generate(bool isNewEtage)
     {
+        Debug.Log("Generation");
         switch (typeEtage)
         {
             case TypeEtage.Labyrinthe:
@@ -270,11 +245,12 @@ public class GenerationDonjon : NetworkBehaviour
     /// </summary>
     public void RandomizeSeed()
     {
-        seed.Value = Random.Range(0, 1000000);
+        seed = Random.Range(0, 1000000);
+        MultiplayerGameManager.Instance.conf.currentSeed = seed;
     }
 
     public int GetSeed()
     {
-        return seed.Value;
+        return seed;
     }
 }
