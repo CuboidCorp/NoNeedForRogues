@@ -7,11 +7,6 @@ public class GenerationDonjon : NetworkBehaviour
     #region Params Donjon
     [Header("Params Donjon")]
     /// <summary>
-    /// Le nombre d'etage du donjon
-    /// </summary>
-    private int maxEtage = 5;
-
-    /// <summary>
     /// Dernier etage atteint, permet de ne pas regenerer des items quand on revient dans un etage déjà atteint
     /// </summary>
     private int maxEtageReached = 0;
@@ -23,12 +18,9 @@ public class GenerationDonjon : NetworkBehaviour
 
     #region Params Etage
     [Header("Params Etage")]
-    [SerializeField]
     private TypeEtage typeEtage;
 
-    [SerializeField]
     private Vector2Int minTailleEtage;
-    [SerializeField]
     private Vector2Int maxTailleEtage;
 
     private int nbStairs = 1;
@@ -137,12 +129,12 @@ public class GenerationDonjon : NetworkBehaviour
 
         if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
         {
-            if (maxEtageReached != 0)
-            {
-                RandomizeSeed();
-            }
             if (MultiplayerGameManager.Instance.IsServer)
             {
+                if (MultiplayerGameManager.Instance.conf.maxEtageReached != 0)
+                {
+                    RandomizeSeed();
+                }
                 MultiplayerGameManager.Instance.seeds[currentEtage - 1] = seed;
                 MultiplayerGameManager.Instance.conf.maxEtageReached = currentEtage;
                 SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, seed, true);
@@ -195,7 +187,6 @@ public class GenerationDonjon : NetworkBehaviour
     private void Configure(ConfigDonjon conf)
     {
         Debug.Log(conf);
-        maxEtage = conf.nbEtages;
         seed = MultiplayerGameManager.Instance.conf.currentSeed;
         minTailleEtage = conf.minTailleEtage;
         maxTailleEtage = conf.maxTailleEtage;
