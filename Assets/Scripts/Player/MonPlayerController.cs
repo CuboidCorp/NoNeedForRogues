@@ -477,6 +477,10 @@ public class MonPlayerController : Entity
     /// </summary>
     public override void Die()
     {
+        currentHealth = 0;
+        healthSlider.value = currentHealth;
+        healthText.text = currentHealth + "/" + MaxHP;
+
         AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.PLAYER_DEAD);
         StopAllCoroutines(); //Pr faire gaffe au poison
         SendDeathServerRpc(OwnerClientId);
