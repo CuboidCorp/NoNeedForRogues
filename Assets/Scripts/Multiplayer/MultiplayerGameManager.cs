@@ -1146,6 +1146,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ClientRpc]
     private void SetSpawnPositionClientRpc(Vector3 pos, ClientRpcParams clientRpcParams)
     {
+        Debug.Log("Set spawn : " + pos);
         MonPlayerController.instanceLocale.transform.position = pos;
         MonPlayerController.instanceLocale.SetRespawnPoint(pos);
     }

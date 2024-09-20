@@ -178,7 +178,7 @@ public class GenEtaLaby : GenerationEtage
                     leave.GetComponent<Escalier>().spawnPoint = stairs.transform.GetChild(5);
                     leave.GetComponent<Escalier>().isUpStairs = true;
                     leave.GetComponent<NetworkObject>().Spawn();
-                    SendStairLeaveData(leave, true);
+                    GenerationDonjon.instance.SendStairLeaveDataClientRpc(leave, true);
                 }
 
                 stairsPos[cptStairs] = stairPos;
@@ -244,7 +244,7 @@ public class GenEtaLaby : GenerationEtage
                     leave.GetComponent<Escalier>().spawnPoint = stairs.transform.GetChild(5);
                     leave.GetComponent<Escalier>().isUpStairs = false;
                     leave.GetComponent<NetworkObject>().Spawn();
-                    SendStairLeaveData(leave, false);
+                    GenerationDonjon.instance.SendStairLeaveDataClientRpc(leave, false);
                 }
                 stairsPos[cptStairs] = stairPos;
                 cptStairs++;
@@ -253,14 +253,6 @@ public class GenEtaLaby : GenerationEtage
 
             }
         }
-    }
-
-    [ClientRpc]
-    private void SendStairLeaveData(NetworkObjectReference objRef, bool isUpStairs)
-    {
-        GameObject leave = (GameObject)objRef;
-        leave.name = "Leave" + (isUpStairs ? "Up" : "Down") + leave.transform.position.x + "_" + leave.transform.position.z;
-        leave.tag = isUpStairs ? "UpStairs" : "DownStairs";
     }
 
     /// <summary>

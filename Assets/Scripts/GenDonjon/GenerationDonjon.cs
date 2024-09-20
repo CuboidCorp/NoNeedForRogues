@@ -107,12 +107,38 @@ public class GenerationDonjon : NetworkBehaviour
     void Awake()
     {
         instance = this;
+        GameObject holder = GameObject.Find("Dungeon");
+        holderStairs = holder.transform.GetChild(0);
+        holderHallways = holder.transform.GetChild(1);
+        holderRooms = holder.transform.GetChild(2);
+        holderItems = holder.transform.GetChild(3);
+        holderTraps = holder.transform.GetChild(4);
+        holderTriggers = holder.transform.GetChild(5);
+        holderTrickshots = holder.transform.GetChild(6);
     }
 
     private void Start()
     {
+        MultiplayerGameManager.Instance.TeleportAllClientRpc(loadingPos);
+        GameObject cam = GameObject.Find("Main Camera");
+        if (cam != null)
+        {
+            Destroy(cam);
+        }
+    }
 
+    public override void OnNetworkSpawn()
+    {
         OnSceneLoaded();
+    }
+
+    [ClientRpc]
+    public void SendStairLeaveDataClientRpc(NetworkObjectReference objRef, bool isUpStairs)
+    {
+        GameObject leave = (GameObject)objRef;
+        leave.name = "Leave" + (isUpStairs ? "Up" : "Down") + leave.transform.position.x + "_" + leave.transform.position.z;
+        Debug.Log("Sending leave data : " + leave.name);
+        leave.tag = isUpStairs ? "UpStairs" : "DownStairs";
     }
 
     /// <summary>
@@ -122,24 +148,12 @@ public class GenerationDonjon : NetworkBehaviour
     {
         if (IsServer)
         {
-            MultiplayerGameManager.Instance.TeleportAllClientRpc(loadingPos);
-        }
-        GameObject holder = GameObject.Find("Dungeon");
-        holderStairs = holder.transform.GetChild(0);
-        holderHallways = holder.transform.GetChild(1);
-        holderRooms = holder.transform.GetChild(2);
-        holderItems = holder.transform.GetChild(3);
-        holderTraps = holder.transform.GetChild(4);
-        holderTriggers = holder.transform.GetChild(5);
-        holderTrickshots = holder.transform.GetChild(6);
-
-        if (IsServer)
-        {
             if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
             {
                 Debug.Log("Nouvel etage");
-                if (MultiplayerGameManager.Instance.conf.maxEtageReached != 0)
+                if (MultiplayerGameManager.Instance.conf.maxEtageReached > 0)
                 {
+                    Debug.Log("Randomize seed");
                     RandomizeSeed();
                 }
                 MultiplayerGameManager.Instance.seeds[currentEtage - 1] = MultiplayerGameManager.Instance.conf.currentSeed;
@@ -154,11 +168,6 @@ public class GenerationDonjon : NetworkBehaviour
             }
         }
 
-        GameObject cam = GameObject.Find("Main Camera");
-        if (cam != null)
-        {
-            Destroy(cam);
-        }
 
         if (IsServer)
         {
