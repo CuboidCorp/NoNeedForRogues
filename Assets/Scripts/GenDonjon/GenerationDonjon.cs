@@ -14,6 +14,8 @@ public class GenerationDonjon : NetworkBehaviour
     [SerializeField]
     private float cellSize = 1;
 
+    [SerializeField]
+    private Vector3 loadingPos;
     #endregion
 
     #region Params Etage
@@ -118,6 +120,10 @@ public class GenerationDonjon : NetworkBehaviour
     /// </summary>
     private void OnSceneLoaded()
     {
+        if (IsServer)
+        {
+            MultiplayerGameManager.Instance.TeleportAllClientRpc(loadingPos);
+        }
         GameObject holder = GameObject.Find("Dungeon");
         holderStairs = holder.transform.GetChild(0);
         holderHallways = holder.transform.GetChild(1);
@@ -127,25 +133,24 @@ public class GenerationDonjon : NetworkBehaviour
         holderTriggers = holder.transform.GetChild(5);
         holderTrickshots = holder.transform.GetChild(6);
 
-        if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
+        if (IsServer)
         {
-            if (MultiplayerGameManager.Instance.IsServer)
+            if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
             {
+                Debug.Log("Nouvel etage");
                 if (MultiplayerGameManager.Instance.conf.maxEtageReached != 0)
                 {
                     RandomizeSeed();
                 }
-                MultiplayerGameManager.Instance.seeds[currentEtage - 1] = seed;
+                MultiplayerGameManager.Instance.seeds[currentEtage - 1] = MultiplayerGameManager.Instance.conf.currentSeed;
                 MultiplayerGameManager.Instance.conf.maxEtageReached = currentEtage;
-                SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, seed, true);
+                SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, true);
             }
-
-        }
-        else
-        {
-            if (MultiplayerGameManager.Instance.IsServer)
+            else
             {
-                SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, MultiplayerGameManager.Instance.seeds[currentEtage - 1], false);
+                Debug.Log("Etage deja atteint");
+                MultiplayerGameManager.Instance.conf.currentSeed = MultiplayerGameManager.Instance.seeds[currentEtage - 1];
+                SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, false);
             }
         }
 
@@ -155,17 +160,18 @@ public class GenerationDonjon : NetworkBehaviour
             Destroy(cam);
         }
 
-        if (MultiplayerGameManager.Instance.IsServer)
+        if (IsServer)
         {
+            Debug.Log("Spawning players");
             MultiplayerGameManager.Instance.SpawnPlayers();
         }
     }
 
     [ClientRpc]
-    private void SendGenerationClientRpc(ConfigDonjon conf, int seed, bool isNewEtage)
+    private void SendGenerationClientRpc(ConfigDonjon conf, bool isNewEtage)
     {
-        this.seed = seed;
-        Random.InitState(seed);
+        Debug.Log("Seed : " + conf.currentSeed);
+        seed = conf.currentSeed;
         Configure(conf);
         currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
         Generate(isNewEtage);
@@ -186,8 +192,7 @@ public class GenerationDonjon : NetworkBehaviour
     /// <param name="conf">La config de donjon qui parametre le donjon</param>
     private void Configure(ConfigDonjon conf)
     {
-        Debug.Log(conf);
-        seed = MultiplayerGameManager.Instance.conf.currentSeed;
+        seed = conf.currentSeed;
         minTailleEtage = conf.minTailleEtage;
         maxTailleEtage = conf.maxTailleEtage;
         nbStairs = conf.nbStairs;
@@ -195,8 +200,11 @@ public class GenerationDonjon : NetworkBehaviour
         typeEtage = conf.typeEtage;
         baseDifficulty = conf.baseDiff;
         difficultyScaling = conf.diffScaling;
-        currentEtage = MultiplayerGameManager.Instance.conf.currentEtage;
-        maxEtageReached = MultiplayerGameManager.Instance.conf.maxEtageReached;
+        if (IsServer)
+        {
+            currentEtage = MultiplayerGameManager.Instance.conf.currentEtage;
+            maxEtageReached = MultiplayerGameManager.Instance.conf.maxEtageReached;
+        }
         Random.InitState(seed);
     }
 

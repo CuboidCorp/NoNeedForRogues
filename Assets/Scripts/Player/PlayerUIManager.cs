@@ -30,6 +30,7 @@ public class PlayerUIManager : MonoBehaviour
     public TMP_Text manaText;
     [SerializeField] private TMP_Text goldText;
     [SerializeField] private TMP_Text goldChangedText;
+    [SerializeField] private TMP_Text connexionVivoxText;
     private Coroutine hideGoldChanged;
 
     #endregion
@@ -139,6 +140,15 @@ public class PlayerUIManager : MonoBehaviour
         yield return new WaitForSeconds(timeToHide);
         goldChangedText.text = "";
         hideGoldChanged = null;
+    }
+
+    /// <summary>
+    /// Set le texte de connexion à vivox
+    /// </summary>
+    /// <param name="text">Vide quand fini, l'erreur si ya un problème</param>
+    public void SetConnexionVivoxTexte(string text)
+    {
+        connexionVivoxText.text = text;
     }
 
     #endregion

@@ -1131,6 +1131,7 @@ public class MultiplayerGameManager : NetworkBehaviour
             {
                 foreach (ulong playerId in playerRepartitionByStairs[i])
                 {
+                    Debug.Log("Setting player at " + escaliers[i].GetComponent<Escalier>().spawnPoint.position + " for player " + playerId);
                     SetSpawnPositionClientRpc(escaliers[i].GetComponent<Escalier>().spawnPoint.position, new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { playerId } } });
                 }
             }
@@ -1205,6 +1206,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ClientRpc]
     private void StartCountdownClientRpc(bool direction)
     {
+        Debug.Log("Starting countdown");
         if (direction)
         {
             escaliersGo = GameObject.FindGameObjectsWithTag("UpStairs");
@@ -1213,6 +1215,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             escaliersGo = GameObject.FindGameObjectsWithTag("DownStairs");
         }
+        Debug.Log("NB stairs :" + escaliersGo.Length);
         foreach (GameObject esc in escaliersGo)
         {
             esc.GetComponent<Escalier>().StartCountdown(countdownToNextLevel);
@@ -1450,7 +1453,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     /// <param name="pos">Position ou on veut tous les clients</param>
     [ClientRpc]
-    private void TeleportAllClientRpc(Vector3 pos)
+    public void TeleportAllClientRpc(Vector3 pos)
     {
         MonPlayerController.instanceLocale.transform.position = pos;
     }

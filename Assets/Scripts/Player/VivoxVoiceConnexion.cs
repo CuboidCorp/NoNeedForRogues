@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
@@ -54,6 +55,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         servVivox.ParticipantRemovedFromChannel += ParticipantRemoved;
         await servVivox.InitializeAsync();
         await servVivox.LoginAsync();
+        PlayerUIManager.Instance.SetConnexionVivoxTexte("Initialisation");
     }
 
     /// <summary>
@@ -62,6 +64,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
     /// <returns>Quand la deconnexion est terminée</returns>
     public async Task LeaveVivox()
     {
+        PlayerUIManager.Instance.SetConnexionVivoxTexte("Deconnecté");
         isConnected = false;
         await servVivox.LeaveAllChannelsAsync();
         await servVivox.LogoutAsync();
@@ -77,7 +80,14 @@ public class VivoxVoiceConnexion : NetworkBehaviour
         ChatCapability chat = ChatCapability.AudioOnly;
         Channel3DProperties channel3DProperties = new(maxDistance, minAudibleDistance, audioFadeIntensity, AudioFadeModel.InverseByDistance);
         await servVivox.JoinPositionalChannelAsync(channelName, chat, channel3DProperties);
-        Debug.Log("Pos Channel joined");
+        PlayerUIManager.Instance.SetConnexionVivoxTexte("Connecté");
+        StartCoroutine(ClearVivoxTexte());
+    }
+
+    private IEnumerator ClearVivoxTexte()
+    {
+        yield return new WaitForSeconds(5);
+        PlayerUIManager.Instance.SetConnexionVivoxTexte("");
     }
 
     /// <summary>
@@ -92,6 +102,7 @@ public class VivoxVoiceConnexion : NetworkBehaviour
             {
                 await servVivox.JoinEchoChannelAsync(echoChannelName, ChatCapability.AudioOnly);
                 Debug.Log("Echo Channel joined");
+                PlayerUIManager.Instance.SetConnexionVivoxTexte("");
                 GameObject channelTap = new("ChannelTap")
                 {
                     tag = "ChannelTap" //Pour les retrouver plus tard
