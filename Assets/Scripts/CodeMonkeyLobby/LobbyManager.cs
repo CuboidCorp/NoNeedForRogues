@@ -98,6 +98,7 @@ public class LobbyManager : MonoBehaviour
         NetworkManager.Singleton.OnClientConnectedCallback += MultiplayerGameManager.Instance.OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += MultiplayerGameManager.Instance.OnClientDisconnected;
         NetworkManager.Singleton.StartHost();
+        NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += MultiplayerGameManager.Instance.OnSceneLoadComplete;
         Destroy(lobbyWindow);
         Destroy(gameObject);
     }
@@ -520,7 +521,7 @@ public class LobbyManager : MonoBehaviour
                 MultiplayerGameManager.Instance.SetNbPlayersLobby(joinedLobby.MaxPlayers, GetAllPlayerNames());
 
                 string relayCode = await RelayManager.Instance.CreateRelay(nbPlayers);
-
+                NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += MultiplayerGameManager.Instance.OnSceneLoadComplete;
                 Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new UpdateLobbyOptions
                 {
                     Data = new Dictionary<string, DataObject>

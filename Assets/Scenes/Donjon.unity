@@ -228,7 +228,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cellSize: 4.8
-  loadingPos: {x: 0, y: 10.5, z: 0}
+  loadingPos: {x: 0, y: 20.5, z: 0}
   seed: 0
   pathToRooms: Donjon/Type1/Rooms
   pathToHallways: Donjon/Type1/HallwaysDoubleHeight
@@ -1166,7 +1166,7 @@ Transform:
   m_GameObject: {fileID: 615491750151543163}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 10, z: 0}
+  m_LocalPosition: {x: 0, y: 20, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

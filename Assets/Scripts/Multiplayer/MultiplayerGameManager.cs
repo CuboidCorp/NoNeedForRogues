@@ -151,6 +151,7 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+
         }
     }
 
@@ -162,6 +163,31 @@ public class MultiplayerGameManager : NetworkBehaviour
             NetworkManager.Singleton.Shutdown();
             SceneManager.LoadSceneAsync("MenuPrincipal");
         }
+    }
+
+    public void OnSceneLoadComplete(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+    {
+        Debug.Log("Scene loaded : " + sceneName);
+        if (clientsTimedOut.Count > 0)
+        {
+            Debug.LogWarning("Client qui ont time out :");
+            foreach (ulong client in clientsTimedOut)
+            {
+                Debug.LogWarning(client);
+            }
+        }
+
+        if (sceneName == "Donjon")
+        {
+            //GenerationDonjon.instance.StartGenerationServer();
+            StartCoroutine(TestAttente());
+        }
+    }
+
+    private IEnumerator TestAttente()
+    {
+        yield return new WaitForSeconds(1);
+        GenerationDonjon.instance.StartGenerationServer();
     }
 
     /// <summary>
@@ -1131,7 +1157,6 @@ public class MultiplayerGameManager : NetworkBehaviour
             {
                 foreach (ulong playerId in playerRepartitionByStairs[i])
                 {
-                    Debug.Log("Setting player at " + escaliers[i].GetComponent<Escalier>().spawnPoint.position + " for player " + playerId);
                     SetSpawnPositionClientRpc(escaliers[i].GetComponent<Escalier>().spawnPoint.position, new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { playerId } } });
                 }
             }
@@ -1207,7 +1232,6 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ClientRpc]
     private void StartCountdownClientRpc(bool direction)
     {
-        Debug.Log("Starting countdown");
         if (direction)
         {
             escaliersGo = GameObject.FindGameObjectsWithTag("UpStairs");
@@ -1216,7 +1240,6 @@ public class MultiplayerGameManager : NetworkBehaviour
         {
             escaliersGo = GameObject.FindGameObjectsWithTag("DownStairs");
         }
-        Debug.Log("NB stairs :" + escaliersGo.Length);
         foreach (GameObject esc in escaliersGo)
         {
             esc.GetComponent<Escalier>().StartCountdown(countdownToNextLevel);
@@ -1475,6 +1498,19 @@ public class MultiplayerGameManager : NetworkBehaviour
     #endregion
 
     /// <summary>
+    /// Verifie si les joueurs connectés
+    /// </summary>
+    public void PrintConnectedClients()
+    {
+        var connectedClients = NetworkManager.Singleton.ConnectedClientsList;
+
+        foreach (var client in connectedClients)
+        {
+            Debug.Log("Client ID: " + client.ClientId);
+        }
+    }
+
+    /// <summary>
     /// Dit a un joueur qu'il a perdu un item (Le nul)
     /// </summary>
     /// <param name="clientRpcParams">Les params pr le client qui a perdu son item</param>
@@ -1482,6 +1518,14 @@ public class MultiplayerGameManager : NetworkBehaviour
     public void SendItemLostClientRpc(ClientRpcParams clientRpcParams)
     {
         StatsManager.Instance.AddItemLost();
+    }
+
+    [ClientRpc]
+    public void SendStairLeaveDataClientRpc(NetworkObjectReference objRef, bool isUpStairs)
+    {
+        GameObject leave = (GameObject)objRef;
+        leave.name = "Leave" + (isUpStairs ? "Up" : "Down") + leave.transform.position.x + "_" + leave.transform.position.z;
+        leave.tag = isUpStairs ? "UpStairs" : "DownStairs";
     }
 
     /// <summary>

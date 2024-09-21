@@ -48,6 +48,8 @@ public class GenEtaLaby : GenerationEtage
 
     private WallState[,] etage;
 
+    private WallState allStates = WallState.LEFT | WallState.RIGHT | WallState.UP | WallState.DOWN | WallState.VISITED;
+
     #region Objets
     private GameObject[] prefabsPieces;
     private GameObject[] prefabsObjets;
@@ -178,7 +180,7 @@ public class GenEtaLaby : GenerationEtage
                     leave.GetComponent<Escalier>().spawnPoint = stairs.transform.GetChild(5);
                     leave.GetComponent<Escalier>().isUpStairs = true;
                     leave.GetComponent<NetworkObject>().Spawn();
-                    GenerationDonjon.instance.SendStairLeaveDataClientRpc(leave, true);
+                    MultiplayerGameManager.Instance.SendStairLeaveDataClientRpc(leave, true);
                 }
 
                 stairsPos[cptStairs] = stairPos;
@@ -244,7 +246,8 @@ public class GenEtaLaby : GenerationEtage
                     leave.GetComponent<Escalier>().spawnPoint = stairs.transform.GetChild(5);
                     leave.GetComponent<Escalier>().isUpStairs = false;
                     leave.GetComponent<NetworkObject>().Spawn();
-                    GenerationDonjon.instance.SendStairLeaveDataClientRpc(leave, false);
+                    MultiplayerGameManager.Instance.PrintConnectedClients();
+                    MultiplayerGameManager.Instance.SendStairLeaveDataClientRpc(leave, false);
                 }
                 stairsPos[cptStairs] = stairPos;
                 cptStairs++;
@@ -487,7 +490,7 @@ public class GenEtaLaby : GenerationEtage
     {
         GameObject instance = Instantiate(chest, itemHolder);
         objets.Add(instance);
-        instance.transform.SetPositionAndRotation(position, Quaternion.Euler(0, (int)etatPos * 90 + 90, 0));
+        instance.transform.SetPositionAndRotation(position, Quaternion.Euler(0, (int)(~allStates ^ ~etatPos) * 90 + 90, 0));
         int typeCoffre = Random.Range(0, 2);
         Chest coffreScript = instance.GetComponent<Chest>();
         instance.GetComponent<NetworkObject>().Spawn();
@@ -529,10 +532,10 @@ public class GenEtaLaby : GenerationEtage
                     coffreScript.onOpen.AddListener(() => SummonSleepingGaz(coffreScript.posObjetInterne.position, 5, .5f, 5));
                     break;
                 case 4: //Bombes
-                    coffreScript.onOpen.AddListener(() => Debug.Log("IM BOUT TO BLOW"));
+                    coffreScript.onOpen.AddListener(() => SummonBomb(coffreScript.posObjetInterne.position, 1, 1, 1, false));
                     break;
                 case 5: //Fake bombs
-                    coffreScript.onOpen.AddListener(() => Debug.Log("TROLLED"));
+                    coffreScript.onOpen.AddListener(() => SummonBomb(coffreScript.posObjetInterne.position, 1, 1, 1, true));
                     break;
 
             }
@@ -753,6 +756,22 @@ public class GenEtaLaby : GenerationEtage
         sleepingGaz.GetComponent<ToxicGaz>().expansionSpeed = expansionSpeed;
 
         Destroy(sleepingGaz, gazDuration);
+    }
+
+    /// <summary>
+    /// Summon une bombe avec certains parametres
+    /// </summary>
+    /// <param name="pos">Position de la bombe</param>
+    /// <param name="delai">Delai avant l'explosion de la bombe</param>
+    /// <param name="expRange">Range de l'explosion</param>
+    /// <param name="expForce">Force de l'explosion</param>
+    /// <param name="isTroll">Si la bombe est fake ou non</param>
+    private void SummonBomb(Vector3 pos, float delai, float expRange, float expForce, bool isTroll)
+    {
+        GameObject bomb = Instantiate(prefabsTraps[(int)Traps.BOMB], pos, Quaternion.identity);
+        bomb.GetComponent<NetworkObject>().Spawn();
+        bomb.GetComponent<Bomb>().SetupBomb(expRange, expForce, isTroll);
+        StartCoroutine(bomb.GetComponent<Bomb>().ExplodeIn(delai));
     }
     #endregion
 

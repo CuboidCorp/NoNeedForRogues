@@ -4,6 +4,9 @@ using Unity.Netcode;
 
 public class GenerationDonjon : NetworkBehaviour
 {
+
+    private int nbPlayersGenFinished = 0;
+
     #region Params Donjon
     [Header("Params Donjon")]
     /// <summary>
@@ -119,7 +122,7 @@ public class GenerationDonjon : NetworkBehaviour
 
     private void Start()
     {
-        MultiplayerGameManager.Instance.TeleportAllClientRpc(loadingPos);
+        MonPlayerController.instanceLocale.transform.position = loadingPos;
         GameObject cam = GameObject.Find("Main Camera");
         if (cam != null)
         {
@@ -127,64 +130,53 @@ public class GenerationDonjon : NetworkBehaviour
         }
     }
 
-    public override void OnNetworkSpawn()
-    {
-        OnSceneLoaded();
-    }
-
-    [ClientRpc]
-    public void SendStairLeaveDataClientRpc(NetworkObjectReference objRef, bool isUpStairs)
-    {
-        GameObject leave = (GameObject)objRef;
-        leave.name = "Leave" + (isUpStairs ? "Up" : "Down") + leave.transform.position.x + "_" + leave.transform.position.z;
-        Debug.Log("Sending leave data : " + leave.name);
-        leave.tag = isUpStairs ? "UpStairs" : "DownStairs";
-    }
-
     /// <summary>
-    /// Appelé quand la scene est chargée
+    /// Commence la generation sur le serveur
     /// </summary>
-    private void OnSceneLoaded()
+    public void StartGenerationServer()
     {
-        if (IsServer)
+        nbPlayersGenFinished = 0;
+        if (MultiplayerGameManager.Instance.conf.maxEtageReached < MultiplayerGameManager.Instance.conf.currentEtage) //Si c'est un nouvel etage
         {
-            if (maxEtageReached < currentEtage) //Si c'est un nouvel etage
+            Debug.Log("Nouvel etage : " + MultiplayerGameManager.Instance.conf.currentEtage);
+            if (MultiplayerGameManager.Instance.conf.maxEtageReached > 0)
             {
-                Debug.Log("Nouvel etage");
-                if (MultiplayerGameManager.Instance.conf.maxEtageReached > 0)
-                {
-                    Debug.Log("Randomize seed");
-                    RandomizeSeed();
-                }
-                MultiplayerGameManager.Instance.seeds[currentEtage - 1] = MultiplayerGameManager.Instance.conf.currentSeed;
-                MultiplayerGameManager.Instance.conf.maxEtageReached = currentEtage;
-                SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, true);
+                Debug.Log("Randomize seed");
+                RandomizeSeed();
             }
-            else
-            {
-                Debug.Log("Etage deja atteint");
-                MultiplayerGameManager.Instance.conf.currentSeed = MultiplayerGameManager.Instance.seeds[currentEtage - 1];
-                SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, false);
-            }
+            MultiplayerGameManager.Instance.seeds[currentEtage - 1] = MultiplayerGameManager.Instance.conf.currentSeed;
+            MultiplayerGameManager.Instance.conf.maxEtageReached = MultiplayerGameManager.Instance.conf.currentEtage;
+            SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, true);
         }
-
-
-        if (IsServer)
+        else
         {
-            Debug.Log("Spawning players");
-            MultiplayerGameManager.Instance.SpawnPlayers();
+            Debug.Log("Etage deja atteint");
+            MultiplayerGameManager.Instance.conf.currentSeed = MultiplayerGameManager.Instance.seeds[currentEtage - 1];
+            SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, false);
         }
     }
 
     [ClientRpc]
     private void SendGenerationClientRpc(ConfigDonjon conf, bool isNewEtage)
     {
-        Debug.Log("Seed : " + conf.currentSeed);
         seed = conf.currentSeed;
         Configure(conf);
         currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
         Generate(isNewEtage);
+        SendEndGenerationServerRpc();
     }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SendEndGenerationServerRpc()
+    {
+        nbPlayersGenFinished++;
+        if (nbPlayersGenFinished == MultiplayerGameManager.nbConnectedPlayers)
+        {
+            Debug.Log("Fin de la generation");
+            MultiplayerGameManager.Instance.SpawnPlayers();
+        }
+    }
+
 
     /// <summary>
     /// Despawn tous les items de l'étage
@@ -209,11 +201,7 @@ public class GenerationDonjon : NetworkBehaviour
         typeEtage = conf.typeEtage;
         baseDifficulty = conf.baseDiff;
         difficultyScaling = conf.diffScaling;
-        if (IsServer)
-        {
-            currentEtage = MultiplayerGameManager.Instance.conf.currentEtage;
-            maxEtageReached = MultiplayerGameManager.Instance.conf.maxEtageReached;
-        }
+        Debug.Log("Generation with seed : " + seed);
         Random.InitState(seed);
     }
 
