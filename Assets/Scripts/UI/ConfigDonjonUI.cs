@@ -214,14 +214,17 @@ public class ConfigDonjon : INetworkSerializable
     {
         return $"ConfigDonjon:\n" +
                $"- Nombre d'étages: {nbEtages}\n" +
-               $"- Seed: {seed}\n" +
+               $"- Seed Initial: {seed}\n" +
+               $"- Current seed: {currentSeed}\n" +
                $"- Nombre de chaudrons: {nbChaudrons}\n" +
                $"- Taille minimale d'un étage: {minTailleEtage.x} x {minTailleEtage.y}\n" +
                $"- Taille maximale d'un étage: {maxTailleEtage.x} x {maxTailleEtage.y}\n" +
                $"- Nombre d'escaliers: {nbStairs}\n" +
                $"- Type d'étage: {typeEtage}\n" +
                $"- Difficulté de base: {baseDiff}\n" +
-               $"- Scaling de difficulté: {diffScaling}";
+               $"- Scaling de difficulté: {diffScaling}" +
+               $"- Etage actuel: {currentEtage}\n" +
+               $"- Max etage atteint: {maxEtageReached}";
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -235,6 +238,9 @@ public class ConfigDonjon : INetworkSerializable
         serializer.SerializeValue(ref typeEtage);
         serializer.SerializeValue(ref baseDiff);
         serializer.SerializeValue(ref diffScaling);
+        serializer.SerializeValue(ref currentSeed);
+        serializer.SerializeValue(ref currentEtage);
+        serializer.SerializeValue(ref maxEtageReached);
     }
 
 }

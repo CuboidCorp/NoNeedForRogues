@@ -9,10 +9,6 @@ public class GenerationDonjon : NetworkBehaviour
 
     #region Params Donjon
     [Header("Params Donjon")]
-    /// <summary>
-    /// Dernier etage atteint, permet de ne pas regenerer des items quand on revient dans un etage déjà atteint
-    /// </summary>
-    private int maxEtageReached = 0;
 
     [SerializeField]
     private float cellSize = 1;
@@ -144,14 +140,16 @@ public class GenerationDonjon : NetworkBehaviour
                 Debug.Log("Randomize seed");
                 RandomizeSeed();
             }
-            MultiplayerGameManager.Instance.seeds[currentEtage - 1] = MultiplayerGameManager.Instance.conf.currentSeed;
+            MultiplayerGameManager.Instance.seeds[MultiplayerGameManager.Instance.conf.currentEtage - 1] = MultiplayerGameManager.Instance.conf.currentSeed;
             MultiplayerGameManager.Instance.conf.maxEtageReached = MultiplayerGameManager.Instance.conf.currentEtage;
+            Debug.Log(MultiplayerGameManager.Instance.conf);
+            Debug.Log(MultiplayerGameManager.Instance.conf.currentSeed);
             SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, true);
         }
         else
         {
             Debug.Log("Etage deja atteint");
-            MultiplayerGameManager.Instance.conf.currentSeed = MultiplayerGameManager.Instance.seeds[currentEtage - 1];
+            MultiplayerGameManager.Instance.conf.currentSeed = MultiplayerGameManager.Instance.seeds[MultiplayerGameManager.Instance.conf.currentEtage - 1];
             SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, false);
         }
     }
@@ -159,7 +157,6 @@ public class GenerationDonjon : NetworkBehaviour
     [ClientRpc]
     private void SendGenerationClientRpc(ConfigDonjon conf, bool isNewEtage)
     {
-        seed = conf.currentSeed;
         Configure(conf);
         currentDifficulty = baseDifficulty + (currentEtage - 1) * difficultyScaling;
         Generate(isNewEtage);
@@ -201,6 +198,7 @@ public class GenerationDonjon : NetworkBehaviour
         typeEtage = conf.typeEtage;
         baseDifficulty = conf.baseDiff;
         difficultyScaling = conf.diffScaling;
+        currentEtage = conf.currentEtage;
         Debug.Log("Generation with seed : " + seed);
         Random.InitState(seed);
     }
@@ -211,7 +209,6 @@ public class GenerationDonjon : NetworkBehaviour
     /// <param name="isNewEtage">Si l'étage est nouveau ou non</param>
     public void Generate(bool isNewEtage)
     {
-        Debug.Log("Generation");
         switch (typeEtage)
         {
             case TypeEtage.Labyrinthe:
@@ -243,6 +240,7 @@ public class GenerationDonjon : NetworkBehaviour
     {
         seed = Random.Range(0, 1000000);
         MultiplayerGameManager.Instance.conf.currentSeed = seed;
+        Debug.Log("New seed : " + seed);
     }
 
     public int GetSeed()
