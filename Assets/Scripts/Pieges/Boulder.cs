@@ -13,6 +13,8 @@ public class Boulder : NetworkBehaviour
     private Vector3 moveDirection;
     private Animator animator;
     private Rigidbody rb;
+
+    private bool isDespawning = false;
     //Le principe c'est que la boule prend une direction random parmi les 4 directions cardinales et se déplace dans cette direction (Sauf si on la change depuis un autre script)
 
     public override void OnNetworkSpawn()
@@ -86,7 +88,11 @@ public class Boulder : NetworkBehaviour
     /// </summary>
     private void Despawn()
     {
-        GetComponent<NetworkObject>().Despawn(true);
+        if (!isDespawning)
+        {
+            isDespawning = true;
+            GetComponent<NetworkObject>().Despawn(true);
+        }
     }
 
     private void Update()

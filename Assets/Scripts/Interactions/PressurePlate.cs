@@ -17,6 +17,12 @@ public class PressurePlate : NetworkBehaviour
     [SerializeField] private float minWeightToPress = 1;
 
     /// <summary>
+    /// La vitesse de l'animation
+    /// </summary>
+    [SerializeField]
+    private float animationSpeed = 1;
+
+    /// <summary>
     /// L'animator de la plaque
     /// </summary>
     private Animator animator;
@@ -57,13 +63,14 @@ public class PressurePlate : NetworkBehaviour
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        animator.speed = animationSpeed;
     }
 
     public override void OnNetworkSpawn()
     {
-        if (!MultiplayerGameManager.Instance.IsServer)
+        if (!MultiplayerGameManager.Instance.IsServer && MultiplayerGameManager.Instance.IsClient) //Parfois bug pour la zone ou c'est déja placé
         {
-            GetComponent<Collider>().enabled = false;//On ne gère le traitement 
+            GetComponent<Collider>().enabled = false;//On ne gère pas le traitement 
         }
     }
 

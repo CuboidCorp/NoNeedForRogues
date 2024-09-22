@@ -477,6 +477,8 @@ public class MonPlayerController : Entity
     /// </summary>
     public override void Die()
     {
+        Debug.Log("Mort du joueur");
+
         currentHealth = 0;
         healthSlider.value = currentHealth;
         healthText.text = currentHealth + "/" + MaxHP;
