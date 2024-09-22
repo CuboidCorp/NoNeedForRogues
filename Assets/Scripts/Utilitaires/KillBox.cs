@@ -22,6 +22,7 @@ public class KillBox : MonoBehaviour
                 Debug.LogWarning("Player IN KILLBOX OOB" + other.gameObject.name);
             }
             other.gameObject.GetComponent<MonPlayerController>().Die();
+            other.gameObject.GetComponent<MonPlayerController>().TpSpawn();
             //TODO : Gerer le cas des vaches aussi
         }
     }

@@ -24,6 +24,7 @@ public class MonPlayerController : Entity
 
     private GameObject vivox;
 
+    [SerializeField]
     private Vector3 lastCheckPoint = new(0, 1, 0);//Le dernier checkpoint où le joueur a été
 
     public GameObject playerUI;
@@ -502,6 +503,22 @@ public class MonPlayerController : Entity
 
         controls.Disable();
         SpawnGhostPlayerServerRpc(OwnerClientId);
+    }
+
+    /// <summary>
+    /// Teleporte le corps du joueur au checkpoint pour eviter des bugs
+    /// </summary>
+    public void TpSpawn()
+    {
+        Debug.Log("TpSpawnCorps");
+        if (IsOwner)
+        {
+            transform.position = lastCheckPoint;
+        }
+        else
+        {
+            MultiplayerGameManager.Instance.TpSpawnServerRpc(OwnerClientId);
+        }
     }
 
     /// <summary>

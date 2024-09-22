@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using TMPro;
 using Unity.Netcode;
 using Unity.Services.Vivox;
@@ -179,11 +180,15 @@ public class MultiplayerGameManager : NetworkBehaviour
 
         if (sceneName == "Donjon")
         {
-            //GenerationDonjon.instance.StartGenerationServer();
             StartCoroutine(TestAttente());
         }
     }
 
+    /// <summary>
+    /// Attends une seconde avant de lancer la generation du donjon
+    /// Pour vraiment attendre que tout le monde soit bien connecté
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator TestAttente()
     {
         yield return new WaitForSeconds(1);
@@ -1527,6 +1532,20 @@ public class MultiplayerGameManager : NetworkBehaviour
         leave.name = "Leave" + (isUpStairs ? "Up" : "Down") + leave.transform.position.x + "_" + leave.transform.position.z;
         leave.tag = isUpStairs ? "UpStairs" : "DownStairs";
     }
+
+    [ServerRpc]
+    public void TpSpawnServerRpc(ulong clientId)
+    {
+        TpSpawnClientRpc(SendRpcToPlayer(clientId));
+    }
+
+    [ClientRpc]
+    private void TpSpawnClientRpc(ClientRpcParams cRpcParams)
+    {
+        MonPlayerController.instanceLocale.TpSpawn();
+    }
+
+
 
     /// <summary>
     /// Les états possibles d'un joueur (Notamment pr les voice taps)
