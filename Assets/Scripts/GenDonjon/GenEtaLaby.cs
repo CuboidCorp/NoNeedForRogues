@@ -324,15 +324,15 @@ public class GenEtaLaby : GenerationEtage
                 GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], ConvertToRealWorldPos(new Vector2Int(i, j)), Quaternion.identity);
                 go.transform.parent = hallwaysHolder;
                 go.name = "Couloir" + GetIndexCouloir(new Vector2Int(i, j)) + "P" + i + "_" + j;
-                GameObject goToRemove = go.transform.GetChild(0).gameObject;
-                foreach (Transform child in go.transform)
-                {
-                    if (child.name == "Ceiling_SquareLarge") //TODO : Temporaire --> Pour voir l'intérieur du labyrinthe
-                    {
-                        goToRemove = child.gameObject;
-                    }
-                }
-                Destroy(goToRemove);
+                //GameObject goToRemove = go.transform.GetChild(0).gameObject;
+                //foreach (Transform child in go.transform)
+                //{
+                //    if (child.name == "Ceiling_SquareLarge") //TODO : Temporaire --> Pour voir l'intérieur du labyrinthe
+                //    {
+                //        goToRemove = child.gameObject;
+                //    }
+                //}
+                //Destroy(goToRemove);
             }
         }
     }
@@ -571,6 +571,7 @@ public class GenEtaLaby : GenerationEtage
             //Nimporte ou : 
             //Sol qui s'ouvre
             //Piege a pique
+            //Piege pique qui drop
             //Piege a scie 
             //Piege boulder
             //Piege a ours
@@ -641,6 +642,7 @@ public class GenEtaLaby : GenerationEtage
                 case Traps.PIEGE_PIQUE_DROP:
                     piege.name += "_SpikeDrop";
                     piege.transform.position += new Vector3(0, 6f, 0);
+                    piege.transform.rotation = Quaternion.Euler(0, 0, 180);
                     if (estServ)
                     {
                         piege.GetComponent<NetworkObject>().Spawn();
@@ -697,7 +699,7 @@ public class GenEtaLaby : GenerationEtage
                         placedTraps[nbPiegesPlaces] = solOuvrant;
 
                         //TODO : Ptet une plaque de pression dans la case d'a coté
-                        CreateTrigger(ConvertToRealWorldPos(posPiege), () => piege.GetComponent<Trap>().ActivateTrap());
+                        CreateTrigger(ConvertToRealWorldPos(posPiege), () => solOuvrant.GetComponent<Trap>().ActivateTrap());
                     }
                     break;
                     //TODO : Faire les autres pieges

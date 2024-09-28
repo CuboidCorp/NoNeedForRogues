@@ -37,7 +37,8 @@ public class SpellRecognition : MonoBehaviour
     private const float resSpeed = 1;
     private const float resDuration = 5;
 
-    private const float lightIntensity = 1;
+    private const float lightIntensity = 2;
+    private const float flashbangIntensity = 100;
     private const float lightTime = 5;
 
     private const float ragdollTime = 3;
@@ -51,7 +52,7 @@ public class SpellRecognition : MonoBehaviour
 
     #endregion
 
-    private static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "François François François", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED" }; //Les sorts en majuscules sont les sorts de debug
+    private readonly static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "François François François", "Flashbang", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED" }; //Les sorts en majuscules sont les sorts de debug
 
     private bool debugMode = false;
 
@@ -108,9 +109,6 @@ public class SpellRecognition : MonoBehaviour
             case "Dimittas":
                 gameObject.GetComponent<PickUpController>().DropObject();
                 break;
-            case "François François François":
-                StartCoroutine(gameObject.GetComponent<MonPlayerController>().SortFrancois());
-                break;
             case "Resurrectio":
                 MultiplayerGameManager.Instance.SummonResurectioServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, resSpeed, resDuration);
                 break;
@@ -147,6 +145,12 @@ public class SpellRecognition : MonoBehaviour
                 break;
             case "Ventus":
                 MultiplayerGameManager.Instance.SummonZoneVentServerRpc(gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 1f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, zoneVentForce, zoneVentSize, zoneVentPos, zoneVentDuration);
+                break;
+            case "François François François":
+                StartCoroutine(gameObject.GetComponent<MonPlayerController>().SortFrancois());
+                break;
+            case "Flashbang":
+                MultiplayerGameManager.Instance.SummonLightballServerRpc(posProj, flashbangIntensity, lightTime);
                 break;
 
             #region SORTS DEBUG
