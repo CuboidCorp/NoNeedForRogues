@@ -1545,6 +1545,12 @@ public class MultiplayerGameManager : NetworkBehaviour
         MonPlayerController.instanceLocale.TpSpawn();
     }
 
+    [ClientRpc]
+    public void SyncScoreClientRpc(int score, int seedInitial)
+    {
+        EndGameManager.Instance.AfficherScore(score, seedInitial);
+    }
+
 
 
     /// <summary>

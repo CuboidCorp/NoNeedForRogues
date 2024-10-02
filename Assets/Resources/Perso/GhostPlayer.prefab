@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2099708518615990853}
   - component: {fileID: 8947138592974610666}
   - component: {fileID: 2398222759888011695}
+  - component: {fileID: 5513745626872006241}
   m_Layer: 0
   m_Name: Camera
   m_TagString: MainCamera
@@ -137,6 +138,23 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
+--- !u!114 &5513745626872006241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 127198034648940234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sharedProfile: {fileID: 11400000, guid: 87b8c378b1ad5704e92839da94edcc40, type: 2}
+  isGlobal: 1
+  blendDistance: 0
+  weight: 1
+  priority: 0
 --- !u!1 &662389490635713011
 GameObject:
   m_ObjectHideFlags: 0
@@ -300,6 +318,8 @@ MonoBehaviour:
   fov: 60
   boostFov: 80
   fovChangeSpeed: 5
+  baseLightColor: {r: 0.02745098, g: 0.02745098, b: 0.02745098, a: 0}
+  nightVisionLightColor: {r: 1, g: 1, b: 1, a: 0}
   normalSpeed: 3
   boostSpeed: 5
 --- !u!114 &8543224325310976409

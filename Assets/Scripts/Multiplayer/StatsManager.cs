@@ -172,6 +172,7 @@ public class StatsManager : NetworkBehaviour
     {
         if (allStatsHolder.Keys.Count == MultiplayerGameManager.Instance.GetNbTotalPlayers())
         {
+            EndGameManager.Instance.CalculScore();
             EndGameManager.Instance.CalculTitres();
             EndGameManager.Instance.DisplayAllPlayerStats();
         }

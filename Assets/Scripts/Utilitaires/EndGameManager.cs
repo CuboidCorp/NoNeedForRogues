@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -12,6 +13,7 @@ public class EndGameManager : MonoBehaviour
 
     [Header("Score")]
     [SerializeField] private GameObject scoreCanva;
+    [SerializeField] private GameObject detailScoreCanva;
 
     public static EndGameManager Instance;
 
@@ -29,6 +31,8 @@ public class EndGameManager : MonoBehaviour
             MultiplayerGameManager.Instance.SetSpawnAllPlayers(transform.position);
         }
     }
+
+    #region Player Stats
 
     /// <summary>
     /// Calcule les titres de chaque joueur
@@ -210,7 +214,7 @@ public class EndGameManager : MonoBehaviour
         playerStat.transform.GetChild(0).GetComponent<TMP_Text>().text = playerName;
         if (playerTitles.ContainsKey(playerId))
         {
-            playerStat.transform.GetChild(1).GetComponent<TMP_Text>().text = playerTitles[playerId][Random.Range(0, playerTitles[playerId].Count)];
+            playerStat.transform.GetChild(1).GetComponent<TMP_Text>().text = playerTitles[playerId][UnityEngine.Random.Range(0, playerTitles[playerId].Count)];
         }
         else
         {
@@ -227,5 +231,69 @@ public class EndGameManager : MonoBehaviour
         playerStat.transform.GetChild(9).GetComponent<TMP_Text>().text = "Fail : " + stats.nbItemsLost;
     }
 
+    #endregion
 
+    #region Score
+    /// <summary>
+    /// Calcule le score sur le serv et l'envoie à tous les clients
+    /// </summary>
+    public void CalculScore()
+    {
+        DateTime dateFin = DateTime.Now;
+        detailScoreCanva.SetActive(true);
+        //Donc pr calc le score on recup le temps d'exploration, l'or recolté, le nombre de morts
+        int score;
+        int totalGold = StatsManager.Instance.totalGold.Value;
+        detailScoreCanva.transform.GetChild(1).GetComponent<TMP_Text>().text = "Or collecté : " + totalGold;
+        int totalDeaths = 0;
+        int tempsExploEnSecondes;
+        int nbEtages = MultiplayerGameManager.Instance.conf.nbEtages;
+
+        //Calcul nbMorts 
+        foreach (KeyValuePair<ulong, PlayerStats> playStats in StatsManager.Instance.allStatsHolder)
+        {
+            totalDeaths += playStats.Value.nbMorts;
+        }
+        detailScoreCanva.transform.GetChild(2).GetComponent<TMP_Text>().text = "Morts : " + totalDeaths;
+
+        detailScoreCanva.transform.GetChild(3).GetComponent<TMP_Text>().text = "Debut : " + StatsManager.Instance.dateDebutGame.ToString("HH:mm:ss");
+        detailScoreCanva.transform.GetChild(4).GetComponent<TMP_Text>().text = "Fin : " + dateFin.ToString("HH:mm:ss");
+
+        //Temps d'exploration moyen par etage
+        TimeSpan tempsTotal = dateFin - StatsManager.Instance.dateDebutGame;
+        tempsExploEnSecondes = (int)tempsTotal.TotalSeconds;
+
+        detailScoreCanva.transform.GetChild(5).GetComponent<TMP_Text>().text = "Temps d'explo : " + tempsExploEnSecondes + " s";
+
+        int tempsMoyenParEtage = tempsExploEnSecondes / nbEtages;
+        //Le temps moyen par etage est comparé au temps moyen normalisé en fonction de la taille min et max et du nombre d'escaliers
+        Vector2Int tailleMoyenne = (MultiplayerGameManager.Instance.conf.maxTailleEtage + MultiplayerGameManager.Instance.conf.minTailleEtage) / 2;
+        detailScoreCanva.transform.GetChild(6).GetComponent<TMP_Text>().text = "Taille moy : " + tailleMoyenne.x + " x " + tailleMoyenne.y;
+        int aireMoyenne = tailleMoyenne.x * tailleMoyenne.y;
+        detailScoreCanva.transform.GetChild(7).GetComponent<TMP_Text>().text = "Aire moy : " + aireMoyenne;
+        int tempsMoyenNormalise = aireMoyenne - 15 * MultiplayerGameManager.Instance.conf.nbStairs;
+        detailScoreCanva.transform.GetChild(8).GetComponent<TMP_Text>().text = "Temps moyen : " + tempsMoyenParEtage + " s";
+        detailScoreCanva.transform.GetChild(9).GetComponent<TMP_Text>().text = "Temps normalisé : " + tempsMoyenNormalise + " s";
+        int diffTemps = tempsMoyenParEtage - tempsMoyenNormalise;
+
+
+        score = totalGold * 10 - totalDeaths * 5 - diffTemps * 5;
+        MultiplayerGameManager.Instance.SyncScoreClientRpc(score, MultiplayerGameManager.Instance.conf.seed);
+    }
+
+    public void AfficherScore(int score, int seedInit)
+    {
+        scoreCanva.transform.GetChild(1).GetComponent<TMP_Text>().text = "Score : " + score;
+        scoreCanva.transform.GetChild(2).GetComponent<TMP_Text>().text = "Seed initial : " + seedInit;
+
+        if (score < 0)
+        {
+            scoreCanva.transform.GetChild(3).GetComponent<TMP_Text>().text = "Looser";
+        }
+        else
+        {
+            scoreCanva.transform.GetChild(3).GetComponent<TMP_Text>().text = "Peut mieux faire ...";
+        }
+    }
+    #endregion
 }

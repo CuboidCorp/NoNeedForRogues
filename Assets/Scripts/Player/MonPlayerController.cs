@@ -32,9 +32,11 @@ public class MonPlayerController : Entity
     #region Camera Variables
 
     [Header("Camera Movement Variables")]
+
     [HideInInspector] public Camera playerCamera;
     [SerializeField] private GameObject cameraPivot; //Le gameObject de la camera
     [SerializeField] private GameObject camTps; //Le gameObject de la camera troisieme personne
+    [SerializeField] private GameObject flashlight;
 
     [SerializeField] private bool invertCamera = false;
     [SerializeField] private float mouseSensitivity = 100f;
@@ -50,6 +52,8 @@ public class MonPlayerController : Entity
 
     private Action<InputAction.CallbackContext> actLook;
     private Action<InputAction.CallbackContext> actRotation;
+
+    private Coroutine deactivateFlashlight;
 
     #endregion
 
@@ -1146,6 +1150,26 @@ public class MonPlayerController : Entity
             cptTime += poisonDamageInterval;
             Damage(poisonDamage);
         }
+    }
+
+    /// <summary>
+    /// Allume la flash light et l'eteint apres un certain temps
+    /// </summary>
+    /// <param name="flashDuration">La duree d'éclairage</param>
+    public void StartFlash(int flashDuration)
+    {
+        flashlight.SetActive(true);
+        if (deactivateFlashlight != null)
+        {
+            StopCoroutine(deactivateFlashlight);
+        }
+        deactivateFlashlight = StartCoroutine(DeactivateFlashlight(flashDuration));
+    }
+
+    private IEnumerator DeactivateFlashlight(int flashDuration)
+    {
+        yield return new WaitForSeconds(flashDuration);
+        flashlight.SetActive(false);
     }
 
     #endregion

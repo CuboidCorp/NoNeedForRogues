@@ -41,6 +41,8 @@ public class SpellRecognition : MonoBehaviour
     private const float flashbangIntensity = 100;
     private const float lightTime = 5;
 
+    private const int flashlightTime = 10;
+
     private const float ragdollTime = 3;
 
     private const float interactRange = 10;
@@ -52,7 +54,7 @@ public class SpellRecognition : MonoBehaviour
 
     #endregion
 
-    private readonly static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "François François François", "Flashbang", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED" }; //Les sorts en majuscules sont les sorts de debug
+    private readonly static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "François François François", "Flashbang", "François divin", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED" }; //Les sorts en majuscules sont les sorts de debug
 
     private bool debugMode = false;
 
@@ -151,6 +153,9 @@ public class SpellRecognition : MonoBehaviour
                 break;
             case "Flashbang":
                 MultiplayerGameManager.Instance.SummonLightballServerRpc(posProj, flashbangIntensity, lightTime);
+                break;
+            case "François divin":
+                MonPlayerController.instanceLocale.StartFlash(flashlightTime);
                 break;
 
             #region SORTS DEBUG

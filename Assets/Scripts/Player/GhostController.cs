@@ -40,6 +40,9 @@ public class GhostController : NetworkBehaviour
 
     #endregion
 
+    [SerializeField] private Color baseLightColor;
+    [SerializeField] private Color nightVisionLightColor;
+
     #region Movement Variables
 
     #region Moving
@@ -66,6 +69,7 @@ public class GhostController : NetworkBehaviour
     {
         controls = new PlayerControls();
         playerActions = controls.Player;
+        RenderSettings.ambientLight = nightVisionLightColor;
 
         playerActions.Move.performed += ctx => OnMove(ctx);
         playerActions.Move.canceled += ctx => moveInput = Vector2.zero;
@@ -189,6 +193,7 @@ public class GhostController : NetworkBehaviour
     /// </summary>
     public void Respawn()
     {
+        RenderSettings.ambientLight = baseLightColor;
         root.GetComponent<MonPlayerController>().enabled = true;
         root.GetComponent<MonPlayerController>().Respawn();
         vivox.transform.parent = root.transform;
