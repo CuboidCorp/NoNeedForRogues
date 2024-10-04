@@ -55,6 +55,9 @@ public class MonPlayerController : Entity
 
     private Coroutine deactivateFlashlight;
 
+    [SerializeField] private Color baseLightColor;
+    [SerializeField] private Color nightVisionLightColor;
+
     #endregion
 
     #region Movement Variables
@@ -576,6 +579,10 @@ public class MonPlayerController : Entity
         ghost.transform.GetChild(0).gameObject.SetActive(true); //Le camera pivot du ghost
         ghost.transform.GetChild(1).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.ShadowsOnly;
         cameraPivot.SetActive(false);
+        if (!MultiplayerGameManager.Instance.isInLobby)
+        {
+            RenderSettings.ambientLight = nightVisionLightColor;
+        }
         enabled = false;
     }
 
@@ -606,6 +613,11 @@ public class MonPlayerController : Entity
         DisableRagdoll(false);
         gameObject.GetComponent<PickUpController>().enabled = true;
         gameObject.GetComponent<SpellRecognition>().enabled = true;
+
+        if (!MultiplayerGameManager.Instance.isInLobby)
+        {
+            RenderSettings.ambientLight = baseLightColor;
+        }
         cameraPivot.SetActive(true);
     }
 

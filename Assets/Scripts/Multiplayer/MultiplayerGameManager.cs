@@ -33,6 +33,8 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     public GameObject TapHolder;
 
+    private int nbDeadPlayers = 0;
+
     #region Données Joueurs
     /// <summary>
     /// Les ids des joueurs selon Netcode pr gameobject
@@ -72,7 +74,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// </summary>
     private bool[] playerGoingUp;
 
-    private bool isInLobby = true;
+    public bool isInLobby = true;
 
     /// <summary>
     /// Temporaire pr la repartition des joueurs dans les escaliers
@@ -432,6 +434,11 @@ public class MultiplayerGameManager : NetworkBehaviour
             error.GetComponent<ErrorHandler>().message = "Vous avez été déconnecté";
             SceneManager.LoadSceneAsync("MenuPrincipal");
         }
+        //Si le joueur est mort on enleve un de nbDeadPlayers
+        if (playersStates[Array.IndexOf(playersIds, id)] == PlayerState.Dead)
+        {
+            nbDeadPlayers--;
+        }
         nbConnectedPlayers--;
         if (nbConnectedPlayers < nbTotalPlayers) //En theorie dans le lobby il peut se reconnecter mais je crois pas
         {
@@ -708,6 +715,11 @@ public class MultiplayerGameManager : NetworkBehaviour
     /// <param name="playerId">L'id du joueur mort</param>
     public void SyncDeath(ulong playerId) //Appelé par le serveur
     {
+        nbDeadPlayers++;
+        if (nbDeadPlayers == nbConnectedPlayers && !isInLobby)
+        {
+            GameOver();
+        }
         SyncDeathClientRpc(playerId, SendRpcToPlayersExcept(playerId));
     }
 
@@ -736,6 +748,18 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
+    private void GameOver()
+    {
+        Debug.Log("GameOver");
+        StartCoroutine(GoToEndScene());
+    }
+
+    private IEnumerator GoToEndScene()
+    {
+        yield return new WaitForSeconds(5);
+        NetworkManager.SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
+    }
+
     #endregion
 
     #region Respawn
@@ -747,6 +771,7 @@ public class MultiplayerGameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void SyncRespawnServerRpc(NetworkObjectReference obj, ulong playerId) //Appelé par le serveur
     {
+        nbDeadPlayers--;
         Destroy((GameObject)obj);
         SyncResClientRpc(playerId, SendRpcToPlayersExcept(playerId));
     }
@@ -853,9 +878,15 @@ public class MultiplayerGameManager : NetworkBehaviour
     internal void SummonLightballServerRpc(Vector3 pos, float intensity, float time)
     {
         GameObject lightBallGo = Instantiate(lightBall, pos, Quaternion.identity);
-        lightBallGo.GetComponent<Light>().intensity = intensity;
         lightBallGo.AddComponent<Temporary>().StartCoroutine(nameof(Temporary.DestroyIn), time);
         lightBallGo.GetComponent<NetworkObject>().Spawn();
+        SetLightballIntensityClientRpc(lightBallGo, intensity);
+    }
+
+    [ClientRpc]
+    private void SetLightballIntensityClientRpc(NetworkObjectReference networkObjectReference, float intensity)
+    {
+        ((GameObject)networkObjectReference).GetComponent<Light>().intensity = intensity;
     }
 
     /// <summary>
