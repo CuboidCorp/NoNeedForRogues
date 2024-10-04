@@ -490,7 +490,8 @@ public class GenEtaLaby : GenerationEtage
     {
         GameObject instance = Instantiate(chest, itemHolder);
         objets.Add(instance);
-        instance.transform.SetPositionAndRotation(position, Quaternion.Euler(0, (int)(~allStates ^ ~etatPos) * 90 + 90, 0));
+        Debug.Log("Wallstate inverse : " + Mathf.Log((int)(~allStates ^ ~etatPos), 2) + " Angle calc " + (Mathf.Log((int)(~allStates ^ ~etatPos), 2) * 90 + 90));
+        instance.transform.SetPositionAndRotation(position, Quaternion.Euler(0, Mathf.Log((int)(~allStates ^ ~etatPos), 2) * 90 + 90, 0));
         int typeCoffre = Random.Range(0, 2);
         Chest coffreScript = instance.GetComponent<Chest>();
         instance.GetComponent<NetworkObject>().Spawn();
