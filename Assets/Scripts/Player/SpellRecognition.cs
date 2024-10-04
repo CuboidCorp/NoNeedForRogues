@@ -39,9 +39,9 @@ public class SpellRecognition : MonoBehaviour
 
     private const float lightIntensity = 2;
     private const float flashbangIntensity = 100;
-    private const float lightTime = 5;
+    private const float lightTime = 15;
 
-    private const int flashlightTime = 10;
+    private const int flashlightTime = 20;
 
     private const float ragdollTime = 3;
 
@@ -54,7 +54,7 @@ public class SpellRecognition : MonoBehaviour
 
     #endregion
 
-    private readonly static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "François François François", "Flashbang", "François divin", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED" }; //Les sorts en majuscules sont les sorts de debug
+    private readonly static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "Lucerna", "François François François", "Flashbang", "François divin", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED", "VISION NOCTURNE" }; //Les sorts en majuscules sont les sorts de debug
 
     private bool debugMode = false;
 
@@ -148,6 +148,10 @@ public class SpellRecognition : MonoBehaviour
             case "Ventus":
                 MultiplayerGameManager.Instance.SummonZoneVentServerRpc(gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 1f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, zoneVentForce, zoneVentSize, zoneVentPos, zoneVentDuration);
                 break;
+            case "Lucerna":
+                MonPlayerController.instanceLocale.StartFlash(flashlightTime, false);
+                break;
+
             case "François François François":
                 StartCoroutine(gameObject.GetComponent<MonPlayerController>().SortFrancois());
                 break;
@@ -155,7 +159,7 @@ public class SpellRecognition : MonoBehaviour
                 MultiplayerGameManager.Instance.SummonLightballServerRpc(posProj, flashbangIntensity, lightTime);
                 break;
             case "François divin":
-                MonPlayerController.instanceLocale.StartFlash(flashlightTime);
+                MonPlayerController.instanceLocale.StartFlash(flashlightTime, true);
                 break;
 
             #region SORTS DEBUG
@@ -222,6 +226,16 @@ public class SpellRecognition : MonoBehaviour
                 else
                 {
                     Debug.LogWarning("Le joueur a essayé de SEED sans autorisation");
+                }
+                break;
+            case "VISION NOCTURNE":
+                if (debugMode)
+                {
+                    MonPlayerController.instanceLocale.NightVision();
+                }
+                else
+                {
+                    Debug.LogWarning("Le joueur a essayé de VISION NOCTURNE sans autorisation");
                 }
                 break;
                 #endregion

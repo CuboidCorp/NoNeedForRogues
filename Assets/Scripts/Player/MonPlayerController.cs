@@ -1168,8 +1168,17 @@ public class MonPlayerController : Entity
     /// Allume la flash light et l'eteint apres un certain temps
     /// </summary>
     /// <param name="flashDuration">La duree d'éclairage</param>
-    public void StartFlash(int flashDuration)
+    /// <param name="francoisMode">Si on a la tete de francois ou pas</param>
+    public void StartFlash(int flashDuration, bool francoisMode)
     {
+        if (francoisMode)
+        {
+            flashlight.GetComponent<Light>().cookie = Resources.Load<Texture>("Textures/francois");
+        }
+        else
+        {
+            flashlight.GetComponent<Light>().cookie = null;
+        }
         flashlight.SetActive(true);
         if (deactivateFlashlight != null)
         {
@@ -1182,6 +1191,14 @@ public class MonPlayerController : Entity
     {
         yield return new WaitForSeconds(flashDuration);
         flashlight.SetActive(false);
+    }
+
+    /// <summary>
+    /// Active la vision nocturne
+    /// </summary>
+    public void NightVision()
+    {
+        RenderSettings.ambientLight = nightVisionLightColor;
     }
 
     #endregion
