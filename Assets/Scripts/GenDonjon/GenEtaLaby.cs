@@ -699,7 +699,7 @@ public class GenEtaLaby : GenerationEtage
                         placedTraps[nbPiegesPlaces] = solOuvrant;
 
                         //TODO : Ptet une plaque de pression dans la case d'a coté
-                        CreateTrigger(ConvertToRealWorldPos(posPiege), () => solOuvrant.GetComponent<Trap>().ActivateTrap());
+                        CreateTrigger(ConvertToRealWorldPos(posPiege), () => solOuvrant.GetComponent<Openable>().Open());
                     }
                     break;
                     //TODO : Faire les autres pieges
