@@ -1,3 +1,10 @@
+#if UNITY_STANDALONE_WIN
+[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+public static extern bool SetDllDirectory(string lpPathName);
+SetDllDirectory(System.IO.Path.Combine(Application.dataPath, "Plugins"));
+#endif
+
+
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -5,7 +12,9 @@ using Unity.Services.Authentication;
 using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if UNITY_EDITOR
 using ParrelSync;
+#endif
 using TMPro;
 using UnityEngine.UIElements;
 

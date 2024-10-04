@@ -137,7 +137,8 @@ PlayerSettings:
   vulkanEnableCommandBufferRecycling: 1
   loadStoreDebugModeEnabled: 0
   bundleVersion: 0.1
-  preloadedAssets: []
+  preloadedAssets:
+  - {fileID: 11400000, guid: 79699150e6935b24ca66c87989314134, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -782,11 +783,11 @@ PlayerSettings:
   m_MobileRenderingPath: 1
   metroPackageName: NoNeedForRogues
   metroPackageVersion: 1.0.0.0
-  metroCertificatePath: 
+  metroCertificatePath: Assets/WSATestCertificate.pfx
   metroCertificatePassword: 
-  metroCertificateSubject: 
-  metroCertificateIssuer: 
-  metroCertificateNotAfter: 0000000000000000
+  metroCertificateSubject: Cuboid Corp
+  metroCertificateIssuer: Cuboid Corp
+  metroCertificateNotAfter: 808473c69935dc01
   metroApplicationDescription: NoNeedForRogues
   wsaImages: {}
   metroTileShortName: NoNeedForRogues
