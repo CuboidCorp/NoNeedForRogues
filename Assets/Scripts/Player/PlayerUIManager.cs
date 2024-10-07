@@ -3,6 +3,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
@@ -53,8 +54,6 @@ public class PlayerUIManager : MonoBehaviour
     private Button returnToPauseButton;
     private Button cancelButton;
     [SerializeField] private AudioMixer mainAudioMixer;
-
-    private InputActionRebindingExtensions.RebindingOperation rebindingOperation;
 
     #endregion
 
@@ -281,11 +280,11 @@ public class PlayerUIManager : MonoBehaviour
         //TODO : Trouver les bonnes valeurs par défaut
 
         mainVolumeSlider.value = PlayerPrefs.GetFloat("mainVolume", 1);
-        musicVolumeSlider.value = PlayerPrefs.GetFloat("musicVolume", 1);
+        musicVolumeSlider.value = PlayerPrefs.GetFloat("musicVolume", .3f);
         sfxVolumeSlider.value = PlayerPrefs.GetFloat("sfxVolume", 1);
         voiceVolumeSlider.value = PlayerPrefs.GetFloat("voiceVolume", 1);
 
-        cameraInversee.value = PlayerPrefs.GetInt("inverseCam", 0) == 0 ? false : true;
+        cameraInversee.value = PlayerPrefs.GetInt("inverseCam", 0) != 0;
         mouseSensiSlider.value = PlayerPrefs.GetFloat("cameraSensi", 100);
     }
 
@@ -294,7 +293,7 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void SaveOptions()
     {
-        PlayerPrefs.SetFloat("mainVolume",mainVolumeSlider.value);
+        PlayerPrefs.SetFloat("mainVolume", mainVolumeSlider.value);
         PlayerPrefs.SetFloat("musicVolume", musicVolumeSlider.value);
         PlayerPrefs.SetFloat("sfxVolume", sfxVolumeSlider.value);
         PlayerPrefs.SetFloat("voiceVolume", voiceVolumeSlider.value);
@@ -302,7 +301,7 @@ public class PlayerUIManager : MonoBehaviour
         PlayerPrefs.SetFloat("cameraSensi", mouseSensiSlider.value);
         PlayerPrefs.SetInt("inverseCam", cameraInversee.value ? 1 : 0);
 
-        PlayerPrefs.SetString("bindings", MonPlayerController.instanceLocale.playerActions.SaveBindingOverridesAsJson());
+        PlayerPrefs.SetString("bindings", MonPlayerController.instanceLocale.controls.SaveBindingOverridesAsJson());
 
         MonPlayerController.instanceLocale.ChargerOptions();
     }
@@ -327,7 +326,7 @@ public class PlayerUIManager : MonoBehaviour
 
         LoadOptions();
 
-        mainAudioMixer.RegisterValueChangedCallback(evt =>
+        mainVolumeSlider.RegisterValueChangedCallback(evt =>
         {
             mainAudioMixer.SetFloat("mainVolume", Mathf.Log10(evt.newValue) * 20);
         });
@@ -348,7 +347,7 @@ public class PlayerUIManager : MonoBehaviour
         });
 
         returnToPauseButton.clicked += HideOptionsMenu;
-
+        cancelButton.clicked += LoadOptions;
         //Donc pr les controles on veut :
         //les 4 bindings de move (haut bas gauche droite)
         //Jump
@@ -359,7 +358,7 @@ public class PlayerUIManager : MonoBehaviour
         //Crouch --> Le truc de fantome pr descendre
     }
 
-    
+
 
     /// <summary>
     /// Deconnecte tous les events du menu des options

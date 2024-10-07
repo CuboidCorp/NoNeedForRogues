@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -11,8 +12,8 @@ using UnityEngine.Rendering.Universal;
 public class MonPlayerController : Entity
 {
     private Rigidbody rb;
-    private PlayerControls controls;
-    public PlayerControls.PlayerActions playerActions;
+    public PlayerControls controls;
+    private PlayerControls.PlayerActions playerActions;
 
     [HideInInspector] public static MonPlayerController instanceLocale;
 
@@ -174,23 +175,23 @@ public class MonPlayerController : Entity
     {
         //TODO : Regarder les vrais valeurs par défaut
         float volumeMain = PlayerPrefs.GetFloat("mainVolume", 1);
-        float volumeMusique = PlayerPrefs.GetFloat("musicVolume", 1);
+        float volumeMusique = PlayerPrefs.GetFloat("musicVolume", .3f);
         float volumeSfx = PlayerPrefs.GetFloat("sfxVolume", 1);
         float volumeVoix = PlayerPrefs.GetFloat("voiceVolume", 1);
 
         mainAudioMixer.SetFloat("mainVolume", Mathf.Log10(volumeMain) * 20);
         mainAudioMixer.SetFloat("musicVolume", Mathf.Log10(volumeMusique) * 20);
         mainAudioMixer.SetFloat("sfxVolume", Mathf.Log10(volumeSfx) * 20);
-        mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(volumeVoix) * 20+10);
+        mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(volumeVoix) * 20 + 10);
 
-        invertCamera = PlayerPrefs.GetInt("inverseCam", 0) == 0 ? false : true;
+        invertCamera = PlayerPrefs.GetInt("inverseCam", 0) != 0;
         mouseSensitivity = PlayerPrefs.GetFloat("cameraSensi", 100);
 
         string bindings = PlayerPrefs.GetString("bindings", "");
 
         if (bindings != "")
         {
-            playerActions.LoadBindingOverridesFromJson(bindings);
+            controls.LoadBindingOverridesFromJson(bindings);
         }
     }
 

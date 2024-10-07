@@ -7,7 +7,7 @@ using System;
 
 public class InputManager : MonoBehaviour
 {
-    public static RebindJumping inputActions;
+    public static PlayerControls inputActions;
 
     public static event Action rebindComplete;
     public static event Action rebindCanceled;
@@ -16,7 +16,7 @@ public class InputManager : MonoBehaviour
     private void Awake()
     {
         if (inputActions == null)
-            inputActions = new RebindJumping();
+            inputActions = new PlayerControls();
     }
 
     public static void StartRebind(string actionName, int bindingIndex, Text statusText, bool excludeMouse)
@@ -85,7 +85,7 @@ public class InputManager : MonoBehaviour
     public static string GetBindingName(string actionName, int bindingIndex)
     {
         if (inputActions == null)
-            inputActions = new RebindJumping();
+            inputActions = new PlayerControls();
 
         InputAction action = inputActions.asset.FindAction(actionName);
         return action.GetBindingDisplayString(bindingIndex);
@@ -93,7 +93,7 @@ public class InputManager : MonoBehaviour
 
     private static void SaveBindingOverride(InputAction action)
     {
-        for (int i = 0 ; i < action.bindings.Count ; i++)
+        for (int i = 0; i < action.bindings.Count; i++)
         {
             PlayerPrefs.SetString(action.actionMap + action.name + i, action.bindings[i].overridePath);
         }
@@ -102,11 +102,11 @@ public class InputManager : MonoBehaviour
     public static void LoadBindingOverride(string actionName)
     {
         if (inputActions == null)
-            inputActions = new RebindJumping();
+            inputActions = new PlayerControls();
 
         InputAction action = inputActions.asset.FindAction(actionName);
 
-        for (int i = 0 ; i < action.bindings.Count ; i++)
+        for (int i = 0; i < action.bindings.Count; i++)
         {
             if (!string.IsNullOrEmpty(PlayerPrefs.GetString(action.actionMap + action.name + i)))
                 action.ApplyBindingOverride(i, PlayerPrefs.GetString(action.actionMap + action.name + i));
@@ -125,7 +125,7 @@ public class InputManager : MonoBehaviour
 
         if (action.bindings[bindingIndex].isComposite)
         {
-            for (int i = bindingIndex ; i < action.bindings.Count && action.bindings[i].isComposite ; i++)
+            for (int i = bindingIndex; i < action.bindings.Count && action.bindings[i].isComposite; i++)
                 action.RemoveBindingOverride(i);
         }
         else
