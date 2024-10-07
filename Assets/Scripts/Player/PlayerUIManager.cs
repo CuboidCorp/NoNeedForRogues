@@ -42,15 +42,21 @@ public class PlayerUIManager : MonoBehaviour
     #endregion
 
     #region Options Menu
+    private Slider mainVolumeSlider;
     private Slider musicVolumeSlider;
     private Slider sfxVolumeSlider;
     private Slider voiceVolumeSlider;
+
+    private Slider mouseSensiSlider;
+    private Toggle cameraInversee;
+
     private Button returnToPauseButton;
-
+    private Button cancelButton;
     [SerializeField] private AudioMixer mainAudioMixer;
+
+    private InputActionRebindingExtensions.RebindingOperation rebindingOperation;
+
     #endregion
-
-
 
     public static PlayerUIManager Instance;
 
@@ -267,16 +273,64 @@ public class PlayerUIManager : MonoBehaviour
     #region Options
 
     /// <summary>
+    /// Charge les options des preferences du joueur pour les afficher
+    /// </summary>
+
+    private void LoadOptions()
+    {
+        //TODO : Trouver les bonnes valeurs par défaut
+
+        mainVolumeSlider.value = PlayerPrefs.GetFloat("mainVolume", 1);
+        musicVolumeSlider.value = PlayerPrefs.GetFloat("musicVolume", 1);
+        sfxVolumeSlider.value = PlayerPrefs.GetFloat("sfxVolume", 1);
+        voiceVolumeSlider.value = PlayerPrefs.GetFloat("voiceVolume", 1);
+
+        cameraInversee.value = PlayerPrefs.GetInt("inverseCam", 0) == 0 ? false : true;
+        mouseSensiSlider.value = PlayerPrefs.GetFloat("cameraSensi", 100);
+    }
+
+    /// <summary>
+    /// Quand on sauvegarde on set tt dans les playerprefs et on les recharge dans le joeuur
+    /// </summary>
+    public void SaveOptions()
+    {
+        PlayerPrefs.SetFloat("mainVolume",mainVolumeSlider.value);
+        PlayerPrefs.SetFloat("musicVolume", musicVolumeSlider.value);
+        PlayerPrefs.SetFloat("sfxVolume", sfxVolumeSlider.value);
+        PlayerPrefs.SetFloat("voiceVolume", voiceVolumeSlider.value);
+
+        PlayerPrefs.SetFloat("cameraSensi", mouseSensiSlider.value);
+        PlayerPrefs.SetInt("inverseCam", cameraInversee.value ? 1 : 0);
+
+        PlayerPrefs.SetString("bindings", MonPlayerController.instanceLocale.playerActions.SaveBindingOverridesAsJson());
+
+        MonPlayerController.instanceLocale.ChargerOptions();
+    }
+
+    /// <summary>
     /// Connecte les events du menu des options
     /// </summary>
     private void SetupOptionsMenu()
     {
         VisualElement root = uiMenu.rootVisualElement;
 
+        mainVolumeSlider = root.Q<Slider>("mainSlider");
         musicVolumeSlider = root.Q<Slider>("musicSlider");
         sfxVolumeSlider = root.Q<Slider>("sfxSlider");
         voiceVolumeSlider = root.Q<Slider>("voiceSlider");
+
+        mouseSensiSlider = root.Q<Slider>("mouseSensiSlider");
+        cameraInversee = root.Q<Toggle>("inverseCamToggle");
+
         returnToPauseButton = root.Q<Button>("returnBtn");
+        cancelButton = root.Q<Button>("cancelBtn");
+
+        LoadOptions();
+
+        mainAudioMixer.RegisterValueChangedCallback(evt =>
+        {
+            mainAudioMixer.SetFloat("mainVolume", Mathf.Log10(evt.newValue) * 20);
+        });
 
         musicVolumeSlider.RegisterValueChangedCallback(evt =>
         {
@@ -304,6 +358,8 @@ public class PlayerUIManager : MonoBehaviour
         //Les emote de 1 a 10
         //Crouch --> Le truc de fantome pr descendre
     }
+
+    
 
     /// <summary>
     /// Deconnecte tous les events du menu des options
@@ -333,10 +389,12 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void HideOptionsMenu()
     {
+        SaveOptions();
         uiMenu.visualTreeAsset = pauseMenu;
         UnSetupOptionsMenu();
         SetupPauseMenu();
     }
+
     #endregion
 
 }

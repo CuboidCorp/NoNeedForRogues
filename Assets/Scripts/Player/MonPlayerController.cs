@@ -12,7 +12,7 @@ public class MonPlayerController : Entity
 {
     private Rigidbody rb;
     private PlayerControls controls;
-    private PlayerControls.PlayerActions playerActions;
+    public PlayerControls.PlayerActions playerActions;
 
     [HideInInspector] public static MonPlayerController instanceLocale;
 
@@ -99,6 +99,7 @@ public class MonPlayerController : Entity
     #region Sound Effects
     [SerializeField] private AudioSource castingAudioSource;
     [SerializeField] private AudioSource movementAudioSource;
+    [SerializeField] private AudioMixer mainAudioMixer;
     #endregion
 
     private VivoxVoiceConnexion voiceConnexion;
@@ -112,6 +113,8 @@ public class MonPlayerController : Entity
     {
         controls = new PlayerControls();
         playerActions = controls.Player;
+        ChargerOptions();
+
         actLook = ctx => Look(ctx.ReadValue<Vector2>());
         actRotation = ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());
 
@@ -163,6 +166,34 @@ public class MonPlayerController : Entity
             seed = UnityEngine.Random.Range(0, 100000);
         }
     }
+
+    /// <summary>
+    /// Charge les valeurs par défaut des playerPrefs
+    /// </summary>
+    public void ChargerOptions()
+    {
+        //TODO : Regarder les vrais valeurs par défaut
+        float volumeMain = PlayerPrefs.GetFloat("mainVolume", 1);
+        float volumeMusique = PlayerPrefs.GetFloat("musicVolume", 1);
+        float volumeSfx = PlayerPrefs.GetFloat("sfxVolume", 1);
+        float volumeVoix = PlayerPrefs.GetFloat("voiceVolume", 1);
+
+        mainAudioMixer.SetFloat("mainVolume", Mathf.Log10(volumeMain) * 20);
+        mainAudioMixer.SetFloat("musicVolume", Mathf.Log10(volumeMusique) * 20);
+        mainAudioMixer.SetFloat("sfxVolume", Mathf.Log10(volumeSfx) * 20);
+        mainAudioMixer.SetFloat("voiceVolume", Mathf.Log10(volumeVoix) * 20+10);
+
+        invertCamera = PlayerPrefs.GetInt("inverseCam", 0) == 0 ? false : true;
+        mouseSensitivity = PlayerPrefs.GetFloat("cameraSensi", 100);
+
+        string bindings = PlayerPrefs.GetString("bindings", "");
+
+        if (bindings != "")
+        {
+            playerActions.LoadBindingOverridesFromJson(bindings);
+        }
+    }
+
 
     /// <summary>
     /// Quand le joueur spawn dans le jeu
