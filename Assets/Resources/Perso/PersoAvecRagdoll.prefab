@@ -7643,6 +7643,7 @@ MonoBehaviour:
   jumpPower: 25
   castingAudioSource: {fileID: 7030730520352729677}
   movementAudioSource: {fileID: 8787183471354773231}
+  mainAudioMixer: {fileID: 24100000, guid: 8ce4d377e0fafc242a67a3ca7f7bec08, type: 2}
   poisonDamageInterval: 1
 --- !u!114 &9205699368199408415
 MonoBehaviour:

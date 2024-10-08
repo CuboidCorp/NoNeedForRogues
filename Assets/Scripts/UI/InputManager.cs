@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 using System;
+using UnityEngine.UIElements;
 
 public class InputManager : MonoBehaviour
 {
@@ -19,7 +19,7 @@ public class InputManager : MonoBehaviour
             inputActions = new PlayerControls();
     }
 
-    public static void StartRebind(string actionName, int bindingIndex, Text statusText, bool excludeMouse)
+    public static void StartRebind(string actionName, int bindingIndex, Button boutonStatut, bool excludeMouse)
     {
         InputAction action = inputActions.asset.FindAction(actionName);
         if (action == null || action.bindings.Count <= bindingIndex)
@@ -32,18 +32,18 @@ public class InputManager : MonoBehaviour
         {
             var firstPartIndex = bindingIndex + 1;
             if (firstPartIndex < action.bindings.Count && action.bindings[firstPartIndex].isComposite)
-                DoRebind(action, bindingIndex, statusText, true, excludeMouse);
+                DoRebind(action, bindingIndex, boutonStatut, true, excludeMouse);
         }
         else
-            DoRebind(action, bindingIndex, statusText, false, excludeMouse);
+            DoRebind(action, bindingIndex, boutonStatut, false, excludeMouse);
     }
 
-    private static void DoRebind(InputAction actionToRebind, int bindingIndex, Text statusText, bool allCompositeParts, bool excludeMouse)
+    private static void DoRebind(InputAction actionToRebind, int bindingIndex, Button boutonStatut, bool allCompositeParts, bool excludeMouse)
     {
         if (actionToRebind == null || bindingIndex < 0)
             return;
 
-        statusText.text = $"Press a {actionToRebind.expectedControlType}";
+        boutonStatut.text = $"Press a {actionToRebind.expectedControlType}";
 
         actionToRebind.Disable();
 
@@ -58,10 +58,9 @@ public class InputManager : MonoBehaviour
             {
                 var nextBindingIndex = bindingIndex + 1;
                 if (nextBindingIndex < actionToRebind.bindings.Count && actionToRebind.bindings[nextBindingIndex].isComposite)
-                    DoRebind(actionToRebind, nextBindingIndex, statusText, allCompositeParts, excludeMouse);
+                    DoRebind(actionToRebind, nextBindingIndex, boutonStatut, allCompositeParts, excludeMouse);
             }
 
-            SaveBindingOverride(actionToRebind);
             rebindComplete?.Invoke();
         });
 
@@ -91,28 +90,6 @@ public class InputManager : MonoBehaviour
         return action.GetBindingDisplayString(bindingIndex);
     }
 
-    private static void SaveBindingOverride(InputAction action)
-    {
-        for (int i = 0; i < action.bindings.Count; i++)
-        {
-            PlayerPrefs.SetString(action.actionMap + action.name + i, action.bindings[i].overridePath);
-        }
-    }
-
-    public static void LoadBindingOverride(string actionName)
-    {
-        if (inputActions == null)
-            inputActions = new PlayerControls();
-
-        InputAction action = inputActions.asset.FindAction(actionName);
-
-        for (int i = 0; i < action.bindings.Count; i++)
-        {
-            if (!string.IsNullOrEmpty(PlayerPrefs.GetString(action.actionMap + action.name + i)))
-                action.ApplyBindingOverride(i, PlayerPrefs.GetString(action.actionMap + action.name + i));
-        }
-    }
-
     public static void ResetBinding(string actionName, int bindingIndex)
     {
         InputAction action = inputActions.asset.FindAction(actionName);
@@ -130,8 +107,6 @@ public class InputManager : MonoBehaviour
         }
         else
             action.RemoveBindingOverride(bindingIndex);
-
-        SaveBindingOverride(action);
     }
 
 }

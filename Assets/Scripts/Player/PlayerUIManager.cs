@@ -1,9 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Utilities;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
@@ -54,6 +56,8 @@ public class PlayerUIManager : MonoBehaviour
     private Button returnToPauseButton;
     private Button cancelButton;
     [SerializeField] private AudioMixer mainAudioMixer;
+
+    [SerializeField] private VisualTreeAsset bindingTemplate;
 
     #endregion
 
@@ -325,6 +329,28 @@ public class PlayerUIManager : MonoBehaviour
         cancelButton = root.Q<Button>("cancelBtn");
 
         LoadOptions();
+        int cpt = 0;
+        foreach (InputBinding binding in MonPlayerController.instanceLocale.controls.bindings)
+        {
+            Debug.Log(binding);
+            VisualElement bindingElement = bindingTemplate.CloneTree();
+            bindingElement.Q<Label>("texteBinding").text = binding.action;
+            bindingElement.Q<Button>("boutonRebind").text = binding.overridePath;
+
+            bindingElement.Q<Button>("bindingValue").clicked += () =>
+            {
+                InputManager.StartRebind(binding.action, cpt, bindingElement.Q<Button>("bindingValue"), false);
+            };
+
+            bindingElement.Q<Button>("boutonReset").clicked += () =>
+            {
+                InputManager.ResetBinding(binding.action, cpt);
+            };
+
+
+            root.Q<VisualElement>("bindingContainer").Add(bindingElement);
+            cpt++;
+        }
 
         mainVolumeSlider.RegisterValueChangedCallback(evt =>
         {
