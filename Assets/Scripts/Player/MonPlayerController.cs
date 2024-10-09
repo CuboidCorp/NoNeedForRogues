@@ -1231,6 +1231,16 @@ public class MonPlayerController : Entity
 
     #endregion
 
+    public void DesactiverMouvement()
+    {
+        controls.Disable();
+    }
+
+    public void ActiverMouvement()
+    {
+        controls.Enable();
+    }
+
     /// <summary>
     /// Gère la deconnexion du joueur
     /// </summary>

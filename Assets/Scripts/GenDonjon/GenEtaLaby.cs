@@ -69,17 +69,16 @@ public class GenEtaLaby : GenerationEtage
     {
         BOMB,
         PIEGE_CAILLOU,
+        PIEGE_HACHE,
         PIEGE_PIQUE,
         PIEGE_PIQUE_DROP,
         PIEGE_SCIE,
         PIEGE_TROU,
         SLEEP_GAZ,
         TOXIC_GAZ,
+        //NYI
         PIEGE_OURS,
         CRUSH_TRAP,
-        ARROW_TRAP,
-        POISON_ARROW_TRAP,
-        AXE_TRAP,
         DOOR_TRAP
 
     }
@@ -324,15 +323,6 @@ public class GenEtaLaby : GenerationEtage
                 GameObject go = Instantiate(couloirsPrefabs[GetIndexCouloir(new Vector2Int(i, j))], ConvertToRealWorldPos(new Vector2Int(i, j)), Quaternion.identity);
                 go.transform.parent = hallwaysHolder;
                 go.name = "Couloir" + GetIndexCouloir(new Vector2Int(i, j)) + "P" + i + "_" + j;
-                //GameObject goToRemove = go.transform.GetChild(0).gameObject;
-                //foreach (Transform child in go.transform)
-                //{
-                //    if (child.name == "Ceiling_SquareLarge") //TODO : Temporaire --> Pour voir l'intérieur du labyrinthe
-                //    {
-                //        goToRemove = child.gameObject;
-                //    }
-                //}
-                //Destroy(goToRemove);
             }
         }
     }
@@ -490,7 +480,6 @@ public class GenEtaLaby : GenerationEtage
     {
         GameObject instance = Instantiate(chest, itemHolder);
         objets.Add(instance);
-        Debug.Log("Wallstate inverse : " + Mathf.Log((int)(~allStates ^ ~etatPos), 2) + " Angle calc " + (Mathf.Log((int)(~allStates ^ ~etatPos), 2) * 90 + 90));
         instance.transform.SetPositionAndRotation(position, Quaternion.Euler(0, Mathf.Log((int)(~allStates ^ ~etatPos), 2) * 90 + 90, 0));
         int typeCoffre = Random.Range(0, 2);
         Chest coffreScript = instance.GetComponent<Chest>();
@@ -515,28 +504,29 @@ public class GenEtaLaby : GenerationEtage
         }
         else
         {
-            int typePiege = Random.Range(0, 6);
+            int typePiege = Random.Range(0, 4);
             switch (typePiege)
             {
-                case 0: //Fleches normales
-                    coffreScript.onOpen.AddListener(() => Debug.Log("Fleche"));
-                    break;
-                case 1: //Fleches empoisonnées
-                    coffreScript.onOpen.AddListener(() => Debug.Log("FLECHES EMPOISONNEES"));
-                    break;
-                case 2: //Gaz poison
+                case 0: //Gaz poison
                     //Le son du gaz devrait être constant tant qu'il y a du gaz
                     coffreScript.onOpen.AddListener(() => SummonToxicGaz(coffreScript.posObjetInterne.position, 1, 0.5f, 5));
                     break;
-                case 3: //Gaz dodo
+                case 1: //Gaz dodo
                     //Le son du gaz devrait être constant tant qu'il y a du gaz
                     coffreScript.onOpen.AddListener(() => SummonSleepingGaz(coffreScript.posObjetInterne.position, 5, .5f, 5));
                     break;
-                case 4: //Bombes
+                case 2: //Bombes
                     coffreScript.onOpen.AddListener(() => SummonBomb(coffreScript.posObjetInterne.position, 1, 1, 1, false));
                     break;
-                case 5: //Fake bombs
+                case 3: //Fake bombs
                     coffreScript.onOpen.AddListener(() => SummonBomb(coffreScript.posObjetInterne.position, 1, 1, 1, true));
+                    break;
+                //TODO : Post alpha ?
+                case 4: //Fleches normales
+                    coffreScript.onOpen.AddListener(() => Debug.Log("Fleche"));
+                    break;
+                case 5: //Fleches empoisonnées
+                    coffreScript.onOpen.AddListener(() => Debug.Log("FLECHES EMPOISONNEES"));
                     break;
 
             }
@@ -582,11 +572,8 @@ public class GenEtaLaby : GenerationEtage
 
             if ((int)etatMurs == 5 || (int)etatMurs == 10)
             {
-                //2 murs et 2 endrois ou passer
-                //Piege hache
-                //Mur compresseur
-                //possibleTraps.Add(6);
-                //possibleTraps.Add(7);
+                //Mur compresseur aussi ptet
+                possibleTraps.Add(Traps.PIEGE_HACHE);
             }
 
             if (posPiege.x == tailleEtage.x - 1 || posPiege.x == 0 || posPiege.y == tailleEtage.y - 1 || posPiege.y == 0)
@@ -626,11 +613,10 @@ public class GenEtaLaby : GenerationEtage
                     break;
                 case Traps.PIEGE_PIQUE:
                     piege.name += "_Spike";
-                    piege.transform.position += new Vector3(0, .25f, 0);
+                    piege.transform.position += new Vector3(0, .125f, 0);
                     if (estServ)
                     {
                         piege.GetComponent<NetworkObject>().Spawn();
-                        //piege.GetComponent<NetworkObject>().TrySetParent(trapHolder);
                         placedTraps[nbPiegesPlaces] = piege;
                         //TODO : Une plaque de pression dans la case d'a coté ? 
                         CreateTrigger(ConvertToRealWorldPos(posPiege), () => piege.GetComponent<Trap>().ActivateTrap());
@@ -648,8 +634,7 @@ public class GenEtaLaby : GenerationEtage
                     {
                         piege.GetComponent<NetworkObject>().Spawn();
 
-                        //piege.GetComponent<NetworkObject>().TrySetParent(trapHolder);
-                        piege.GetComponent<PiegePiqueDrop>().Setup(piege.transform.position, ConvertToRealWorldPos(posPiege) + new Vector3(0, .5f, 0), 3, 1, 15);
+                        piege.GetComponent<PiegePiqueDrop>().Setup(piege.transform.position, ConvertToRealWorldPos(posPiege) + new Vector3(0, .8f, 0), 3, 1, 15);
                         placedTraps[nbPiegesPlaces] = piege;
 
                         CreatePlaque(ConvertToRealWorldPos(posPiege), () => piege.GetComponent<Trap>().ActivateTrap());
@@ -665,7 +650,7 @@ public class GenEtaLaby : GenerationEtage
                     if (estServ)
                     {
                         piege.GetComponent<NetworkObject>().Spawn();
-                        //piege.GetComponent<NetworkObject>().TrySetParent(trapHolder);
+                        piege.GetComponent<Sawtrap>().SetDonnees(1.5f, 2);
                         piege.GetComponent<Sawtrap>().ActivateTrap();
                         placedTraps[nbPiegesPlaces] = piege;
                     }
@@ -696,14 +681,35 @@ public class GenEtaLaby : GenerationEtage
                     {
                         GameObject solOuvrant = Instantiate(Resources.Load<GameObject>(piege.GetComponent<FloorTrap>().GetSolOuvrant()), piege.transform.position, Quaternion.Euler(180, 0, 0));
                         solOuvrant.GetComponent<NetworkObject>().Spawn();
-                        //solOuvrant.GetComponent<NetworkObject>().TrySetParent(trapHolder);
                         placedTraps[nbPiegesPlaces] = solOuvrant;
 
                         //TODO : Ptet une plaque de pression dans la case d'a coté
                         CreateTrigger(ConvertToRealWorldPos(posPiege), () => solOuvrant.GetComponent<Openable>().Open());
                     }
                     break;
-                    //TODO : Faire les autres pieges
+                case Traps.PIEGE_HACHE:
+                    Debug.Log("Axe Trap temp");
+                    piege.name += "_Axe";
+                    piege.transform.position += new Vector3(0, 0.3f, 0);
+                    if (estServ)
+                    {
+                        piege.GetComponent<NetworkObject>().Spawn();
+                        piege.GetComponent<AxeTrap>().SetDonnees(1, 5);
+                        piege.GetComponent<AxeTrap>().ActivateTrap();
+                        placedTraps[nbPiegesPlaces] = piege;
+                    }
+                    else
+                    {
+                        //On detruit le piege
+                        Destroy(piege);
+                    }
+                    break;
+
+                //TODO : Faire les autres pieges
+                default:
+                    throw new NotImplementedException("T'as pas encore fait ce piège chef");
+
+
             }
             piege.name += "-P" + posPiege.x + "_" + posPiege.y;
             //Si ça marche et qu'on a tt placé

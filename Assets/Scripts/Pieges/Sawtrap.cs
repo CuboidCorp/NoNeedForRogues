@@ -16,6 +16,15 @@ public class Sawtrap : Trap
         damageZone = GetComponentInChildren<DamageZone>();
         damageZone.damage = damage;
     }
+
+    public void SetDonnees(float speed, float damage)
+    {
+        this.speed = speed;
+        this.damage = damage;
+        scieMobile.SetSpeed(speed);
+        damageZone.damage = damage;
+    }
+
     public override void ActivateTrap()
     {
         ChangePlateformeClientRpc(speed);

@@ -28,6 +28,17 @@ public class AxeTrap : Trap
         }
     }
 
+    public void SetDonnees(float animationSpeed, float damage)
+    {
+        this.animationSpeed = animationSpeed;
+        this.damage = damage;
+        animator.speed = animationSpeed;
+        foreach (DamageZone dmgZone in dmgZones)
+        {
+            dmgZone.damage = damage;
+        }
+    }
+
     public override void ActivateTrap()
     {
         if (!activated)

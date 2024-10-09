@@ -1194,6 +1194,7 @@ public class MultiplayerGameManager : NetworkBehaviour
                 foreach (ulong playerId in playerRepartitionByStairs[i])
                 {
                     SetSpawnPositionClientRpc(escaliers[i].GetComponent<Escalier>().spawnPoint.position, new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { playerId } } });
+                    ReactiverMouvementClientRpc();
                 }
             }
         }
@@ -1208,8 +1209,17 @@ public class MultiplayerGameManager : NetworkBehaviour
     private void SetSpawnPositionClientRpc(Vector3 pos, ClientRpcParams clientRpcParams)
     {
         Debug.Log("Set spawn : " + pos);
+
+        MonPlayerController.instanceLocale.DesactiverMouvement();
         MonPlayerController.instanceLocale.transform.position = pos;
         MonPlayerController.instanceLocale.SetRespawnPoint(pos);
+
+    }
+
+    [ClientRpc]
+    private void ReactiverMouvementClientRpc()
+    {
+        MonPlayerController.instanceLocale.ActiverMouvement();
     }
 
     /// <summary>
