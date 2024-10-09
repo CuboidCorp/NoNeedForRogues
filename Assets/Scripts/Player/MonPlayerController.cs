@@ -173,7 +173,6 @@ public class MonPlayerController : Entity
     /// </summary>
     public void ChargerOptions()
     {
-        //TODO : Regarder les vrais valeurs par défaut
         float volumeMain = PlayerPrefs.GetFloat("mainVolume", 1);
         float volumeMusique = PlayerPrefs.GetFloat("musicVolume", .3f);
         float volumeSfx = PlayerPrefs.GetFloat("sfxVolume", 1);
@@ -187,12 +186,9 @@ public class MonPlayerController : Entity
         invertCamera = PlayerPrefs.GetInt("inverseCam", 0) != 0;
         mouseSensitivity = PlayerPrefs.GetFloat("cameraSensi", 100);
 
-        string bindings = PlayerPrefs.GetString("bindings", "");
+        bool fullscreen = PlayerPrefs.GetInt("fullscreen", 1) != 0;
+        Screen.fullScreen = fullscreen;
 
-        if (bindings != "")
-        {
-            controls.LoadBindingOverridesFromJson(bindings);
-        }
     }
 
 
@@ -897,8 +893,8 @@ public class MonPlayerController : Entity
         {
             direction.y *= -1;
         }
-        yaw += direction.x * mouseSensitivity * Time.deltaTime;
-        pitch -= direction.y * mouseSensitivity * Time.deltaTime;
+        yaw += direction.x * mouseSensitivity * Time.fixedDeltaTime;
+        pitch -= direction.y * mouseSensitivity * Time.fixedDeltaTime;
 
         pitch = Mathf.Clamp(pitch, -minLookAngle, minLookAngle);
 

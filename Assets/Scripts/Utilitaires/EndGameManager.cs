@@ -248,6 +248,9 @@ public class EndGameManager : MonoBehaviour
         int totalDeaths = 0;
         int tempsExploEnSecondes;
         int nbEtages = MultiplayerGameManager.Instance.conf.nbEtages;
+        int dernierEtageAtteint = MultiplayerGameManager.Instance.conf.currentEtage;
+
+        int penaliteGameOver = 1000 * (nbEtages - dernierEtageAtteint);
 
         //Calcul nbMorts 
         foreach (KeyValuePair<ulong, PlayerStats> playStats in StatsManager.Instance.allStatsHolder)
@@ -276,8 +279,10 @@ public class EndGameManager : MonoBehaviour
         detailScoreCanva.transform.GetChild(9).GetComponent<TMP_Text>().text = "Temps normalisé : " + tempsMoyenNormalise + " s";
         int diffTemps = tempsMoyenParEtage - tempsMoyenNormalise;
 
+        detailScoreCanva.transform.GetChild(10).GetComponent<TMP_Text>().text = "Pénalité gameover : " + penaliteGameOver;
 
-        score = totalGold * 10 - totalDeaths * 5 - diffTemps * 5;
+
+        score = totalGold * 10 - totalDeaths * 5 - diffTemps * 5 - penaliteGameOver;
         MultiplayerGameManager.Instance.SyncScoreClientRpc(score, MultiplayerGameManager.Instance.conf.seed);
     }
 

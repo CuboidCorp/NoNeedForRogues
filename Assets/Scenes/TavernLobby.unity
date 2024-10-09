@@ -24331,6 +24331,7 @@ MonoBehaviour:
   goldChangedText: {fileID: 2031904015}
   connexionVivoxText: {fileID: 877556028}
   mainAudioMixer: {fileID: 24100000, guid: 8ce4d377e0fafc242a67a3ca7f7bec08, type: 2}
+  bindingTemplate: {fileID: 9197481963319205126, guid: e49195b8d0a8ded4ab3a45a4eb1c46c2, type: 3}
 --- !u!1001 &2145338467
 PrefabInstance:
   m_ObjectHideFlags: 0

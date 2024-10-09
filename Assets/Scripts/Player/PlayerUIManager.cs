@@ -53,6 +53,8 @@ public class PlayerUIManager : MonoBehaviour
     private Slider mouseSensiSlider;
     private Toggle cameraInversee;
 
+    private Toggle fullscreenToggle;
+
     private Button returnToPauseButton;
     private Button cancelButton;
     [SerializeField] private AudioMixer mainAudioMixer;
@@ -281,8 +283,6 @@ public class PlayerUIManager : MonoBehaviour
 
     private void LoadOptions()
     {
-        //TODO : Trouver les bonnes valeurs par défaut
-
         mainVolumeSlider.value = PlayerPrefs.GetFloat("mainVolume", 1);
         musicVolumeSlider.value = PlayerPrefs.GetFloat("musicVolume", .3f);
         sfxVolumeSlider.value = PlayerPrefs.GetFloat("sfxVolume", 1);
@@ -290,6 +290,8 @@ public class PlayerUIManager : MonoBehaviour
 
         cameraInversee.value = PlayerPrefs.GetInt("inverseCam", 0) != 0;
         mouseSensiSlider.value = PlayerPrefs.GetFloat("cameraSensi", 100);
+
+        fullscreenToggle.value = PlayerPrefs.GetInt("fullscreen", 1) != 0;
     }
 
     /// <summary>
@@ -305,7 +307,7 @@ public class PlayerUIManager : MonoBehaviour
         PlayerPrefs.SetFloat("cameraSensi", mouseSensiSlider.value);
         PlayerPrefs.SetInt("inverseCam", cameraInversee.value ? 1 : 0);
 
-        PlayerPrefs.SetString("bindings", MonPlayerController.instanceLocale.controls.SaveBindingOverridesAsJson());
+        PlayerPrefs.SetInt("fullscreen", fullscreenToggle.value ? 1 : 0);
 
         MonPlayerController.instanceLocale.ChargerOptions();
     }
@@ -325,32 +327,12 @@ public class PlayerUIManager : MonoBehaviour
         mouseSensiSlider = root.Q<Slider>("mouseSensiSlider");
         cameraInversee = root.Q<Toggle>("inverseCamToggle");
 
+        fullscreenToggle = root.Q<Toggle>("fullscreenToggle");
+
         returnToPauseButton = root.Q<Button>("returnBtn");
         cancelButton = root.Q<Button>("cancelBtn");
 
         LoadOptions();
-        int cpt = 0;
-        foreach (InputBinding binding in MonPlayerController.instanceLocale.controls.bindings)
-        {
-            Debug.Log(binding);
-            VisualElement bindingElement = bindingTemplate.CloneTree();
-            bindingElement.Q<Label>("texteBinding").text = binding.action;
-            bindingElement.Q<Button>("boutonRebind").text = binding.overridePath;
-
-            bindingElement.Q<Button>("bindingValue").clicked += () =>
-            {
-                InputManager.StartRebind(binding.action, cpt, bindingElement.Q<Button>("bindingValue"), false);
-            };
-
-            bindingElement.Q<Button>("boutonReset").clicked += () =>
-            {
-                InputManager.ResetBinding(binding.action, cpt);
-            };
-
-
-            root.Q<VisualElement>("bindingContainer").Add(bindingElement);
-            cpt++;
-        }
 
         mainVolumeSlider.RegisterValueChangedCallback(evt =>
         {
@@ -407,6 +389,7 @@ public class PlayerUIManager : MonoBehaviour
         });
 
         returnToPauseButton.clicked -= HideOptionsMenu;
+        cancelButton.clicked -= LoadOptions;
     }
 
     /// <summary>
