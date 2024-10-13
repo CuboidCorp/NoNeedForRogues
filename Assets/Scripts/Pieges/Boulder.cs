@@ -14,6 +14,7 @@ public class Boulder : NetworkBehaviour
     private Animator animator;
     private Rigidbody rb;
 
+    private bool isLaunched = false;
     private bool isDespawning = false;
     //Le principe c'est que la boule prend une direction random parmi les 4 directions cardinales et se déplace dans cette direction (Sauf si on la change depuis un autre script)
 
@@ -33,6 +34,7 @@ public class Boulder : NetworkBehaviour
 
     private void Launch()
     {
+        isLaunched = true;
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
         if (direction == -1)
@@ -77,9 +79,9 @@ public class Boulder : NetworkBehaviour
             collision.gameObject.GetComponent<CowController>().UnCow();
             Despawn();
         }
-        else if (collision.gameObject.CompareTag("Wall"))
+        else if (isLaunched == false)
         {
-            Despawn();
+            Launch();
         }
     }
 
@@ -92,25 +94,6 @@ public class Boulder : NetworkBehaviour
         {
             isDespawning = true;
             GetComponent<NetworkObject>().Despawn(true);
-        }
-    }
-
-    private void Update()
-    {
-        CheckGround();
-    }
-
-    /// <summary>
-    /// Vérifie si la boule touche le sol
-    /// </summary>
-    private void CheckGround()
-    {
-        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 1f))
-        {
-            if (hit.collider.CompareTag("Floor"))
-            {
-                Launch();
-            }
         }
     }
 }

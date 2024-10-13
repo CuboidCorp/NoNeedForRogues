@@ -143,7 +143,6 @@ public class GenerationDonjon : NetworkBehaviour
             MultiplayerGameManager.Instance.seeds[MultiplayerGameManager.Instance.conf.currentEtage - 1] = MultiplayerGameManager.Instance.conf.currentSeed;
             MultiplayerGameManager.Instance.conf.maxEtageReached = MultiplayerGameManager.Instance.conf.currentEtage;
             Debug.Log(MultiplayerGameManager.Instance.conf);
-            Debug.Log(MultiplayerGameManager.Instance.conf.currentSeed);
             SendGenerationClientRpc(MultiplayerGameManager.Instance.conf, true);
         }
         else
@@ -199,7 +198,6 @@ public class GenerationDonjon : NetworkBehaviour
         baseDifficulty = conf.baseDiff;
         difficultyScaling = conf.diffScaling;
         currentEtage = conf.currentEtage;
-        Debug.Log("Generation with seed : " + seed);
         Random.InitState(seed);
     }
 

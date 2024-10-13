@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using static UnityEngine.Rendering.DebugUI;
 using Random = UnityEngine.Random;
 
 /// <summary>
@@ -441,8 +442,19 @@ public class GenEtaLaby : GenerationEtage
         GameObject instance = Instantiate(objet, itemHolder);
         objets.Add(instance);
         instance.transform.position = position;
-        instance.GetComponent<GoldObject>().value = valeur;
         instance.GetComponent<NetworkObject>().Spawn();
+        SyncGoldValueClientRpc(instance, valeur);
+    }
+
+    /// <summary>
+    /// Donne à tous les clients la valeur de l'or d'un objet
+    /// </summary>
+    /// <param name="objRef">L'objet en question</param>
+    /// <param name="valeur">La valeur de l'objet</param>
+    [ClientRpc]
+    private void SyncGoldValueClientRpc(NetworkObjectReference objRef, int valeur)
+    {
+        ((GameObject)objRef).GetComponent<GoldObject>().value = valeur;
     }
 
     /// <summary>

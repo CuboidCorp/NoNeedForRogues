@@ -34,6 +34,7 @@ public class PlayerUIManager : MonoBehaviour
     [SerializeField] private TMP_Text goldText;
     [SerializeField] private TMP_Text goldChangedText;
     [SerializeField] private TMP_Text connexionVivoxText;
+    [SerializeField] private TMP_Text debugText;
     private Coroutine hideGoldChanged;
 
     #endregion
@@ -58,8 +59,6 @@ public class PlayerUIManager : MonoBehaviour
     private Button returnToPauseButton;
     private Button cancelButton;
     [SerializeField] private AudioMixer mainAudioMixer;
-
-    [SerializeField] private VisualTreeAsset bindingTemplate;
 
     #endregion
 
@@ -160,6 +159,15 @@ public class PlayerUIManager : MonoBehaviour
     public void SetConnexionVivoxTexte(string text)
     {
         connexionVivoxText.text = text;
+    }
+
+    /// <summary>
+    /// Set le texte de debug
+    /// </summary>
+    /// <param name="text">Texte du debug</param>
+    public void SetDebugTexte(string text)
+    {
+        debugText.text = text;
     }
 
     #endregion

@@ -74,6 +74,11 @@ public class SpellRecognition : MonoBehaviour
         builder.AppendFormat(" Duration: {0} seconds{1}", args.phraseDuration.TotalSeconds, Environment.NewLine);
         Debug.Log(builder.ToString());
 
+        if (debugMode)
+        {
+            PlayerUIManager.Instance.SetDebugTexte(args.text);
+        }
+
         Vector3 posProj = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
 
         StatsManager.Instance.AddSpellCast();
