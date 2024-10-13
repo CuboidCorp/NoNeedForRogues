@@ -30,6 +30,7 @@ public class EndGameManager : MonoBehaviour
         {
             MultiplayerGameManager.Instance.SetSpawnAllPlayers(transform.position);
         }
+        AudioManager.instance.SetMusic(AudioManager.Musique.END);
     }
 
     #region Player Stats

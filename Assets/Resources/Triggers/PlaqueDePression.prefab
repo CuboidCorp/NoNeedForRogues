@@ -174,7 +174,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   totalWeight: 0
   minWeightToPress: 1
-  animationSpeed: 2
+  animationSpeed: 3
   pressAnimationName: Pressed
   resetAnimationName: Reset
   pressAnimation: {fileID: 7400000, guid: 4328f83a8adb6c34f83f7e550c09ef68, type: 2}

@@ -40,7 +40,6 @@ public class AudioManager : NetworkBehaviour
         ARROW_TRAP,
         FLOOR_TRAP,
         PP_DOWN,
-        PP_UP,
         BEAT_TRAP,
         SPIKE_UP
     }

@@ -32,6 +32,7 @@ public class Chest : Openable, IInteractable
     {
         if (current) //Donc ouverture
         {
+            AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.CHEST_OPENED);
             anim.Play(openingAnimationName);
             interactText = "Fermer";
             if (hasNeverBeenOpened)

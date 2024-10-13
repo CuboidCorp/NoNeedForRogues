@@ -54,7 +54,7 @@ public class SpellRecognition : MonoBehaviour
 
     #endregion
 
-    private readonly static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "Lucerna", "François François François", "Flashbang", "François divin", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED", "VISION NOCTURNE" }; //Les sorts en majuscules sont les sorts de debug
+    private readonly static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "Lucerna", "François François François", "Flashbang", "François divin", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED", "VISION NOCTURNE", "SPAWN" }; //Les sorts en majuscules sont les sorts de debug
 
     private bool debugMode = false;
 
@@ -236,6 +236,16 @@ public class SpellRecognition : MonoBehaviour
                 else
                 {
                     Debug.LogWarning("Le joueur a essayé de VISION NOCTURNE sans autorisation");
+                }
+                break;
+            case "SPAWN":
+                if (debugMode)
+                {
+                    MonPlayerController.instanceLocale.TpSpawn();
+                }
+                else
+                {
+                    Debug.LogWarning("Le joueur a essayé de SPAWN sans autorisation");
                 }
                 break;
                 #endregion

@@ -106,7 +106,7 @@ public class LobbyManager : MonoBehaviour
     private void Update()
     {
 #if !UNITY_EDITOR
-        HandleRefreshLobbyList(); // Disabled Auto Refresh for testing with multiple builds
+        HandleRefreshLobbyList();
 #endif
         HandleLobbyHeartbeat();
         HandleLobbyPolling();

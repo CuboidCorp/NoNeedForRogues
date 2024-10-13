@@ -480,7 +480,8 @@ public class GenEtaLaby : GenerationEtage
     {
         GameObject instance = Instantiate(chest, itemHolder);
         objets.Add(instance);
-        instance.transform.SetPositionAndRotation(position, Quaternion.Euler(0, Mathf.Log((int)(~allStates ^ ~etatPos), 2) * 90 + 90, 0));
+        Debug.Log($"Chest rotation : {360 - (Mathf.Log((int)(~allStates ^ ~etatPos), 2) * 90 + 90)} Side : {Mathf.Log((int)(~allStates ^ ~etatPos), 2)} WallState : {~allStates ^ ~etatPos}");
+        instance.transform.SetPositionAndRotation(position, Quaternion.Euler(0, 360 - (Mathf.Log((int)(~allStates ^ ~etatPos), 2) * 90 + 90), 0));
         int typeCoffre = Random.Range(0, 2);
         Chest coffreScript = instance.GetComponent<Chest>();
         instance.GetComponent<NetworkObject>().Spawn();
@@ -542,6 +543,8 @@ public class GenEtaLaby : GenerationEtage
     {
         int nbPieges = 10 + difficulty * 2;
 
+        Debug.Log("Nb pieges : " + nbPieges);
+
         trapsPos = new Vector2Int[nbPieges];
         placedTraps = new GameObject[nbPieges];
         placedTrigger = new List<GameObject>();
@@ -587,14 +590,12 @@ public class GenEtaLaby : GenerationEtage
 
             Traps indexPiege = possibleTraps[Random.Range(0, possibleTraps.Count)];
 
-            //TODO : Instantiate le gameObject du piege dans la liste des pieges
             GameObject piege = Instantiate(prefabsTraps[(int)indexPiege], ConvertToRealWorldPos(posPiege), Quaternion.identity);
-            piege.name = "Piege" + indexPiege;
+            piege.name = $"{indexPiege}";
             switch (indexPiege)
             {
                 case Traps.PIEGE_CAILLOU: //Piege caillou
                     //On met le piege en haut genre 6
-                    piege.name += "_Rock";
                     piege.transform.position += new Vector3(0, 6f, 0);
                     piege.GetComponent<BoulderTrap>().SetDirection(Random.Range(0, 4));
                     if (estServ)
@@ -612,7 +613,6 @@ public class GenEtaLaby : GenerationEtage
                     }
                     break;
                 case Traps.PIEGE_PIQUE:
-                    piege.name += "_Spike";
                     piege.transform.position += new Vector3(0, .125f, 0);
                     if (estServ)
                     {
@@ -627,14 +627,13 @@ public class GenEtaLaby : GenerationEtage
                     }
                     break;
                 case Traps.PIEGE_PIQUE_DROP:
-                    piege.name += "_SpikeDrop";
                     piege.transform.position += new Vector3(0, 6f, 0);
                     piege.transform.rotation = Quaternion.Euler(0, 0, 180);
                     if (estServ)
                     {
                         piege.GetComponent<NetworkObject>().Spawn();
 
-                        piege.GetComponent<PiegePiqueDrop>().Setup(piege.transform.position, ConvertToRealWorldPos(posPiege) + new Vector3(0, .8f, 0), 3, 1, 15);
+                        piege.GetComponent<PiegePiqueDrop>().Setup(piege.transform.position, ConvertToRealWorldPos(posPiege) + new Vector3(0, .8f, 0), 3, 1, 20);
                         placedTraps[nbPiegesPlaces] = piege;
 
                         CreatePlaque(ConvertToRealWorldPos(posPiege), () => piege.GetComponent<Trap>().ActivateTrap());
@@ -645,8 +644,9 @@ public class GenEtaLaby : GenerationEtage
                     }
                     break;
                 case Traps.PIEGE_SCIE:
-                    piege.name += "_Saw";
                     piege.transform.position += new Vector3(0, 0.3f, 0);
+                    int randomRotate = Random.Range(0, 4);
+                    piege.transform.rotation = Quaternion.Euler(0, 90 * randomRotate, 0);
                     if (estServ)
                     {
                         piege.GetComponent<NetworkObject>().Spawn();
@@ -661,7 +661,7 @@ public class GenEtaLaby : GenerationEtage
                     }
                     break;
                 case Traps.PIEGE_TROU:
-                    piege.name += "_Hole";
+                    Debug.Log("Piege trou a la position : " + posPiege);
                     //Suppresion du sol on fait un raycast
                     piege.transform.position += new Vector3(0, 0.1525f, 0);
                     Ray ray = new(piege.transform.position + new Vector3(0, .5f, 0), Vector3.down);
@@ -681,6 +681,7 @@ public class GenEtaLaby : GenerationEtage
                     {
                         GameObject solOuvrant = Instantiate(Resources.Load<GameObject>(piege.GetComponent<FloorTrap>().GetSolOuvrant()), piege.transform.position, Quaternion.Euler(180, 0, 0));
                         solOuvrant.GetComponent<NetworkObject>().Spawn();
+                        solOuvrant.name = $"SolOuvrant-P{posPiege.x}_{posPiege.y}";
                         placedTraps[nbPiegesPlaces] = solOuvrant;
 
                         //TODO : Ptet une plaque de pression dans la case d'a coté
@@ -688,9 +689,15 @@ public class GenEtaLaby : GenerationEtage
                     }
                     break;
                 case Traps.PIEGE_HACHE:
-                    Debug.Log("Axe Trap temp");
-                    piege.name += "_Axe";
                     piege.transform.position += new Vector3(0, 0.3f, 0);
+                    if ((int)etatMurs == 10)
+                    {
+                        piege.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                    }
+                    else
+                    {
+                        piege.transform.localRotation = Quaternion.Euler(0, 90, 0);
+                    }
                     if (estServ)
                     {
                         piege.GetComponent<NetworkObject>().Spawn();
@@ -739,7 +746,9 @@ public class GenEtaLaby : GenerationEtage
     private void CreatePlaque(Vector3 pos, UnityAction action)
     {
         GameObject plaque = Instantiate(prefabsTriggers[0], pos, Quaternion.identity);
-        plaque.transform.position += new Vector3(0, 0.25f, 0);
+        int offsetX = Random.Range(-1, 1);
+        int offsetZ = Random.Range(-1, 1);
+        plaque.transform.position += new Vector3(offsetX, 0.25f, offsetZ);
         plaque.GetComponent<NetworkObject>().Spawn();
         plaque.GetComponent<PressurePlate>().SetOnPress(action);
         placedTrigger.Add(plaque);

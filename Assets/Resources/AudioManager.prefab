@@ -69,8 +69,8 @@ MonoBehaviour:
   musiques:
   - {fileID: 8300000, guid: 32f808275bc2d1d4582e6b8a331fd850, type: 3}
   - {fileID: 8300000, guid: 1f368934c32a08048898cdc28e432313, type: 3}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 8300000, guid: b2640994297419d49a33692783b5ab51, type: 3}
+  - {fileID: 8300000, guid: 9bf4f1d4ec99fb346bd9a23e36af40fd, type: 3}
   soundFxPrefab: {fileID: 878706812287644236, guid: be1cbe099c850c744a1afb2e9bbbf7c4, type: 3}
   oneShotClips:
   - {fileID: 8300000, guid: 61eacbf903d88f745869805f56106ca0, type: 3}
@@ -83,10 +83,10 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 9d861bfc34e83e8409fd90b0e274ed22, type: 3}
   - {fileID: 0}
   - {fileID: 8300000, guid: 269d51ec32f49ee43aefb91362f8eeee, type: 3}
+  - {fileID: 8300000, guid: 317817b30d0e58846b26f38d9b388bae, type: 3}
   - {fileID: 0}
   - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 8300000, guid: 56941c14fe38e4349b38f5211fa187be, type: 3}
   - {fileID: 0}
   - {fileID: 0}
 --- !u!82 &8529220706815342068

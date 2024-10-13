@@ -545,7 +545,6 @@ public class MonPlayerController : Entity
     /// </summary>
     public void TpSpawn()
     {
-        Debug.Log("TpSpawnCorps");
         if (IsOwner)
         {
             transform.position = lastCheckPoint;

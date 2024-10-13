@@ -108,7 +108,7 @@ public class PressurePlate : NetworkBehaviour
         totalWeight += weight;
         if (totalWeight >= minWeightToPress)
         {
-            Debug.Log("Press");
+            AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.PP_DOWN);
             animator.Play(pressAnimationName);
             StartCoroutine(WaitForEndPress());
         }

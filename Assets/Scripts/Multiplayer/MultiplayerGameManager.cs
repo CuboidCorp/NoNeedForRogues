@@ -751,6 +751,10 @@ public class MultiplayerGameManager : NetworkBehaviour
     private void GameOver()
     {
         Debug.Log("GameOver");
+        //Faut respawn tt le monde
+        RespawnAllPlayers();
+        //On despawn tt les objets et autre
+        GenerationDonjon.instance.DespawnItems();
         StartCoroutine(GoToEndScene());
     }
 
@@ -800,6 +804,19 @@ public class MultiplayerGameManager : NetworkBehaviour
             playersStates[playerIndex] = PlayerState.Alive;
             MovePlayerTapToHuman(id);
         }
+    }
+
+    /// <summary>
+    /// Respawn tous les joueurs quand ils sont tous morts
+    /// </summary>
+    private void RespawnAllPlayers()
+    {
+        GameObject[] ghosts = GameObject.FindGameObjectsWithTag("PlayerGhost");
+        foreach (GameObject ghost in ghosts)
+        {
+            ghost.GetComponent<GhostController>().Respawn();
+        }
+
     }
 
     #endregion
