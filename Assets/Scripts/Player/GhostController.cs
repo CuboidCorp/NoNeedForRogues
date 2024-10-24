@@ -34,9 +34,11 @@ public class GhostController : NetworkBehaviour
     [SerializeField] private float boostFov = 80f;
     [SerializeField] private float fovChangeSpeed = 5f;
 
-    // Internal Variables
-    private float yaw = 0.0f;
-    private float pitch = 0.0f;
+    public float smoothTime = 0.05f;
+
+    private float xRotation = 0f;
+    private Vector2 currentMouseDelta;
+    private Vector2 currentMouseDeltaVelocity;
 
     #endregion
 
@@ -49,8 +51,6 @@ public class GhostController : NetworkBehaviour
     private float moveSpeed;
     [SerializeField] private float normalSpeed = 3f;
     [SerializeField] private float boostSpeed = 5f;
-
-    //private float maxSpeed = 10f;    //private float maxSpeed = 10f;
 
     private bool isWalking = false;
     private bool isBoosting = false;
@@ -69,13 +69,16 @@ public class GhostController : NetworkBehaviour
 
         playerActions.Move.performed += ctx => OnMove(ctx);
         playerActions.Move.canceled += ctx => moveInput = Vector2.zero;
-        playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
         playerActions.Run.started += ctx => StartBoost();
         playerActions.Run.canceled += ctx => StopBoost();
         playerActions.Jump.started += ctx => moveInputVertical = 1;
         playerActions.Jump.canceled += ctx => moveInputVertical = 0;
         playerActions.Crouch.started += ctx => moveInputVertical = -1;
         playerActions.Crouch.canceled += ctx => moveInputVertical = 0;
+
+        invertCamera = PlayerPrefs.GetInt("inverseCam", 0) != 0;
+        mouseSensitivity = PlayerPrefs.GetFloat("cameraSensi", 100);
+
     }
 
     /// <summary>
@@ -92,6 +95,11 @@ public class GhostController : NetworkBehaviour
     private void OnDisable()
     {
         controls.Disable();
+    }
+
+    private void LateUpdate()
+    {
+        Look();
     }
 
     /// <summary>
@@ -128,6 +136,8 @@ public class GhostController : NetworkBehaviour
         Vector3 moveDirection = new(moveInput.x, moveInputVertical, moveInput.y);
 
         transform.Translate(moveSpeed * Time.fixedDeltaTime * moveDirection);
+
+        transform.Rotate(Vector3.up * currentMouseDelta.x);
 
         if (isBoosting)
         {
@@ -166,20 +176,19 @@ public class GhostController : NetworkBehaviour
     /// Gère la rotation de la caméra du joueur
     /// </summary>
     /// <param name="direction">La direction ou on regarde</param>
-    private void Look(Vector2 direction)
+    private void Look()
     {
-        if (invertCamera)
-        {
-            direction.y *= -1;
-        }
-        yaw += direction.x * mouseSensitivity * Time.deltaTime;
-        pitch -= direction.y * mouseSensitivity * Time.deltaTime;
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * (invertCamera ? -1 : 1);
 
-        pitch = Mathf.Clamp(pitch, -minLookAngle, minLookAngle);
+        Vector2 targetMouseDelta = new(mouseX, mouseY);
+        currentMouseDelta = Vector2.SmoothDamp(currentMouseDelta, targetMouseDelta, ref currentMouseDeltaVelocity, smoothTime);
 
-        playerCamera.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
+        // Rotation verticale (regarder vers le haut et vers le bas)
+        xRotation -= currentMouseDelta.y;
+        xRotation = Mathf.Clamp(xRotation, -minLookAngle, minLookAngle); // Limite la rotation verticale entre -90 et 90 degrés
 
-        transform.eulerAngles = new Vector3(0.0f, yaw, 0.0f);
+        playerCamera.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
     #endregion

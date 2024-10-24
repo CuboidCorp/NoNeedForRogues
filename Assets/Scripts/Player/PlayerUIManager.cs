@@ -192,6 +192,7 @@ public class PlayerUIManager : MonoBehaviour
     /// </summary>
     public void ShowPauseMenu()
     {
+        MonPlayerController.instanceLocale.isPaused = true;
         playControls.Player.Disable();
         playControls.UI.Enable();
         UnityEngine.Cursor.lockState = CursorLockMode.None;
@@ -208,6 +209,7 @@ public class PlayerUIManager : MonoBehaviour
         playControls.Player.Enable();
         playControls.UI.Disable();
         UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+        MonPlayerController.instanceLocale.isPaused = false;
         inGameUI.SetActive(true);
         uiMenu.visualTreeAsset = null;
         UnSetupPauseMenu();

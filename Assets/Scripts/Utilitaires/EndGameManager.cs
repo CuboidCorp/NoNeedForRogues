@@ -251,7 +251,7 @@ public class EndGameManager : MonoBehaviour
         int nbEtages = MultiplayerGameManager.Instance.conf.nbEtages;
         int dernierEtageAtteint = MultiplayerGameManager.Instance.conf.currentEtage;
 
-        int penaliteGameOver = 1000 * (nbEtages - dernierEtageAtteint);
+        int penaliteGameOver = 1000 * (nbEtages - dernierEtageAtteint + 1);
 
         //Calcul nbMorts 
         foreach (KeyValuePair<ulong, PlayerStats> playStats in StatsManager.Instance.allStatsHolder)

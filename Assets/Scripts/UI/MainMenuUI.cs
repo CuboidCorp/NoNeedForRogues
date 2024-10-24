@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using Unity.Services.Authentication;
@@ -19,6 +19,9 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private GameObject errorPopup;
     [SerializeField] private TMP_InputField inputField;
 
+
+    private static string[] blagues = { "On recrute des designers d'UI", "On recrute n'importe qui", "Le jeu n'a pas de bug que des features", "Je revends vos données à Microsoft", "你是个白痴" };
+
     private string Profile = "Original";
 #if UNITY_EDITOR
     private string filename = "originalInfo.json";
@@ -30,6 +33,8 @@ public class MainMenuUI : MonoBehaviour
     private void Awake()
     {
         mainMenuRootVisualElement = mainMenu.GetComponent<UIDocument>().rootVisualElement;
+        mainMenuRootVisualElement.Q<Label>("labelVersion").text = $"V{Application.version}";
+        mainMenuRootVisualElement.Q<Label>("labelJoke").text = blagues[UnityEngine.Random.Range(0, blagues.Length)];
     }
 
     private void OnEnable()
@@ -48,6 +53,7 @@ public class MainMenuUI : MonoBehaviour
     {
         AudioManager.instance.SetMusic(AudioManager.Musique.MAIN);
         AudioManager.instance.ActivateMusic();
+        Debug.Log("Application Version : " + Application.version);
 #if UNITY_EDITOR
         if (ClonesManager.IsClone())
         {
@@ -67,7 +73,7 @@ public class MainMenuUI : MonoBehaviour
     /// <summary>
     /// Affiche un message d'erreur
     /// </summary>
-    /// <param name="message">Le message � afficher</param>
+    /// <param name="message">Le message à afficher</param>
     private void ShowError(string message)
     {
         errorPopup.SetActive(true);
@@ -75,7 +81,7 @@ public class MainMenuUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Lance le jeu si le joueur � un fichier de sauvegarde
+    /// Lance le jeu si le joueur à un fichier de sauvegarde
     /// </summary>
     public void StartGame()
     {
@@ -184,7 +190,7 @@ public class MainMenuUI : MonoBehaviour
     /// </summary>
     private async void CreationPlayerInfoGameObject(PlayerInfo playerInfo)
     {
-        if (FindObjectOfType<DataHolder>() == null) //Si le data holder existe d�j� on ne le recree pas
+        if (FindObjectOfType<DataHolder>() == null) //Si le data holder existe déjà on ne le recree pas
         {
             GameObject playerInfoGameObject = new("PlayerInfo");
             playerInfoGameObject.AddComponent<DataHolder>();
@@ -213,7 +219,7 @@ public class MainMenuUI : MonoBehaviour
     public void Annuler()
     {
         inputField.text = "";
-        inputField.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text = "Entrez votre nom (5 � 15 caract�res) alphanum�riques";
+        inputField.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text = "Entrez votre nom (5 à 15 caractères) alphanumériques";
         mainMenu.SetActive(true);
         popupMenu.SetActive(false);
     }

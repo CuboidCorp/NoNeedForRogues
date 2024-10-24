@@ -38,6 +38,8 @@ public abstract class Entity : NetworkBehaviour
     public virtual void Damage(float damage)
     {
         currentHealth -= damage;
+        //On arrondit en entier
+        currentHealth = Mathf.Round(currentHealth);
         healthSlider.value = currentHealth;
         healthText.text = currentHealth + "/" + MaxHP;
         if (currentHealth <= 0)

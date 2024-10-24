@@ -32,6 +32,23 @@ public class GoldObject : NetworkBehaviour, IInteractable
     {
         //Rajoute le gold au truc du serveur
         AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.MONEY_GAINED, .75f);
+        SendInteractionServerRpc(MonPlayerController.instanceLocale.OwnerClientId);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SendInteractionServerRpc(ulong ramasseurId)
+    {
+        SendStatsClientRpc(value, MultiplayerGameManager.SendRpcToPlayer(ramasseurId));
+    }
+
+    /// <summary>
+    /// On renvoie au joueur la bonne info et on supprime l'objet
+    /// </summary>
+    /// <param name="value">La valeur de l'objet</param>
+    /// <param name="clientParams">Les params pr l'envoyer à la personne concernée</param>
+    [ClientRpc]
+    private void SendStatsClientRpc(int value, ClientRpcParams clientParams)
+    {
         StatsManager.Instance.AddGold(value);
         DespawnServerRpc();
     }

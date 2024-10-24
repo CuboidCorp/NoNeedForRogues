@@ -7325,8 +7325,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: Crepitus, Lux, Mortus, Infernum, Sesamae occludit, Penitus, Fusrohdah,
-    Capere, Dimittas, Emitto, Resurrectio, Acceleratio, Curae, Saltus, Polymorphismus,
-    Offendas, Ventus, Lucerna
+    Capere, Dimittas, Emitto, Resurrectio, Acceleratio, Curae, Saltus, Offendas,
+    Ventus, Lucerna
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 12bf5ba272199a541ba8d91ff6e42b41, type: 2}
   m_sharedMaterial: {fileID: 8030851293896615881, guid: 12bf5ba272199a541ba8d91ff6e42b41, type: 2}

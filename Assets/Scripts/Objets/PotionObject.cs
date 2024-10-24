@@ -45,9 +45,24 @@ public class PotionObject : WeightedObject, IInteractable
     }
 
     /// <summary>
-    /// Gère l'interaction avec l'objet
+    /// Quand on interagit on recup les bonnes valeurs sur les serv
     /// </summary>
-    public void HandleInteraction()
+    /// <param name="player">L'id du joueur qui a intéragit</param>
+    [ServerRpc(RequireOwnership = false)]
+    private void InteractServerRpc(ulong player)
+    {
+        InteractClientRpc(power, nbSecPoison, type, MultiplayerGameManager.SendRpcToPlayer(player));
+    }
+
+    /// <summary>
+    /// Renvoie l'interaction avec les bons params
+    /// </summary>
+    /// <param name="power">Puissance de la potion</param>
+    /// <param name="nbSecPoison">Nombre de seconde de poision</param>
+    /// <param name="type">Type de potion</param>
+    /// <param name="param">Player sui qui le mettre</param>
+    [ClientRpc]
+    private void InteractClientRpc(float power, int nbSecPoison, PotionType type, ClientRpcParams param)
     {
         StatsManager.Instance.AddPotionDrank();
         switch (type)
@@ -57,11 +72,11 @@ public class PotionObject : WeightedObject, IInteractable
                 MonPlayerController.instanceLocale.Heal(power);
                 break;
             case PotionType.MANA_REGEN:
-                Debug.Log("Mana regen");
+                Debug.Log("Potion Mana regen");
                 MonPlayerController.instanceLocale.GainMana(power);
                 break;
             case PotionType.POISON:
-                Debug.Log("Poison");
+                Debug.Log("Potion Poison");
                 MonPlayerController.instanceLocale.StartPoison(power, nbSecPoison);
                 break;
         }
@@ -74,6 +89,11 @@ public class PotionObject : WeightedObject, IInteractable
     private void DespawnObjectServerRpc()
     {
         GetComponent<NetworkObject>().Despawn(true);
+    }
+
+    public void HandleInteraction()
+    {
+        InteractServerRpc(MonPlayerController.instanceLocale.OwnerClientId);
     }
 
     #endregion

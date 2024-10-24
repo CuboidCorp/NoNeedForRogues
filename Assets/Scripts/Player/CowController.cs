@@ -81,7 +81,6 @@ public class CowController : NetworkBehaviour
         playerActions.Move.performed += ctx => OnMove(ctx);
         playerActions.Move.canceled += ctx => moveInput = Vector2.zero;
         playerActions.Jump.performed += ctx => Jump();
-        playerActions.Look.performed += ctx => Look(ctx.ReadValue<Vector2>());
         playerActions.Run.started += ctx => StartRun();
         playerActions.Run.canceled += ctx => StopRun();
 

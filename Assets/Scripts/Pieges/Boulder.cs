@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -62,6 +63,8 @@ public class Boulder : NetworkBehaviour
         }
 
         rb.velocity = moveDirection * speed;
+
+        DespawnAfterTime(10);
     }
 
     /// <summary>
@@ -79,10 +82,25 @@ public class Boulder : NetworkBehaviour
             collision.gameObject.GetComponent<CowController>().UnCow();
             Despawn();
         }
+        else if (collision.gameObject.CompareTag("Wall"))
+        {
+            Despawn();
+        }
         else if (isLaunched == false)
         {
             Launch();
         }
+    }
+
+    /// <summary>
+    /// Coroutine qui fait despawn le boulder au bout d'un certain temps
+    /// </summary>
+    /// <param name="time">Temps avant de despawn</param>
+    /// <returns></returns>
+    private IEnumerator DespawnAfterTime(float time)
+    {
+        yield return new WaitForSeconds(time);
+        Despawn();
     }
 
     /// <summary>

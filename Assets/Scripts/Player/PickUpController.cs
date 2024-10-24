@@ -147,10 +147,6 @@ public class PickUpController : NetworkBehaviour
             return;
         }
         //On le drop
-        if (isRotating)
-        {
-            MonPlayerController.instanceLocale.StopRotation();
-        }
         isRotating = false;
         SubstituteCopyForReal(Vector3.zero);
         StopClipping();
@@ -167,10 +163,6 @@ public class PickUpController : NetworkBehaviour
         if (heldObj == null)
         {
             return;
-        }
-        if (isRotating)
-        {
-            MonPlayerController.instanceLocale.StopRotation();
         }
         isRotating = false;
         SubstituteCopyForReal(holdArea.transform.forward * throwForce);

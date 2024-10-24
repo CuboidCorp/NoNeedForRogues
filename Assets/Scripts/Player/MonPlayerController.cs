@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -47,19 +46,20 @@ public class MonPlayerController : Entity
     [SerializeField] private float sprintFOV = 80f;
     [SerializeField] private float fovChangeSpeed = 5f;
 
-    // Internal Variables
-    private float yaw = 0.0f;
-    private float pitch = 0.0f;
-
-    private Action<InputAction.CallbackContext> actLook;
-    private Action<InputAction.CallbackContext> actRotation;
-
     private Coroutine deactivateFlashlight;
+
+    public float smoothTime = 0.05f;
+
+    private float xRotation = 0f;
+    private Vector2 currentMouseDelta;
+    private Vector2 currentMouseDeltaVelocity;
 
     [SerializeField] private Color baseLightColor;
     [SerializeField] private Color nightVisionLightColor;
 
     #endregion
+
+    public bool isPaused = false;
 
     #region Movement Variables
     [Header("Movement Variables")]
@@ -116,21 +116,14 @@ public class MonPlayerController : Entity
         playerActions = controls.Player;
         ChargerOptions();
 
-        actLook = ctx => Look(ctx.ReadValue<Vector2>());
-        actRotation = ctx => GetComponent<PickUpController>().RotateObject(ctx.ReadValue<Vector2>());
-
         playerActions.Move.performed += OnMove;
         playerActions.Move.canceled += _ => moveInput = Vector2.zero;
         playerActions.Jump.performed += _ => Jump();
-        playerActions.Look.performed += actLook;
         playerActions.Run.started += _ => StartRun();
         playerActions.Run.canceled += _ => StopRun();
         playerActions.LongAttack.started += _ => StartCasting();
         playerActions.LongAttack.performed += _ => StopCasting();
         playerActions.LongAttack.canceled += _ => StopCasting();
-
-        playerActions.Rotation.started += _ => StartRotation(); //Rajouter un grand hold sur les controles
-        playerActions.Rotation.canceled += _ => StopRotation();
 
         playerActions.Interact.performed += _ => Interact();
 
@@ -164,7 +157,7 @@ public class MonPlayerController : Entity
         //On randomize le joueur
         if (seed == 0)
         {
-            seed = UnityEngine.Random.Range(0, 100000);
+            seed = Random.Range(0, 100000);
         }
     }
 
@@ -285,6 +278,18 @@ public class MonPlayerController : Entity
         await voiceConnexion.LeaveVivox();
     }
 
+    private void LateUpdate()
+    {
+        if (!isPaused)
+        {
+            Look();
+        }
+        else
+        {
+            currentMouseDelta = Vector2.zero;
+        }
+    }
+
     /// <summary>
     /// Update meilleur pr les checks car appelé à chaque frame
     /// </summary>
@@ -325,6 +330,8 @@ public class MonPlayerController : Entity
             animator.SetBool("isWalking", false);
             StopRun();
         }
+
+        transform.Rotate(Vector3.up * currentMouseDelta.x);
 
         Vector3 moveDirection = new(moveInput.x, 0f, moveInput.y);
 
@@ -886,19 +893,18 @@ public class MonPlayerController : Entity
     /// Gère la rotation de la caméra du joueur
     /// </summary>
     /// <param name="direction">La direction ou on regarde</param>
-    private void Look(Vector2 direction)
+    private void Look()
     {
-        if (invertCamera)
-        {
-            direction.y *= -1;
-        }
-        yaw += direction.x * mouseSensitivity * Time.fixedDeltaTime;
-        pitch -= direction.y * mouseSensitivity * Time.fixedDeltaTime;
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * (invertCamera ? -1 : 1);
 
-        pitch = Mathf.Clamp(pitch, -minLookAngle, minLookAngle);
+        Vector2 targetMouseDelta = new(mouseX, mouseY);
+        currentMouseDelta = Vector2.SmoothDamp(currentMouseDelta, targetMouseDelta, ref currentMouseDeltaVelocity, smoothTime);
 
-        playerCamera.transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
-        transform.eulerAngles = new Vector3(0.0f, yaw, 0.0f);
+        xRotation -= currentMouseDelta.y;
+        xRotation = Mathf.Clamp(xRotation, -minLookAngle, minLookAngle);
+
+        playerCamera.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
     /// <summary>
@@ -928,31 +934,6 @@ public class MonPlayerController : Entity
             }
         }
 
-    }
-
-    /// <summary>
-    /// Desactive la rotation de la camera et permet de faire tourner l'objet qu'on tient dans les mains
-    /// </summary>
-    private void StartRotation()
-    {
-        if (GetComponent<PickUpController>().IsHoldingObject())
-        {
-            playerActions.Look.performed -= actLook;
-            playerActions.Look.performed += actRotation;
-        }
-    }
-
-    /// <summary>
-    /// Reactive la rotation de la camera et desactive l'action de faire tourner l'objet qu'on tient dans les mains
-    /// </summary>
-    public void StopRotation()
-    {
-        if (GetComponent<PickUpController>().IsHoldingObject())
-        {
-            GetComponent<PickUpController>().isRotating = false;
-            playerActions.Look.performed += actLook;
-            playerActions.Look.performed -= actRotation;
-        }
     }
 
     #endregion

@@ -28,7 +28,7 @@ public class SpellRecognition : MonoBehaviour
 
     private const float jumpBonus = 10;
 
-    private const float dashForce = 10;
+    private const float dashForce = 100;
 
     private const float healSpeed = 1;
     private const float healDuration = 5;
@@ -54,7 +54,14 @@ public class SpellRecognition : MonoBehaviour
 
     #endregion
 
-    private readonly static string[] spells = { "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Polyphorphismus", "Offendas", "Ventus", "Lucerna", "François François François", "Flashbang", "François divin", "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED", "VISION NOCTURNE", "SPAWN" }; //Les sorts en majuscules sont les sorts de debug
+
+    //Sort desactivé : Polyphorphismus
+
+    private readonly static string[] spells = {
+        "Crepitus", "Lux", "Mortuus", "Infernum", "Sesamae occludit", "Penitus", "FusRoDah", "Capere", "Emitto", "Dimittas", "Resurrectio", "Acceleratio", "Curae", "Saltus", "Offendas", "Ventus", "Lucerna", //"Polyphorphismus",
+        "François François François", "Flashbang", "François divin", //Sorts troll
+        "DEBUG", "TPALL", "RAGDOLL", "TRESOR", "TRAJECTOIRE", "SEED", "VISION NOCTURNE", "SPAWN" //Sorts DEBUG
+    };
 
     private bool debugMode = false;
 
@@ -143,9 +150,9 @@ public class SpellRecognition : MonoBehaviour
             case "Saltus":
                 gameObject.GetComponent<MonPlayerController>().GreaterJump(jumpBonus);
                 break;
-            case "Polyphorphismus":
-                gameObject.GetComponent<MonPlayerController>().Polymorph();
-                break;
+            //case "Polyphorphismus":
+            //    gameObject.GetComponent<MonPlayerController>().Polymorph();
+            //    break;
             case "Offendas":
                 Vector3 lookDir = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward;
                 gameObject.GetComponent<MonPlayerController>().Dash(lookDir, dashForce);

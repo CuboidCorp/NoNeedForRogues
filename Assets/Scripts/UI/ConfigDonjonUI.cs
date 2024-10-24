@@ -100,6 +100,7 @@ public class ConfigDonjonUI : MonoBehaviour
             {
                 nbEtages = nbEtages.value,
                 seed = seed.value,
+                currentSeed = seed.value,
                 minTailleEtage = minTailleEtage.value,
                 maxTailleEtage = maxTailleEtage.value,
                 nbStairs = nbStairs.value,
