@@ -20,7 +20,7 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private TMP_InputField inputField;
 
 
-    private static string[] blagues = { "On recrute des designers d'UI", "On recrute n'importe qui", "Le jeu n'a pas de bug que des features", "Je revends vos données à Microsoft", "你是个白痴" };
+    private readonly static string[] blagues = { "On recrute des designers d'UI", "On recrute n'importe qui", "Le jeu n'a pas de bugs que des features", "Je revends vos données à Microsoft", "你是个白痴", "On recherche des bruiteurs" };
 
     private string Profile = "Original";
 #if UNITY_EDITOR

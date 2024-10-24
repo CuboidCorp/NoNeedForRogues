@@ -1,11 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Utilities;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
@@ -35,6 +32,7 @@ public class PlayerUIManager : MonoBehaviour
     [SerializeField] private TMP_Text goldChangedText;
     [SerializeField] private TMP_Text connexionVivoxText;
     [SerializeField] private TMP_Text debugText;
+    [SerializeField] private TMP_Text spellText;
     private Coroutine hideGoldChanged;
 
     #endregion
@@ -66,6 +64,8 @@ public class PlayerUIManager : MonoBehaviour
 
     private readonly string interactButton = "[E]";
     private PlayerControls playControls;
+
+    private Coroutine hideSpellText;
 
     private void Awake()
     {
@@ -168,6 +168,26 @@ public class PlayerUIManager : MonoBehaviour
     public void SetDebugTexte(string text)
     {
         debugText.text = text;
+    }
+
+    /// <summary>
+    /// Set le texte pour indiquer le sort lancé et sa couleur en fonction de si c'est bien prononcé
+    /// </summary>
+    /// <param name="texte">Le texte du sort</param>
+    /// <param name="color">La couleur du sort</param>
+    public void SetSpellTexte(string texte, Color color)
+    {
+        spellText.text = texte;
+        spellText.color = color;
+        if (hideSpellText != null)
+            StopCoroutine(hideSpellText);
+        hideSpellText = StartCoroutine(HideSpellText(5));
+    }
+
+    private IEnumerator HideSpellText(int timeToHide)
+    {
+        yield return new WaitForSeconds(timeToHide);
+        spellText.text = "";
     }
 
     #endregion

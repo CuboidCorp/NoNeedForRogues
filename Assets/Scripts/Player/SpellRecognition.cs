@@ -19,7 +19,6 @@ public class SpellRecognition : MonoBehaviour
 
     private const float speedBoostDuration = 10;
     private const float speedBoostSpeed = 5;
-    private const float speedBoostTime = 3;
 
     private const float fusrohdahSpeed = 3;
     private const float fusrohdahExplosionRange = 5;
@@ -28,7 +27,7 @@ public class SpellRecognition : MonoBehaviour
 
     private const float jumpBonus = 10;
 
-    private const float dashForce = 100;
+    private const float dashForce = 75;
 
     private const float healSpeed = 1;
     private const float healDuration = 5;
@@ -51,6 +50,8 @@ public class SpellRecognition : MonoBehaviour
     private static Vector3 zoneVentSize = new(2, 2, 5);
     private static Vector3 zoneVentPos = new(1, 1, 2.5f); //TODO  : A changer pr les vraies valeurs
     private const float zoneVentDuration = 5;
+
+    private const float highMultiplier = 1.5f;
 
     #endregion
 
@@ -80,11 +81,16 @@ public class SpellRecognition : MonoBehaviour
         builder.AppendFormat("Timestamp: {0}{1}", args.phraseStartTime, Environment.NewLine);
         builder.AppendFormat(" Duration: {0} seconds{1}", args.phraseDuration.TotalSeconds, Environment.NewLine);
         Debug.Log(builder.ToString());
-
-        if (debugMode)
+        Color colorSpell = args.confidence switch
         {
-            PlayerUIManager.Instance.SetDebugTexte(args.text);
-        }
+            ConfidenceLevel.Medium => Color.yellow,
+            ConfidenceLevel.High => Color.green,
+            _ => Color.red,
+        };
+
+        float multiplier = args.confidence == ConfidenceLevel.High ? highMultiplier : 1;
+
+        PlayerUIManager.Instance.SetSpellTexte(args.text, colorSpell);
 
         Vector3 posProj = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 3f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position;
 
@@ -94,25 +100,25 @@ public class SpellRecognition : MonoBehaviour
         switch (args.text)
         {
             case "Crepitus":
-                Explosion(transform, explosionRange, explosionForce);
+                Explosion(transform, explosionRange * multiplier, explosionForce * multiplier);
                 break;
             case "Lux":
-                MultiplayerGameManager.Instance.SummonLightballServerRpc(posProj, lightIntensity, lightTime);
+                MultiplayerGameManager.Instance.SummonLightballServerRpc(posProj, lightIntensity * multiplier, lightTime * multiplier);
                 break;
             case "Mortuus":
                 gameObject.GetComponent<MonPlayerController>().Die();
                 break;
             case "Infernum":
-                MultiplayerGameManager.Instance.SummonFireBallServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, fireBallSpeed, fireBallExplosionRange, fireBallExplosionForce, fireBallTime);
+                MultiplayerGameManager.Instance.SummonFireBallServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, fireBallSpeed * multiplier, fireBallExplosionRange, fireBallExplosionForce * multiplier, fireBallTime);
                 break;
             case "Sesamae occludit":
-                OpenSesame(gameObject.GetComponent<MonPlayerController>().playerCamera.transform, interactRange);
+                OpenSesame(gameObject.GetComponent<MonPlayerController>().playerCamera.transform, interactRange * multiplier);
                 break;
             case "Penitus":
-                gameObject.GetComponent<MonPlayerController>().InteractSpell(interactRange);
+                gameObject.GetComponent<MonPlayerController>().InteractSpell(interactRange * multiplier);
                 break;
             case "FusRoDah":
-                MultiplayerGameManager.Instance.SummonFusrohdahServerRpc(gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 1f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, fusrohdahSpeed, fusrohdahTime, fusrohdahExplosionRange, fusrohdahExplosionForce);
+                MultiplayerGameManager.Instance.SummonFusrohdahServerRpc(gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 1f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, fusrohdahSpeed * multiplier, fusrohdahTime, fusrohdahExplosionRange * multiplier, fusrohdahExplosionForce * multiplier);
                 break;
             case "Capere":
                 gameObject.GetComponent<PickUpController>().TryGrabObject();
@@ -130,54 +136,55 @@ public class SpellRecognition : MonoBehaviour
                 //Fait bouger le joueur plus vite et change sa voix pour qu'elle soit plus aigue
                 if (MultiplayerGameManager.Instance.soloMode)
                 {
-                    gameObject.GetComponent<MonPlayerController>().ReceiveSpeedBoost(speedBoostDuration);
+                    gameObject.GetComponent<MonPlayerController>().ReceiveSpeedBoost(speedBoostDuration * multiplier);
                 }
                 else
                 {
-                    MultiplayerGameManager.Instance.SummonAccelProjServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, speedBoostSpeed, speedBoostDuration, speedBoostDuration);
+                    MultiplayerGameManager.Instance.SummonAccelProjServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, speedBoostSpeed, speedBoostDuration, speedBoostDuration * multiplier);
                 }
                 break;
             case "Curae":
                 if (MultiplayerGameManager.Instance.soloMode)
                 {
-                    gameObject.GetComponent<MonPlayerController>().Heal(healAmount);
+                    gameObject.GetComponent<MonPlayerController>().Heal(healAmount * multiplier);
                 }
                 else
                 {
-                    MultiplayerGameManager.Instance.SummonHealProjServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, healSpeed, healDuration, healAmount);
+                    MultiplayerGameManager.Instance.SummonHealProjServerRpc(posProj, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, healSpeed, healDuration, healAmount * multiplier);
                 }
                 break;
             case "Saltus":
-                gameObject.GetComponent<MonPlayerController>().GreaterJump(jumpBonus);
+                gameObject.GetComponent<MonPlayerController>().GreaterJump(jumpBonus * multiplier);
                 break;
             //case "Polyphorphismus":
             //    gameObject.GetComponent<MonPlayerController>().Polymorph();
             //    break;
             case "Offendas":
                 Vector3 lookDir = gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward;
-                gameObject.GetComponent<MonPlayerController>().Dash(lookDir, dashForce);
+                gameObject.GetComponent<MonPlayerController>().Dash(lookDir, dashForce * multiplier);
                 break;
             case "Ventus":
-                MultiplayerGameManager.Instance.SummonZoneVentServerRpc(gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 1f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, zoneVentForce, zoneVentSize, zoneVentPos, zoneVentDuration);
+                MultiplayerGameManager.Instance.SummonZoneVentServerRpc(gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward * 1f + gameObject.GetComponent<MonPlayerController>().playerCamera.transform.position, gameObject.GetComponent<MonPlayerController>().playerCamera.transform.forward, zoneVentForce * multiplier, zoneVentSize, zoneVentPos, zoneVentDuration);
                 break;
             case "Lucerna":
-                MonPlayerController.instanceLocale.StartFlash(flashlightTime, false);
+                MonPlayerController.instanceLocale.StartFlash((int)(flashlightTime * multiplier), false);
                 break;
 
             case "François François François":
                 StartCoroutine(gameObject.GetComponent<MonPlayerController>().SortFrancois());
                 break;
             case "Flashbang":
-                MultiplayerGameManager.Instance.SummonLightballServerRpc(posProj, flashbangIntensity, lightTime);
+                MultiplayerGameManager.Instance.SummonLightballServerRpc(posProj, flashbangIntensity * multiplier, lightTime * multiplier);
                 break;
             case "François divin":
-                MonPlayerController.instanceLocale.StartFlash(flashlightTime, true);
+                MonPlayerController.instanceLocale.StartFlash((int)(flashlightTime * multiplier), true);
                 break;
 
             #region SORTS DEBUG
             // SORTS DE DEBUG A PARTIR D'ICI
             case "DEBUG":
                 debugMode = true;
+                PlayerUIManager.Instance.SetDebugTexte("DEBUG");
                 Debug.Log("Mode debug activé");
                 break;
             case "TPALL":
