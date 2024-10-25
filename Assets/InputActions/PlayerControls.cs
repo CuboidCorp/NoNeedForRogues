@@ -190,9 +190,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Rotation"",
+                    ""name"": ""Vivox"",
                     ""type"": ""Button"",
-                    ""id"": ""cb772e89-1b12-4ece-99f9-28dd432aad43"",
+                    ""id"": ""0ccbc1a0-cce8-40ec-b85c-41d3779a25b9"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -488,12 +488,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""85439b72-214e-4914-b9bf-d541553a60dc"",
-                    ""path"": ""<Keyboard>/r"",
-                    ""interactions"": ""Hold"",
+                    ""id"": ""9acf3168-2337-4a3c-bf98-ce7fdc44878c"",
+                    ""path"": ""<Keyboard>/v"",
+                    ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": ""Keyboard&Mouse"",
-                    ""action"": ""Rotation"",
+                    ""groups"": """",
+                    ""action"": ""Vivox"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -987,7 +987,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player_Emote9 = m_Player.FindAction("Emote9", throwIfNotFound: true);
         m_Player_Emote10 = m_Player.FindAction("Emote10", throwIfNotFound: true);
         m_Player_Pause = m_Player.FindAction("Pause", throwIfNotFound: true);
-        m_Player_Rotation = m_Player.FindAction("Rotation", throwIfNotFound: true);
+        m_Player_Vivox = m_Player.FindAction("Vivox", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1080,7 +1080,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Emote9;
     private readonly InputAction m_Player_Emote10;
     private readonly InputAction m_Player_Pause;
-    private readonly InputAction m_Player_Rotation;
+    private readonly InputAction m_Player_Vivox;
     public struct PlayerActions
     {
         private @PlayerControls m_Wrapper;
@@ -1103,7 +1103,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @Emote9 => m_Wrapper.m_Player_Emote9;
         public InputAction @Emote10 => m_Wrapper.m_Player_Emote10;
         public InputAction @Pause => m_Wrapper.m_Player_Pause;
-        public InputAction @Rotation => m_Wrapper.m_Player_Rotation;
+        public InputAction @Vivox => m_Wrapper.m_Player_Vivox;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1167,9 +1167,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Pause.started += instance.OnPause;
             @Pause.performed += instance.OnPause;
             @Pause.canceled += instance.OnPause;
-            @Rotation.started += instance.OnRotation;
-            @Rotation.performed += instance.OnRotation;
-            @Rotation.canceled += instance.OnRotation;
+            @Vivox.started += instance.OnVivox;
+            @Vivox.performed += instance.OnVivox;
+            @Vivox.canceled += instance.OnVivox;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1228,9 +1228,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Pause.started -= instance.OnPause;
             @Pause.performed -= instance.OnPause;
             @Pause.canceled -= instance.OnPause;
-            @Rotation.started -= instance.OnRotation;
-            @Rotation.performed -= instance.OnRotation;
-            @Rotation.canceled -= instance.OnRotation;
+            @Vivox.started -= instance.OnVivox;
+            @Vivox.performed -= instance.OnVivox;
+            @Vivox.canceled -= instance.OnVivox;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1403,7 +1403,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnEmote9(InputAction.CallbackContext context);
         void OnEmote10(InputAction.CallbackContext context);
         void OnPause(InputAction.CallbackContext context);
-        void OnRotation(InputAction.CallbackContext context);
+        void OnVivox(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

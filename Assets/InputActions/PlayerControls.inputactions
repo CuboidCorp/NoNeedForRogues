@@ -168,9 +168,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Rotation",
+                    "name": "Vivox",
                     "type": "Button",
-                    "id": "cb772e89-1b12-4ece-99f9-28dd432aad43",
+                    "id": "0ccbc1a0-cce8-40ec-b85c-41d3779a25b9",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -466,12 +466,12 @@
                 },
                 {
                     "name": "",
-                    "id": "85439b72-214e-4914-b9bf-d541553a60dc",
-                    "path": "<Keyboard>/r",
-                    "interactions": "Hold",
+                    "id": "9acf3168-2337-4a3c-bf98-ce7fdc44878c",
+                    "path": "<Keyboard>/v",
+                    "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Rotation",
+                    "groups": "",
+                    "action": "Vivox",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

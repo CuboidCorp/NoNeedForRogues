@@ -110,7 +110,7 @@ public class PressurePlate : NetworkBehaviour
         {
             AudioManager.instance.PlayOneShotClipServerRpc(transform.position, AudioManager.SoundEffectOneShot.PP_DOWN);
             animator.Play(pressAnimationName);
-            StartCoroutine(WaitForEndPress());
+            onPress.Invoke();
         }
     }
 
@@ -129,7 +129,7 @@ public class PressurePlate : NetworkBehaviour
     private IEnumerator WaitForEndPress()
     {
         yield return new WaitForSeconds(pressAnimation.length);
-        onPress.Invoke();
+
     }
 
     #endregion

@@ -137,6 +137,7 @@ public class MonPlayerController : Entity
         playerActions.Emote8.started += _ => StartEmote8();
         playerActions.Emote9.started += _ => StartEmote9();
         playerActions.Emote10.started += _ => StartEmote10();
+        playerActions.Vivox.started += _ => JoinVivox();
 
         playerActions.Pause.performed += _ => PlayerUIManager.Instance.ShowPauseMenu();
 
@@ -267,7 +268,10 @@ public class MonPlayerController : Entity
     /// </summary>
     public async void JoinVivox()
     {
-        await voiceConnexion.InitVivox();
+        if (!voiceConnexion.IsConnected())
+        {
+            await voiceConnexion.InitVivox();
+        }
     }
 
     /// <summary>

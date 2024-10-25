@@ -170,6 +170,8 @@ public class GenerationDonjon : NetworkBehaviour
         {
             Debug.Log("Fin de la generation");
             MultiplayerGameManager.Instance.SpawnPlayers();
+            GameObject portail = Instantiate(Resources.Load<GameObject>("Objets/Portail"), new Vector3(0, 22.4f, 0), Quaternion.identity);
+            portail.GetComponent<NetworkObject>().Spawn();
         }
     }
 

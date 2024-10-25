@@ -149,6 +149,15 @@ public class VivoxVoiceConnexion : NetworkBehaviour
 
     }
 
+    /// <summary>
+    /// Retourne si on est connecté à Vivox ou non
+    /// </summary>
+    /// <returns>True si connecté, false sinon</returns>
+    public bool IsConnected()
+    {
+        return isConnected;
+    }
+
     private void Update()
     {
         if (isConnected)

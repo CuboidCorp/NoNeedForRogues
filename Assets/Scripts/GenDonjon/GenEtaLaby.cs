@@ -807,7 +807,7 @@ public class GenEtaLaby : GenerationEtage
         GameObject sleepingGaz = Instantiate(prefabsTraps[(int)Traps.SLEEP_GAZ], position, Quaternion.identity);
         sleepingGaz.GetComponent<NetworkObject>().Spawn();
         sleepingGaz.GetComponent<SleepingGaz>().sleepingTime = sleepDuration;
-        sleepingGaz.GetComponent<ToxicGaz>().expansionSpeed = expansionSpeed;
+        sleepingGaz.GetComponent<SleepingGaz>().expansionSpeed = expansionSpeed;
 
         Destroy(sleepingGaz, gazDuration);
     }
